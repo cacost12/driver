@@ -31,7 +31,7 @@ extern "C" {
 /* Board identifier code */
 #ifdef A0002_REV1
 	/* Rev 1 */
-	#define A0002_PING_RESPONSE_CODE    ( 0x04 )
+	#define PING_RESPONSE_CODE    ( 0x04 )
 #endif
 
 

@@ -46,7 +46,7 @@ uint8_t    response;   /* A0002 Response Code */
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-response = A0002_PING_RESPONSE_CODE; /* Code specific to board and revision */
+response = PING_RESPONSE_CODE; /* Code specific to board and revision */
 
 
 /*------------------------------------------------------------------------------
