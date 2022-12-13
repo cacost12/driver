@@ -20,10 +20,10 @@
 #include "main.h"
 #include "imu.h"
 
+
 /*------------------------------------------------------------------------------
  Global Variables 
 ------------------------------------------------------------------------------*/
-extern I2C_HandleTypeDef hi2c2; /* IMU I2C HAL handle */
 
 
 /*------------------------------------------------------------------------------
@@ -78,12 +78,12 @@ HAL_StatusTypeDef hal_status;     /* Status return code of I2C HAL */
 ------------------------------------------------------------------------------*/
 
 /* Read I2C registers */
-hal_status = HAL_I2C_Mem_Read( &hi2c2, 
-                               IMU_MAG_ADDR, 
-                               reg_addr, 
+hal_status = HAL_I2C_Mem_Read( &( IMU_I2C )        , 
+                               IMU_MAG_ADDR        , 
+                               reg_addr            , 
                                I2C_MEMADD_SIZE_8BIT, 
-                               reg_data_ptr, 
-                               num_registers, 
+                               reg_data_ptr        , 
+                               num_registers       , 
                                HAL_DEFAULT_TIMEOUT
                              );
 
@@ -126,12 +126,12 @@ HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
 ------------------------------------------------------------------------------*/
 
 /* Read I2C register */
-hal_status = HAL_I2C_Mem_Read ( &hi2c2, 
-                                IMU_ADDR, 
-                                reg_addr, 
+hal_status = HAL_I2C_Mem_Read ( &( IMU_I2C )        , 
+                                IMU_ADDR            , 
+                                reg_addr            , 
                                 I2C_MEMADD_SIZE_8BIT, 
-                                reg_data_ptr, 
-                                sizeof( uint8_t ), 
+                                reg_data_ptr        , 
+                                sizeof( uint8_t )   , 
                                 HAL_DEFAULT_TIMEOUT ); 
 
 /* Return I2C HAL status */
@@ -175,7 +175,7 @@ HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
 ------------------------------------------------------------------------------*/
 
 /*Read I2C register*/
-hal_status = HAL_I2C_Mem_Read( &hi2c2              , 
+hal_status = HAL_I2C_Mem_Read( &( IMU_I2C )        , 
                                IMU_ADDR            , 
                                reg_addr            , 
                                I2C_MEMADD_SIZE_8BIT, 
