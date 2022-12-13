@@ -37,6 +37,8 @@ typedef enum USB_STATUS
 #if defined( A0002_REV1 )
 	extern UART_HandleTypeDef huart6; /* USB UART  */
 	#define USB_HUART	( huart6 )
+#else 
+	#error No USB compatible device specified
 #endif
 
 
