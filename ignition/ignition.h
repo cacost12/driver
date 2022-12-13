@@ -18,6 +18,16 @@
 extern "C" {
 #endif
 
+
+/*------------------------------------------------------------------------------
+ MCU Peripheral Configuration 
+------------------------------------------------------------------------------*/
+
+#if !( defined( A0002_REV1 ) || defined( L0002_REV4 ) ) 
+	#error No IGNITION compatible device specified
+#endif
+
+
 /*------------------------------------------------------------------------------
  Typdefs 
 ------------------------------------------------------------------------------*/
@@ -71,15 +81,16 @@ typedef enum IGN_SUBCOMMAND
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#if defined TERMINAL
+#if defined( TERMINAL )
 /* Executes an ignition subcommand based on user input from the sdec terminal */
 IGN_STATUS ign_cmd_execute
 	(
     IGN_SUBCOMMAND ign_subcommand
     );
-#endif
+#endif /* #if defined( TERMINAL ) */
 
 
+#if defined( A0002_REV1 )
 /* Asserts the ignition signal to ignite the main parachute deployment ematch. 
    Returns a response code indicating if the ignition occured succesfully */
 IGN_STATUS ign_deploy_main 
@@ -93,14 +104,6 @@ IGN_STATUS ign_deploy_main
 IGN_STATUS ign_deploy_drogue 
     (
 	void
-    );
-
-
-/* Polls each continuity pin and sets the continuity bits in the response 
-   code */
-IGN_CONT_STAT ign_get_cont_info
-	(
-    void
     );
 
 
@@ -118,6 +121,16 @@ bool ign_drogue_cont
 	(
 	void
 	);
+
+#endif /* #if defined( A0002_REV1 )*/
+
+
+/* Polls each continuity pin and sets the continuity bits in the response 
+   code */
+IGN_CONT_STAT ign_get_cont_info
+	(
+    void
+    );
 
 
 /* Returns TRUE if there is continuity across the switch screw terminals */

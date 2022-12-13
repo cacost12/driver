@@ -91,6 +91,7 @@ return ign_status;
 #endif /* TERMINAL */
 
 
+#if defined( A0002_REV1 )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -194,55 +195,6 @@ else /* Ignition unsuccessful */
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		ign_get_cont_info                                                      *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Polls each continuity pin and sets the continuity bits in the          *
-*       response code                                                          *   
-*                                                                              *
-*******************************************************************************/
-IGN_CONT_STAT ign_get_cont_info
-	(
-    void
-    )
-{
-/*------------------------------------------------------------------------------
- Local Variables 
-------------------------------------------------------------------------------*/
-IGN_CONT_STAT ign_status = 0; /* Status code to be returned */
-
-
-/*------------------------------------------------------------------------------
- Call API functions 
-------------------------------------------------------------------------------*/
-
-/* Poll the switch continuity pin */
-if ( ign_switch_cont() )
-	{
-    ign_status |= IGN_SWITCH_MASK;
-    }
-
-/* Poll the main parachute deployment continuity pin */
-if ( ign_main_cont() )
-	{
-    ign_status |= IGN_MAIN_CONT_MASK;
-    }
-
-/* Poll the drogue parachute deployment continuity pin */
-if ( ign_drogue_cont() )
-	{
-    ign_status |= IGN_DROGUE_CONT_MASK;
-    }
-
-/* Return the status code */
-return ign_status;
-
-} /* ign_get_cont_info */
-
-
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
 * 		ign_main_cont                                                          *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
@@ -303,6 +255,56 @@ else
     }
 
 } /* drogue_cont */
+#endif /* #if defined( A0002_REV1 ) */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		ign_get_cont_info                                                      *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Polls each continuity pin and sets the continuity bits in the          *
+*       response code                                                          *   
+*                                                                              *
+*******************************************************************************/
+IGN_CONT_STAT ign_get_cont_info
+	(
+    void
+    )
+{
+/*------------------------------------------------------------------------------
+ Local Variables 
+------------------------------------------------------------------------------*/
+IGN_CONT_STAT ign_status = 0; /* Status code to be returned */
+
+
+/*------------------------------------------------------------------------------
+ Call API functions 
+------------------------------------------------------------------------------*/
+
+/* Poll the switch continuity pin */
+if ( ign_switch_cont() )
+	{
+    ign_status |= IGN_SWITCH_MASK;
+    }
+
+/* Poll the main parachute deployment continuity pin */
+if ( ign_main_cont() )
+	{
+    ign_status |= IGN_MAIN_CONT_MASK;
+    }
+
+/* Poll the drogue parachute deployment continuity pin */
+if ( ign_drogue_cont() )
+	{
+    ign_status |= IGN_DROGUE_CONT_MASK;
+    }
+
+/* Return the status code */
+return ign_status;
+
+} /* ign_get_cont_info */
 
 
 /*******************************************************************************

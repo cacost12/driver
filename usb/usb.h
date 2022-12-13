@@ -17,18 +17,6 @@
 extern "C" {
 #endif
 
-/*------------------------------------------------------------------------------
- Typdefs 
-------------------------------------------------------------------------------*/
-
-/* Function return codes */
-typedef enum USB_STATUS
-	{
-	USB_OK = 0,
-    USB_FAIL  ,
-	USB_TIMEOUT
-	} USB_STATUS;
-
 
 /*------------------------------------------------------------------------------
  MCU Peripheral Configuration 
@@ -40,6 +28,19 @@ typedef enum USB_STATUS
 #else 
 	#error No USB compatible device specified
 #endif
+
+
+/*------------------------------------------------------------------------------
+ Typdefs 
+------------------------------------------------------------------------------*/
+
+/* Function return codes */
+typedef enum USB_STATUS
+	{
+	USB_OK = 0,
+    USB_FAIL  ,
+	USB_TIMEOUT
+	} USB_STATUS;
 
 
 /*------------------------------------------------------------------------------
