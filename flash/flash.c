@@ -30,7 +30,6 @@
 /*------------------------------------------------------------------------------
  Global Variables 
 ------------------------------------------------------------------------------*/
-extern SPI_HandleTypeDef hspi2; /* Flash SPI bus */
 
 
 /*------------------------------------------------------------------------------
@@ -413,7 +412,7 @@ HAL_GPIO_WritePin(
 
 /* Send RDSR code to flash chip */
 hal_status = HAL_SPI_Transmit(
-							 &( hspi2 )                ,
+							 &( FLASH_SPI )            ,
                              &transmit_data            ,
                              sizeof( transmit_data )   ,
                              HAL_DEFAULT_TIMEOUT 
@@ -425,7 +424,7 @@ if ( hal_status == HAL_TIMEOUT )
 
 /* Recieve status code */
 hal_status = HAL_SPI_Receive(
-                            &( hspi2                                 ),
+                            &( FLASH_SPI ),
                             &( pflash_handle      -> status_register ),
                             sizeof( pflash_handle -> status_register ),
 							HAL_DEFAULT_TIMEOUT
@@ -491,7 +490,7 @@ HAL_GPIO_WritePin(
 
 /* Enable the write to status register command */
 hal_status = HAL_SPI_Transmit(
-							 &hspi2           ,
+							 &( FLASH_SPI )   ,
                              &flash_opcodes[0],
                              sizeof( uint8_t ),
                              HAL_DEFAULT_TIMEOUT 
@@ -520,7 +519,7 @@ HAL_GPIO_WritePin(
 
 /* Send the chip the flash write to status register command */
 hal_status = HAL_SPI_Transmit(
-                             &hspi2           ,
+                             &( FLASH_SPI )   ,
                              &flash_opcodes[1],
                              sizeof( uint8_t ),
 							 HAL_DEFAULT_TIMEOUT
@@ -528,7 +527,7 @@ hal_status = HAL_SPI_Transmit(
 
 /* Write to the status register using byte provided by calling function */
 hal_status = HAL_SPI_Transmit(
-                             &hspi2                ,
+                             &( FLASH_SPI )        ,
                              &flash_status         ,
                              sizeof( flash_status ),
 							 HAL_DEFAULT_TIMEOUT
@@ -593,7 +592,7 @@ HAL_GPIO_WritePin(
 
 /* Transmit WREN code to flash over SPI */
 hal_status = HAL_SPI_Transmit(
-                             &( hspi2 )            ,
+                             &( FLASH_SPI )        ,
                              &flash_opcode         ,
                              sizeof( flash_opcode ),
                              HAL_DEFAULT_TIMEOUT
@@ -660,7 +659,7 @@ HAL_GPIO_WritePin(
 
 /* Transmit WREN code to flash over SPI */
 hal_status = HAL_SPI_Transmit(
-                             &( hspi2 )             ,
+                             &( FLASH_SPI )         ,
                              &transmit_data         ,
                              sizeof( transmit_data ),
                              HAL_DEFAULT_TIMEOUT
@@ -743,7 +742,7 @@ HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 
 /* Send command code  */
 hal_status = HAL_SPI_Transmit(
-							  &hspi2                 ,
+							  &( FLASH_SPI )         ,
 							  &flash_command         ,
 							  sizeof( flash_command ),
 							  HAL_DEFAULT_TIMEOUT
@@ -755,7 +754,7 @@ if ( hal_status == HAL_TIMEOUT )
 	}
 
 /* Send address bytes */
-hal_status = HAL_SPI_Transmit( &hspi2           ,
+hal_status = HAL_SPI_Transmit( &( FLASH_SPI )   ,
 							   &address[0]      ,
 							   sizeof( address ),
 							   HAL_DEFAULT_TIMEOUT );
@@ -767,7 +766,7 @@ if ( hal_status == HAL_TIMEOUT )
 
 /* Write bytes */
 hal_status = HAL_SPI_Transmit(
-							  &hspi2                    ,
+							  &( FLASH_SPI )            ,
 							  pflash_handle -> pbuffer  ,
 							  pflash_handle -> num_bytes,
 							  HAL_FLASH_TIMEOUT 
@@ -825,7 +824,7 @@ HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 
 /* Send command code*/
 hal_status = HAL_SPI_Transmit(
-							  &hspi2                 ,
+							  &( FLASH_SPI )         ,
 							  &flash_command         ,
 							  sizeof( flash_command ),
 							  HAL_DEFAULT_TIMEOUT
@@ -838,7 +837,7 @@ if ( hal_status == HAL_TIMEOUT )
 
 /* Send Address*/
 hal_status = HAL_SPI_Transmit(
-							  &hspi2           ,
+							  &( FLASH_SPI )   ,
 							  &( address[0] )  ,
 							  sizeof( address ),
 							  HAL_DEFAULT_TIMEOUT
@@ -854,7 +853,7 @@ for ( int i = 0; i < num_bytes; ++i )
 	{
 	uint8_t* pbuffer = ( pflash_handle -> pbuffer ) + i;
 	hal_status = HAL_SPI_Receive(
-								 &hspi2              ,
+								 &( FLASH_SPI )      ,
 								 pbuffer             ,
 								 sizeof( uint8_t )   ,
 								 HAL_DEFAULT_TIMEOUT
@@ -920,7 +919,7 @@ HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 
 /* Full chip erase */
 hal_status = HAL_SPI_Transmit(
-							  &hspi2                 ,
+							  &( FLASH_SPI )         ,
 							  &transmit_data         ,
 							  sizeof( transmit_data ),
 							  HAL_DEFAULT_TIMEOUT
@@ -980,7 +979,7 @@ HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 
 /* Send command code*/
 hal_status = HAL_SPI_Transmit(
-							 &hspi2                 ,
+							 &( FLASH_SPI )         ,
                              &flash_command         ,
                              sizeof( flash_command ),
                              HAL_DEFAULT_TIMEOUT 
@@ -993,7 +992,7 @@ if ( hal_status == HAL_TIMEOUT )
 
 /* Send Address*/
 hal_status = HAL_SPI_Transmit(
-							 &hspi2           ,
+							 &( FLASH_SPI )   ,
                              &( address[0] )  ,
                              sizeof( address ),
                              HAL_DEFAULT_TIMEOUT 
@@ -1006,7 +1005,7 @@ if ( hal_status == HAL_TIMEOUT )
 
 /* Send Dummy Byte */
 hal_status = HAL_SPI_Transmit(
-							 &hspi2           ,
+							 &( FLASH_SPI )   ,
                              &dummy_byte      ,
                              sizeof( uint8_t ),
                              HAL_DEFAULT_TIMEOUT 
@@ -1022,7 +1021,7 @@ for(int i = 0; i < num_bytes; ++i)
 	{
 	uint8_t* pbuffer = ( pflash_handle -> pbuffer ) + i;
     hal_status = HAL_SPI_Receive(
-                                &hspi2           ,
+                                &( FLASH_SPI )   ,
                                 pbuffer          ,
                                 sizeof( uint8_t ),
 							    HAL_DEFAULT_TIMEOUT
@@ -1084,7 +1083,7 @@ HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET);
 
 /* Send command code */
 hal_status = HAL_SPI_Transmit(
-							 &hspi2                    ,
+							 &( FLASH_SPI )            ,
                              &transmit_data            ,
                              sizeof( transmit_data )   ,
                              HAL_DEFAULT_TIMEOUT 
@@ -1097,9 +1096,9 @@ if ( hal_status == HAL_TIMEOUT )
 
 /* Send Address*/
 hal_status = HAL_SPI_Transmit(
-							 &hspi2                             ,
-                             &( pflash_handle -> address[0] )   ,
-                             sizeof( pflash_handle -> address )  ,
+							 &( FLASH_SPI )                    ,
+                             &( pflash_handle -> address[0] )  ,
+                             sizeof( pflash_handle -> address ),
                              HAL_DEFAULT_TIMEOUT 
                              );
 

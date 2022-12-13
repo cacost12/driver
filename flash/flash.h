@@ -22,9 +22,24 @@ extern "C" {
 /*------------------------------------------------------------------------------
 Includes 
 ------------------------------------------------------------------------------*/
+
+/* Standard includes */
 #include <stdbool.h>
 
+/* Project includes */
 #include "sensor.h"
+
+
+/*------------------------------------------------------------------------------
+ MCU Peripheral Configuration 
+------------------------------------------------------------------------------*/
+
+#if defined( A0002_REV1 )
+	extern SPI_HandleTypeDef hspi2; /* Flash SPI bus */
+	#define FLASH_SPI ( hspi2 )
+#else 
+	#error No FLASH compatible device specified
+#endif
 
 /*------------------------------------------------------------------------------
  Macros 
