@@ -31,8 +31,13 @@ typedef enum USB_STATUS
 
 
 /*------------------------------------------------------------------------------
- Macros 
+ MCU Peripheral Configuration 
 ------------------------------------------------------------------------------*/
+
+#if defined( A0002_REV1 )
+	extern UART_HandleTypeDef huart6; /* USB UART  */
+	#define USB_HUART	( huart6 )
+#endif
 
 
 /*------------------------------------------------------------------------------
