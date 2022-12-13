@@ -27,7 +27,6 @@
 /*------------------------------------------------------------------------------
 Global Variables  
 ------------------------------------------------------------------------------*/
-extern I2C_HandleTypeDef hi2c1; /* MCU I2C handle */
 
 
 /*------------------------------------------------------------------------------
@@ -79,7 +78,7 @@ osr      |= config_ptr -> osr_setting << 3; /* Temperature oversampling */
 ------------------------------------------------------------------------------*/
 
 /* Write to the PWR_CTRL register -> Operating mode and enable sensors */
-hal_status = HAL_I2C_Mem_Write( &hi2c1              , 
+hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ), 
                                 BARO_I2C_ADDR       , 
 								BARO_REG_PWR_CTRL   ,
 				                I2C_MEMADD_SIZE_8BIT,
@@ -93,7 +92,7 @@ if ( hal_status != HAL_OK )
 	}
 
 /* Write to the OSR register -> set the oversampling rate */
-hal_status = HAL_I2C_Mem_Write( &hi2c1 ,
+hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
                                 BARO_I2C_ADDR, 
                                 BARO_REG_OSR ,
                                 I2C_MEMADD_SIZE_8BIT,
@@ -139,7 +138,7 @@ API function implementation
 ------------------------------------------------------------------------------*/
 
 /* Read I2C register*/
-hal_status = HAL_I2C_Mem_Read( &hi2c1,
+hal_status = HAL_I2C_Mem_Read( &( BARO_I2C ),
 				               BARO_I2C_ADDR,
 				               reg_addr,
 				               I2C_MEMADD_SIZE_8BIT,
@@ -185,7 +184,7 @@ API function implementation
 ------------------------------------------------------------------------------*/
 
 /*Read I2C register*/
-hal_status = HAL_I2C_Mem_Read( &hi2c1,
+hal_status = HAL_I2C_Mem_Read( &( BARO_I2C ),
                                BARO_I2C_ADDR,
                                reg_addr,
                                I2C_MEMADD_SIZE_8BIT,
@@ -233,7 +232,7 @@ HAL_StatusTypeDef hal_status;
 
 /* Read baro register with I2C */
 hal_status = HAL_I2C_Mem_Read (
-                               &hi2c1              ,
+                               &( BARO_I2C ),
                                BARO_I2C_ADDR       ,
                                BARO_REG_CHIP_ID    ,
                                I2C_MEMADD_SIZE_8BIT,
