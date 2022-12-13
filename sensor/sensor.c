@@ -22,12 +22,12 @@
 #include "main.h"
 #include "imu.h"
 #include "baro.h"
+#include "usb.h"
 #include "sensor.h"
 
 /*------------------------------------------------------------------------------
  Global Variables 
 ------------------------------------------------------------------------------*/
-extern UART_HandleTypeDef huart6; /* USB UART handler struct        */
 
 
 /*------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ SENSOR_DATA   sensor_data;                           /* Struct with all sensor
                                                         data                  */
 uint8_t       sensor_data_bytes[ SENSOR_DATA_SIZE ]; /* Byte array with sensor 
                                                        readouts               */
-const uint8_t num_sensor_bytes = SENSOR_DATA_SIZE;
+uint8_t       num_sensor_bytes = SENSOR_DATA_SIZE;
 
 /*------------------------------------------------------------------------------
  Initializations  
@@ -86,10 +86,9 @@ switch ( subcommand )
 	case SENSOR_DUMP_CODE: 
 		{
 		/* Tell the PC how many bytes to expect */
-		HAL_UART_Transmit( &huart6,
-                           &num_sensor_bytes,
-                           sizeof( num_sensor_bytes ), 
-                           HAL_DEFAULT_TIMEOUT );
+		usb_transmit( &num_sensor_bytes,
+                      sizeof( num_sensor_bytes ), 
+                      HAL_DEFAULT_TIMEOUT );
 
 		/* Get the sensor readings */
 	    sensor_subcmd_status = sensor_dump( &sensor_data );	
@@ -102,10 +101,9 @@ switch ( subcommand )
 			{
 			// readings_to_bytes( &sensor_readings_bytes[0], 
             //                    &sensor_readings[0] );
-			HAL_UART_Transmit( &huart6                    , 
-                               &sensor_data_bytes[0]      , 
-                               sizeof( sensor_data_bytes ), 
-                               HAL_SENSOR_TIMEOUT );
+			usb_transmit( &sensor_data_bytes[0]      , 
+                          sizeof( sensor_data_bytes ), 
+                          HAL_SENSOR_TIMEOUT );
 			return ( sensor_subcmd_status );
             }
 		else
