@@ -134,6 +134,7 @@ typedef enum FLASH_STATUS {
 	FLASH_WRITE_PROTECTED   ,
 	FLASH_WRITE_TIMEOUT     ,
 	FLASH_USB_ERROR         ,
+	FLASH_SPI_ERROR         ,
 	FLASH_CANNOT_WRITE_ENABLE
 } FLASH_STATUS;
 
@@ -149,14 +150,6 @@ FLASH_STATUS flash_cmd_execute
     HFLASH_BUFFER* pflash_handle   
     );
 
-/* Store a frame of flight computer data in flash */
-FLASH_STATUS flash_store
-	(
-	HFLASH_BUFFER* pflash_handle,
-	SENSOR_DATA* sensor_data_ptr,
-	uint32_t time
-	);
-
 /* Read the status register of the flash chip */
 FLASH_STATUS flash_get_status
 	(
@@ -171,15 +164,15 @@ FLASH_STATUS flash_set_status
     );
 
 /* Enable writing to the external flash chip */
-FLASH_STATUS flash_write_enable 
+void flash_write_enable 
     (
-    HFLASH_BUFFER* pflash_handle
+	void
     );
 
 /* Disable writing to the external flash chip */
-FLASH_STATUS flash_write_disable
+void flash_write_disable
     (
-    HFLASH_BUFFER* pflash_handle
+    void  
     );
 
 /* Write bytes from a flash buffer to the external flash */
