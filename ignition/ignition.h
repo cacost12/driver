@@ -90,7 +90,7 @@ IGN_STATUS ign_cmd_execute
 #endif /* #if defined( TERMINAL ) */
 
 
-#if defined( A0002_REV1 )
+#if defined( FLIGHT_COMPUTER )
 /* Asserts the ignition signal to ignite the main parachute deployment ematch. 
    Returns a response code indicating if the ignition occured succesfully */
 IGN_STATUS ign_deploy_main 
@@ -122,7 +122,7 @@ bool ign_drogue_cont
 	void
 	);
 
-#endif /* #if defined( A0002_REV1 )*/
+#endif /* #if defined( FLIGHT_COMPUTER )*/
 
 
 /* Polls each continuity pin and sets the continuity bits in the response 
