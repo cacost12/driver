@@ -163,6 +163,9 @@ BARO_STATUS baro_get_altitude
 	);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* BARO_H */
 
 /*******************************************************************************
