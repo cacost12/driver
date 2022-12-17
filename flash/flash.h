@@ -37,6 +37,9 @@ Includes
 #if defined( A0002_REV1 )
 	extern SPI_HandleTypeDef hspi2; /* Flash SPI bus */
 	#define FLASH_SPI ( hspi2 )
+#elif defined( L0002_REV4 )
+	extern SPI_HandleTypeDef hspi2; /* Flash SPI bus */
+	#define FLASH_SPI ( hspi2 )
 #else 
 	#error No FLASH compatible device specified
 #endif
