@@ -29,9 +29,12 @@ extern "C" {
 #define SENSOR_OP   0x03    /* sensor command opcode   */
 
 /* Board identifier code */
-#ifdef A0002_REV1
+#if   defined( A0002_REV1 )
 	/* Rev 1 */
 	#define PING_RESPONSE_CODE    ( 0x04 )
+#elif defined( L0002_REV4 )
+	/* Rev 4 */
+	#define PING_RESPONSE_CODE	  ( 0x03 )
 #endif
 
 
