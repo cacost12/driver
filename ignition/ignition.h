@@ -76,18 +76,65 @@ typedef enum IGN_SUBCOMMAND
 /* Ignition burn time */
 #define IGN_BURN_DELAY          10 
 
+/* Ignition response code bitmasks */
+#if defined( ENGINE_CONTROLLER ) 
+	#define IGN_E_CONT_MASK   	0b00000001
+	#define IGN_SP_CONT_MASK  	0b00000010
+	#define IGN_NOZ_CONT_MASK 	0b00000100
+	#define IGN_FAIL_E_MASK   	0b00001000
+	#define IGN_FAIL_PWR_MASK 	0b00010000
+	#define IGN_FAIL_MASK       0b00100000
+	#define IGN_SUCCESS         0b01000000
+#endif
+
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#if defined( TERMINAL )
+#if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) )
 /* Executes an ignition subcommand based on user input from the sdec terminal */
 IGN_STATUS ign_cmd_execute
 	(
     IGN_SUBCOMMAND ign_subcommand
     );
-#endif /* #if defined( TERMINAL ) */
+#endif /* #if defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) */
+
+#if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER) )
+/* Execute a terminal command using API functions */
+uint8_t ign_cmd_execute
+	(
+    uint8_t ign_subcommand
+    );
+#endif /* #if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER )  )*/
+
+#if defined( ENGINE_CONTROLLER )
+/* Asserts the ignition signal to ignite the engine ematch. Returns a response 
+code indicating if the ignition occured succesfully */
+IGN_STATUS ign_ignite
+    (
+	void
+    );
+
+/* Check for continuity across solid propellant wire screw terminals */
+bool ign_solid_prop_cont
+	(
+    void
+    );
+
+/* Check for continuity across nozzle wire screw terminals           */
+bool ign_nozzle_cont
+	(
+    void
+    );
+
+/* Check for continuity across ematch and switch screw terminals     */
+bool ign_ematch_cont
+	(
+    void
+    );
+
+#endif /* #if defined( ENGINE_CONTROLLER ) */
 
 
 #if defined( FLIGHT_COMPUTER )
