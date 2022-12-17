@@ -91,7 +91,7 @@ return ign_status;
 #endif /* TERMINAL */
 
 
-#if defined( A0002_REV1 )
+#if defined( FLIGHT_COMPUTER )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -255,7 +255,7 @@ else
     }
 
 } /* drogue_cont */
-#endif /* #if defined( A0002_REV1 ) */
+#endif /* #if defined( FLIGHT_COMPUTER ) */
 
 
 /*******************************************************************************
