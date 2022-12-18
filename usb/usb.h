@@ -19,21 +19,6 @@ extern "C" {
 
 
 /*------------------------------------------------------------------------------
- MCU Peripheral Configuration 
-------------------------------------------------------------------------------*/
-
-#if defined( A0002_REV1 )
-	extern UART_HandleTypeDef huart6; /* USB UART  */
-	#define USB_HUART   ( huart6 )
-#elif defined( L0002_REV4 )
-	extern UART_HandleTypeDef huart1; /* USB UART */
-	#define USB_HUART   ( huart1 )
-#else 
-	#error No USB compatible device specified
-#endif
-
-
-/*------------------------------------------------------------------------------
  Typdefs 
 ------------------------------------------------------------------------------*/
 

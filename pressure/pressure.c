@@ -29,7 +29,6 @@
 
 /* Amplifier gain settings */
 static uint8_t           pt_gains[] = { 0, 0, 0, 0, 0, 0, 0, 0 } ; 
-extern ADC_HandleTypeDef hadc1;               /* ADC handle                   */
 
 
 /*------------------------------------------------------------------------------
@@ -388,13 +387,13 @@ static PRESSURE_STATUS sample_adc_poll
 HAL_StatusTypeDef adc_status;
 
 /* Start the ADC */
-HAL_ADC_Start( &hadc1 );
+HAL_ADC_Start( &( PRESS_ADC ) );
 
 /* Poll ADC */
 for ( int i = 0; i < num_samples; ++i )
 	{
 	/* Wait for end of conversion */
-    adc_status = HAL_ADC_PollForConversion( &hadc1, ADC_TIMEOUT );
+    adc_status = HAL_ADC_PollForConversion( &( PRESS_ADC ), ADC_TIMEOUT );
     if      ( adc_status == HAL_TIMEOUT )
 		{
         return PRESSURE_ADC_TIMEOUT;
@@ -406,12 +405,12 @@ for ( int i = 0; i < num_samples; ++i )
 	else /* No error */
 		{
 		/* Read the ADC value */
-		*(psample_buffer + i) = HAL_ADC_GetValue( &hadc1 ); 
+		*(psample_buffer + i) = HAL_ADC_GetValue( &( PRESS_ADC ) ); 
         }
     }
 
 /* Stop the ADC */
-HAL_ADC_Stop( &hadc1 );
+HAL_ADC_Stop( &( PRESS_ADC ) );
 
 /* Conversion successful */
 return PRESSURE_OK;
