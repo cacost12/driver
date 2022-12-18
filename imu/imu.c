@@ -18,6 +18,7 @@
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
 #include "main.h"
+#include "sdr_pin_defines_A0002.h"
 #include "imu.h"
 
 
