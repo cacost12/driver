@@ -14,7 +14,9 @@
 #define SENSOR_H
 
 #include "stm32h7xx_hal.h"
-#include "imu.h"
+#if defined( FLIGHT_COMPUTER )
+	#include "imu.h"
+#endif
 
 /*------------------------------------------------------------------------------
 Includes 
@@ -55,6 +57,7 @@ typedef enum
 	SENSOR_UNRECOGNIZED_OP,
 	SENSOR_UNSUPPORTED_OP ,
 	SENSOR_IMU_FAIL       ,
+	SENSOR_PT_FAIL        ,
 	SENSOR_ACCEL_ERROR    ,
     SENSOR_GRYO_ERROR     ,
 	SENSOR_MAG_ERROR      ,

@@ -87,6 +87,13 @@ Includes
 /* Reset state of flash register */
 #define FLASH_REG_RESET_VAL         0b00111000
 
+/* Timeouts */
+#ifndef SDR_DEBUG
+	#define HAL_FLASH_TIMEOUT       100
+#else
+	#define HAL_FLASH_TIMEOUT       0xFFFFFFFF
+#endif
+
 
 /*------------------------------------------------------------------------------
  Typdefs 

@@ -30,8 +30,10 @@
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
 #include "main.h"
-#include "imu.h"
-#include "baro.h"
+#if defined( FLIGHT_COMPUTER )
+	#include "imu.h"
+	#include "baro.h"
+#endif
 #include "usb.h"
 #include "sensor.h"
 #if defined( ENGINE_CONTROLLER )
@@ -162,7 +164,7 @@ SENSOR_STATUS sensor_subcmd_status;           /* Status indicating if
 uint32_t      sensor_readings[ NUM_SENSORS ]; /* Readings obtained from each 
                                                  sensor                       */
 uint8_t       sensor_readings_bytes[ 4*NUM_SENSORS ];
-const uint8_t num_sensor_bytes = 4*NUM_SENSORS; /* Number of bytes to be 
+uint8_t       num_sensor_bytes = 4*NUM_SENSORS; /* Number of bytes to be 
                                                    transmitted back to PC     */
 
 /*------------------------------------------------------------------------------
@@ -191,9 +193,9 @@ switch ( subcommand )
 	case SENSOR_DUMP_CODE: 
 		{
 		/* Tell the PC how many bytes to expect */
-		usb_transmit( &num_sensor_bytes       ,
-		              sizeof( num_sensor_bytes,
-					  HAL_DEFAULT_TIMEOUT ) );
+		usb_transmit( &num_sensor_bytes         ,
+		              sizeof( num_sensor_bytes ),
+					  HAL_DEFAULT_TIMEOUT );
 
 		/* Get the sensor readings */
 	    sensor_subcmd_status = sensor_dump( &sensor_readings[0] );	

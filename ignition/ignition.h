@@ -56,12 +56,18 @@ typedef enum IGN_STATUS
 	} IGN_STATUS;
 
 /* SDEC Subcommand Codes */
+#if defined( FLIGHT_COMPUTER )
 typedef enum IGN_SUBCOMMAND
 	{
 	IGN_MAIN_DEPLOY_CODE = 0x01,
 	IGN_CONT_CODE              ,
 	IGN_DROGUE_DEPLOY_CODE     
 	} IGN_SUBCOMMAND;
+#elif defined( ENGINE_CONTROLLER )
+	/* Ignition subcommand codes */
+	#define IGN_FIRE_CODE       0x01
+	#define IGN_CONT_CODE       0x02
+#endif
 
 
 /*------------------------------------------------------------------------------

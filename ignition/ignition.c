@@ -117,7 +117,7 @@ uint8_t ign_cmd_execute
 /*------------------------------------------------------------------------------
  Local Variables 
 ------------------------------------------------------------------------------*/
-IGN_STAT ign_status = 0; /* Status code returned by ignite API function */
+IGN_STATUS ign_status = 0; /* Status code returned by ignite API function */
 
 /*------------------------------------------------------------------------------
  Call API function 
@@ -126,7 +126,7 @@ switch(ign_subcommand)
 	{
     /* Light ematch */
 	case IGN_FIRE_CODE:
-		ign_status = ignite();
+		ign_status = ign_ignite();
 		break;
 
 	/* Return continuity information */
@@ -202,7 +202,7 @@ else /* Ignition unsuccessful */
 *       response code                                                          *   
 *                                                                              *
 *******************************************************************************/
-IGN_STAT ign_get_cont_info
+IGN_STATUS ign_get_cont_info
 	(
     void
     )
@@ -251,7 +251,7 @@ return ign_status;
 *       screw terminals                                                        *
 *                                                                              *
 *******************************************************************************/
-bool solid_prop_cont
+bool ign_solid_prop_cont
 	(
 	void
 	)
@@ -293,7 +293,7 @@ bool ign_nozzle_cont
 uint8_t nozzle_cont_pinstate = HAL_GPIO_ReadPin(NOZ_CONT_GPIO_PORT, NOZ_CONT_PIN);
 
 /* Return true if GPIO state is high*/
-if ( ign_nozzle_cont_pinstate == 0 )
+if ( nozzle_cont_pinstate == 0 )
 	{
     return true;
 	}
@@ -504,7 +504,7 @@ else
 } /* drogue_cont */
 #endif /* #if defined( FLIGHT_COMPUTER ) */
 
-
+#if defined( FLIGHT_COMPUTER )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -552,8 +552,10 @@ if ( ign_drogue_cont() )
 return ign_status;
 
 } /* ign_get_cont_info */
+#endif /* #if defined( FLIGHT_COMPUTER ) */
 
 
+#if defined( FLIGHT_COMPUTER )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -582,6 +584,7 @@ else
     }
 
 } /* switch_cont */
+#endif
 
 
 /*******************************************************************************
