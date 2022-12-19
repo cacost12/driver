@@ -51,13 +51,16 @@ extern "C" {
 /* Ignition Status Response Code */
 typedef enum IGN_STATUS
 	{
-	IGN_OK   = 0b01000000, /* Cont status takes up first 64 values */
-	IGN_FAIL             ,
-	IGN_SWITCH_FAIL      ,
-	IGN_MAIN_FAIL        ,
-	IGN_DROGUE_FAIL      ,
-	IGN_MAIN_CONT_FAIL   ,
-    IGN_DROGUE_CONT_FAIL
+	IGN_OK               = 0x40, /* Cont status takes up first 64 values */
+	IGN_SUCCESS          = 0x41,
+	IGN_EMATCH_CONT_FAIL = 0x42, 
+	IGN_POWER_FAIL       = 0x43, 
+	IGN_FAIL             = 0x44,
+	IGN_SWITCH_FAIL            ,
+	IGN_MAIN_FAIL              ,
+	IGN_DROGUE_FAIL            ,
+	IGN_MAIN_CONT_FAIL         ,
+    IGN_DROGUE_CONT_FAIL 
 	} IGN_STATUS;
 
 /* SDEC Subcommand Codes */
@@ -84,14 +87,6 @@ typedef enum IGN_SUBCOMMAND
 
 /* Ignition burn time */
 #define IGN_BURN_DELAY          10 
-
-/* Ignition response code bitmasks */
-#if defined( ENGINE_CONTROLLER ) 
-	#define IGN_FAIL_E_MASK   	0b00001000
-	#define IGN_FAIL_PWR_MASK 	0b00010000
-	#define IGN_FAIL_MASK       0b00100000
-	#define IGN_SUCCESS         0b01000000
-#endif
 
 
 /*------------------------------------------------------------------------------

@@ -133,14 +133,14 @@ IGN_STATUS ign_ignite
 if ( !ign_ematch_cont() )
 	{
     /* No continuity across ematch and/or switch */
-    return IGN_MAIN_CONT_FAIL; 
+    return IGN_EMATCH_CONT_FAIL; 
     }
 
 /* Check that power supply is not USB */
 
 /* Assert ignition signal for 10 ms */
-HAL_GPIO_WritePin(FIRE_GPIO_PORT, FIRE_PIN, GPIO_PIN_SET);
-HAL_Delay(100);
+HAL_GPIO_WritePin(FIRE_GPIO_PORT, FIRE_PIN, GPIO_PIN_SET  );
+HAL_Delay( IGN_BURN_DELAY );
 HAL_GPIO_WritePin(FIRE_GPIO_PORT, FIRE_PIN, GPIO_PIN_RESET);
 
 /* Check ematch continuity to check that ematch was lit */
