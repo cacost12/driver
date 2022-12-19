@@ -36,7 +36,7 @@
  Procedures 
 ------------------------------------------------------------------------------*/
 
-#if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) )
+#if defined( TERMINAL )  
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -62,6 +62,7 @@ IGN_STATUS ign_status = 0; /* Status code returned by ignite API function */
 ------------------------------------------------------------------------------*/
 switch( ign_subcommand )
 	{
+	#if defined( FLIGHT_COMPUTER )
     /* Deploy main */
 	case IGN_MAIN_DEPLOY_CODE:
 		{
@@ -75,6 +76,16 @@ switch( ign_subcommand )
 		ign_status = ign_deploy_main();
 		break;
 		}
+
+	#elif defined( ENGINE_CONTROLLER )
+    /* Light ematch */
+	case IGN_FIRE_CODE:
+		{
+		ign_status = ign_ignite();
+		break;
+		}
+
+	#endif /* #elif defined( ENGINE_CONTROLLER ) */
 
 	/* Return continuity information */
 	case IGN_CONT_CODE:
@@ -96,55 +107,6 @@ return ign_status;
 
 } /* ign_cmd_execute */
 #endif /* #if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) ) */
-
-
-#if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER ) )
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		ign_cmd_execute                                                        *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Executes an ignition subcommand based on user input from the sdec      *
-*       terminal                                                               *
-*                                                                              *
-*******************************************************************************/
-uint8_t ign_cmd_execute
-	(
-    uint8_t ign_subcommand
-    )
-{
-/*------------------------------------------------------------------------------
- Local Variables 
-------------------------------------------------------------------------------*/
-IGN_STATUS ign_status = 0; /* Status code returned by ignite API function */
-
-/*------------------------------------------------------------------------------
- Call API function 
-------------------------------------------------------------------------------*/
-switch(ign_subcommand)
-	{
-    /* Light ematch */
-	case IGN_FIRE_CODE:
-		ign_status = ign_ignite();
-		break;
-
-	/* Return continuity information */
-	case IGN_CONT_CODE:
-		ign_status = ign_get_cont_info();
-		break;
-
-    /* Unrecognized subcommand code: call error handler */
-	default:
-		Error_Handler();
-
-    }
-
-/* Return the response code */
-return ign_status;
-
-} /* ign_cmd_execute */
-#endif /* #if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER )  )*/
 
 
 #if defined( ENGINE_CONTROLLER )
@@ -192,6 +154,7 @@ else /* Ignition unsuccessful */
     }
 
 } /* ignite */
+#endif /* #if defined( ENGINE_CONTROLLER ) */
 
 /*******************************************************************************
 *                                                                              *
@@ -218,6 +181,7 @@ IGN_STATUS ign_status = 0; /* Status code to be returned */
  Call API functions 
 ------------------------------------------------------------------------------*/
 
+#if defined( ENGINE_CONTROLLER )
 /* Poll the ematch continuity pin */
 if ( ign_ematch_cont() )
 	{
@@ -235,6 +199,25 @@ if ( ign_nozzle_cont() )
 	{
     ign_status |= IGN_NOZ_CONT_MASK;
     }
+#elif defined( FLIGHT_COMPUTER )
+/* Poll the switch continuity pin */
+if ( ign_switch_cont() )
+	{
+    ign_status |= IGN_SWITCH_MASK;
+    }
+
+/* Poll the main parachute deployment continuity pin */
+if ( ign_main_cont() )
+	{
+    ign_status |= IGN_MAIN_CONT_MASK;
+    }
+
+/* Poll the drogue parachute deployment continuity pin */
+if ( ign_drogue_cont() )
+	{
+    ign_status |= IGN_DROGUE_CONT_MASK;
+    }
+#endif /* elif defined( FLIGHT_COMPUTER ) */
 
 /* Return the status code */
 return ign_status;
@@ -242,6 +225,7 @@ return ign_status;
 } /* ign_get_cont_info */
 
 
+#if defined( ENGINE_CONTROLLER )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -423,7 +407,7 @@ else /* Continuity is good for drogue */
 	{
 	/* Assert ignition signal for 10 ms */
 	HAL_GPIO_WritePin( DROGUE_GPIO_PORT, DROGUE_PIN, GPIO_PIN_SET   );
-	HAL_Delay( 10 );
+	HAL_Delay( IGN_BURN_DELAY );
 	HAL_GPIO_WritePin( DROGUE_GPIO_PORT, DROGUE_PIN, GPIO_PIN_RESET );
 	}
 
@@ -503,56 +487,6 @@ else
     }
 
 } /* drogue_cont */
-#endif /* #if defined( FLIGHT_COMPUTER ) */
-
-#if defined( FLIGHT_COMPUTER )
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		ign_get_cont_info                                                      *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Polls each continuity pin and sets the continuity bits in the          *
-*       response code                                                          *   
-*                                                                              *
-*******************************************************************************/
-IGN_CONT_STAT ign_get_cont_info
-	(
-    void
-    )
-{
-/*------------------------------------------------------------------------------
- Local Variables 
-------------------------------------------------------------------------------*/
-IGN_CONT_STAT ign_status = 0; /* Status code to be returned */
-
-
-/*------------------------------------------------------------------------------
- Call API functions 
-------------------------------------------------------------------------------*/
-
-/* Poll the switch continuity pin */
-if ( ign_switch_cont() )
-	{
-    ign_status |= IGN_SWITCH_MASK;
-    }
-
-/* Poll the main parachute deployment continuity pin */
-if ( ign_main_cont() )
-	{
-    ign_status |= IGN_MAIN_CONT_MASK;
-    }
-
-/* Poll the drogue parachute deployment continuity pin */
-if ( ign_drogue_cont() )
-	{
-    ign_status |= IGN_DROGUE_CONT_MASK;
-    }
-
-/* Return the status code */
-return ign_status;
-
-} /* ign_get_cont_info */
 #endif /* #if defined( FLIGHT_COMPUTER ) */
 
 

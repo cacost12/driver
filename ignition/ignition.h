@@ -35,58 +35,58 @@ extern "C" {
 /* Ignition Continuity Status */
 /* IGN_CONT_STAT = bit7 | bit6 | bit5 | bit4 | bit3 | bit2 | bit1 | bit0 
 
-   bit3-7: not used 
+   bits6-7: unused
+   bit5:   Nozzle continuity of liquid engine, 1 indicates continuity between 
+           between screw terminals
+   bit4:   Solid propellant continuity for liquid engine, 1 indiciates 
+           continuity between screw terminals
+   bit3:   Ematch continuity for liquid engine, 1 indicates continuity between
+           srew terminals 
    bit2:   Drogue parachute deployment continuity, 1 indicates continuity between 
            screw terminals
    bit1:   Main Parachute Deployment continuity, 1 indicates continuity between 
 		   screw terminals
    bit0:   Switch continuity */
-typedef uint8_t IGN_CONT_STAT;
 
 /* Ignition Status Response Code */
 typedef enum IGN_STATUS
 	{
-	IGN_OK = 0x40       ,
-	IGN_FAIL = 0x20     ,
-	IGN_SWITCH_FAIL     ,
-	IGN_MAIN_FAIL       ,
-	IGN_DROGUE_FAIL     ,
-	IGN_MAIN_CONT_FAIL = 0x08,
+	IGN_OK   = 0b01000000, /* Cont status takes up first 64 values */
+	IGN_FAIL             ,
+	IGN_SWITCH_FAIL      ,
+	IGN_MAIN_FAIL        ,
+	IGN_DROGUE_FAIL      ,
+	IGN_MAIN_CONT_FAIL   ,
     IGN_DROGUE_CONT_FAIL
 	} IGN_STATUS;
 
 /* SDEC Subcommand Codes */
-#if defined( FLIGHT_COMPUTER )
 typedef enum IGN_SUBCOMMAND
 	{
-	IGN_MAIN_DEPLOY_CODE = 0x01,
-	IGN_CONT_CODE              ,
+	IGN_FIRE_CODE = 0x01,
+	IGN_CONT_CODE       ,
+	IGN_MAIN_DEPLOY_CODE,
 	IGN_DROGUE_DEPLOY_CODE     
 	} IGN_SUBCOMMAND;
-#elif defined( ENGINE_CONTROLLER )
-	/* Ignition subcommand codes */
-	#define IGN_FIRE_CODE       0x01
-	#define IGN_CONT_CODE       0x02
-#endif
 
 
 /*------------------------------------------------------------------------------
  Macros 
 ------------------------------------------------------------------------------*/
 
-/* Ignition response code bitmasks */
+/* Ignition continuity code bitmasks */
 #define IGN_SWITCH_MASK   	    0b00000001
 #define IGN_MAIN_CONT_MASK  	0b00000010
 #define IGN_DROGUE_CONT_MASK 	0b00000100
+#define IGN_E_CONT_MASK         0b00001000
+#define IGN_SP_CONT_MASK        0b00010000
+#define IGN_NOZ_CONT_MASK       0b00100000
 
 /* Ignition burn time */
 #define IGN_BURN_DELAY          10 
 
 /* Ignition response code bitmasks */
 #if defined( ENGINE_CONTROLLER ) 
-	#define IGN_E_CONT_MASK   	0b00000001
-	#define IGN_SP_CONT_MASK  	0b00000010
-	#define IGN_NOZ_CONT_MASK 	0b00000100
 	#define IGN_FAIL_E_MASK   	0b00001000
 	#define IGN_FAIL_PWR_MASK 	0b00010000
 	#define IGN_FAIL_MASK       0b00100000
@@ -98,21 +98,20 @@ typedef enum IGN_SUBCOMMAND
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) )
+#if defined( TERMINAL ) 
 /* Executes an ignition subcommand based on user input from the sdec terminal */
 IGN_STATUS ign_cmd_execute
 	(
     IGN_SUBCOMMAND ign_subcommand
     );
-#endif /* #if defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) */
+#endif /* #if defined( TERMINAL ) */
 
-#if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER) )
-/* Execute a terminal command using API functions */
-uint8_t ign_cmd_execute
+/* Polls each continuity pin and sets the continuity bits in the response 
+   code */
+IGN_STATUS ign_get_cont_info
 	(
-    uint8_t ign_subcommand
+    void
     );
-#endif /* #if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER )  )*/
 
 #if defined( ENGINE_CONTROLLER )
 /* Asserts the ignition signal to ignite the engine ematch. Returns a response 
@@ -175,24 +174,16 @@ bool ign_drogue_cont
 	void
 	);
 
-#endif /* #if defined( FLIGHT_COMPUTER )*/
-
-
-/* Polls each continuity pin and sets the continuity bits in the response 
-   code */
-IGN_CONT_STAT ign_get_cont_info
-	(
-    void
-    );
-
-
 /* Returns TRUE if there is continuity across the switch screw terminals */
 bool ign_switch_cont
 	(
 	void
 	);
 
+#endif /* #if defined( FLIGHT_COMPUTER )*/
+
 #endif /* IGNITION_H */
+
 
 /*******************************************************************************
 * END OF FILE                                                                  * 
