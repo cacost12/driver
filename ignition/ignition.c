@@ -364,7 +364,7 @@ else /* Continuity is good for main */
 /* Check ematch continuity to check that ematch was lit */
 if ( !ign_main_cont() )
 	{
-	return IGN_OK;
+	return IGN_SUCCESS;
 	}
 else /* Ignition unsuccessful */
 	{
@@ -414,7 +414,7 @@ else /* Continuity is good for drogue */
 /* Check ematch continuity to check that ematch was lit */
 if ( !ign_drogue_cont() )
 	{
-	return IGN_OK;
+	return IGN_SUCCESS;
 	}
 else /* Ignition unsuccessful */
 	{

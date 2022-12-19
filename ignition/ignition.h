@@ -56,11 +56,11 @@ typedef enum IGN_STATUS
 	IGN_EMATCH_CONT_FAIL = 0x42, 
 	IGN_POWER_FAIL       = 0x43, 
 	IGN_FAIL             = 0x44,
-	IGN_SWITCH_FAIL            ,
-	IGN_MAIN_FAIL              ,
-	IGN_DROGUE_FAIL            ,
-	IGN_MAIN_CONT_FAIL         ,
-    IGN_DROGUE_CONT_FAIL 
+	IGN_SWITCH_FAIL      = 0x45,
+	IGN_MAIN_CONT_FAIL   = 0x46,
+	IGN_MAIN_FAIL        = 0x47,
+    IGN_DROGUE_CONT_FAIL = 0x48, 
+	IGN_DROGUE_FAIL      = 0x49
 	} IGN_STATUS;
 
 /* SDEC Subcommand Codes */
