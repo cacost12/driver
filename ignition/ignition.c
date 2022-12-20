@@ -73,7 +73,7 @@ switch( ign_subcommand )
     /* Deploy drogue */
 	case IGN_DROGUE_DEPLOY_CODE:
 		{
-		ign_status = ign_deploy_main();
+		ign_status = ign_deploy_drogue();
 		break;
 		}
 
