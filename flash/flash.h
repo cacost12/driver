@@ -122,16 +122,17 @@ typedef enum FLASH_SUBCMD_CODES {
 
 /* Flash return value codes */
 typedef enum FLASH_STATUS {
-	FLASH_OK = 0            ,
-	FLASH_FAIL              ,
-	FLASH_UNSUPPORTED_OP    ,
-	FLASH_UNRECOGNIZED_OP   ,
-	FLASH_TIMEOUT           ,
-	FLASH_WRITE_PROTECTED   ,
-	FLASH_WRITE_TIMEOUT     ,
-	FLASH_USB_ERROR         ,
-	FLASH_SPI_ERROR         ,
-	FLASH_CANNOT_WRITE_ENABLE
+	FLASH_OK = 0             ,
+	FLASH_FAIL               ,
+	FLASH_UNSUPPORTED_OP     ,
+	FLASH_UNRECOGNIZED_OP    ,
+	FLASH_TIMEOUT            ,
+	FLASH_WRITE_PROTECTED    ,
+	FLASH_WRITE_TIMEOUT      ,
+	FLASH_USB_ERROR          ,
+	FLASH_SPI_ERROR          ,
+	FLASH_CANNOT_WRITE_ENABLE,
+	FLASH_INVALID_INPUT
 } FLASH_STATUS;
 
 
@@ -146,6 +147,14 @@ FLASH_STATUS flash_cmd_execute
     HFLASH_BUFFER* pflash_handle   
     );
 
+/* Initializes the flash chip */
+FLASH_STATUS flash_init 
+	(
+	HFLASH_BUFFER* pflash_handle  , /* Flash handle */
+	bool           write_protected, 
+	uint8_t        bpl_bits         
+	);
+
 /* Read the status register of the flash chip */
 FLASH_STATUS flash_get_status
 	(
@@ -155,7 +164,6 @@ FLASH_STATUS flash_get_status
 /* Write to the status register of the flash chip */
 FLASH_STATUS flash_set_status
 	(
-	HFLASH_BUFFER* pflash_handle,
 	uint8_t        flash_status
     );
 

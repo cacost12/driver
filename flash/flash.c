@@ -347,6 +347,85 @@ switch ( opcode )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
+* 		flash_init                                                             *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+*       Initializes the flash chip                                             *
+*                                                                              *
+*******************************************************************************/
+FLASH_STATUS flash_init 
+	(
+	HFLASH_BUFFER* pflash_handle  , /* Flash handle */
+	bool           write_protected, /* False for write enabled */
+	uint8_t        bpl_bits         /* Block level protection  */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local variables 
+------------------------------------------------------------------------------*/
+FLASH_STATUS flash_status;    /* Flash API function return codes        */
+uint32_t     timeout_counter; /* Counts to 1000 while waiting for flash */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+flash_status    = FLASH_OK;
+timeout_counter = 0;
+
+
+/*------------------------------------------------------------------------------
+ Pre-processing 
+------------------------------------------------------------------------------*/
+
+/* Check for invalid BPL setting */
+if ( bpl_bits > 15 || bpl_bits < 0 )
+	{
+	return FLASH_INVALID_INPUT; 
+	}
+
+
+/*------------------------------------------------------------------------------
+ API Function Implementation 
+------------------------------------------------------------------------------*/
+
+/* Configure write protection */
+if ( write_protected )
+	{
+	flash_write_disable();
+	return FLASH_OK;
+	}
+else
+	{
+	flash_write_enable();
+	}
+
+/* Check that flash chip is functional */
+flash_status = flash_get_status( pflash_handle );
+if ( flash_status != FLASH_OK )
+	{
+	return flash_status;
+	}
+while ( ( pflash_handle -> status_register == 0xFF ) )
+	{
+	flash_get_status( pflash_handle );
+	timeout_counter++;
+	if ( timeout_counter == 1000 )
+		{
+		return FLASH_FAIL;
+		}
+	}
+
+/* Set the bpl bits in the flash chip */
+flash_status = flash_set_status( ( bpl_bits << 2 ) );
+return flash_status;
+
+} /* flash_init */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
 * 		flash_get_status                                                       *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
@@ -419,7 +498,6 @@ else
 *******************************************************************************/
 FLASH_STATUS flash_set_status
 	(
-	HFLASH_BUFFER* pflash_handle, 
 	uint8_t        flash_status	
     )
 {
