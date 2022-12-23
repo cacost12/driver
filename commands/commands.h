@@ -28,6 +28,7 @@ extern "C" {
 #define POWER_OP    0x21    /* Power command opcode    */
 #define FLASH_OP    0x22    /* flash command opcode    */
 #define SENSOR_OP   0x03    /* sensor command opcode   */
+#define SOL_OP      0x51    /* solenoid command opcode */
 
 /* Board identifier code */
 #if   defined( A0002_REV1 )

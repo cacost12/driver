@@ -16,6 +16,8 @@
 	#include "sdr_pin_defines_A0002.h"
 #elif defined( ENGINE_CONTROLLER )
 	#include "sdr_pin_defines_L0002.h"
+#elif defined( VALVE_CONTROLLER )
+	#include "sdr_pin_defines_L0005.h"
 #endif
 
 

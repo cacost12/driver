@@ -20,23 +20,6 @@ extern "C" {
 /*------------------------------------------------------------------------------
  Macros 
 ------------------------------------------------------------------------------*/
-#define SOL_OP     0x51 /* solenoid command line opcode */
-
-/* Microcontroller Pin Assignments */
-#define SOL1_PIN   GPIO_PIN_2
-#define SOL2_PIN   GPIO_PIN_3
-#define SOL3_PIN   GPIO_PIN_4
-#define SOL4_PIN   GPIO_PIN_0
-#define SOL5_PIN   GPIO_PIN_1
-#define SOL6_PIN   GPIO_PIN_2
-
-/* Microcontroller Pin Assignments */
-#define SOL1_PORT   GPIOE
-#define SOL2_PORT   GPIOE
-#define SOL3_PORT   GPIOE
-#define SOL4_PORT   GPIOA
-#define SOL5_PORT   GPIOA
-#define SOL6_PORT   GPIOA
 
 /* Solenoid Subcommand Codes */
 #define SOL_ON_BASE_CODE	    0x00
