@@ -61,9 +61,9 @@ static void address_to_bytes
 	uint8_t* address_bytes
 	)
 {
-address_bytes[0] =  address        & 0xFF;
+address_bytes[0] = (address >> 16) & 0xFF;
 address_bytes[1] = (address >> 8 ) & 0xFF;
-address_bytes[2] = (address >> 16) & 0xFF;
+address_bytes[2] =  address        & 0xFF;
 } /* address_to_bytes */
 
 
