@@ -81,9 +81,9 @@ static inline uint32_t bytes_to_address
 	uint8_t address_bytes[3]
 	)
 {
-return ( (uint32_t) address_bytes[2] << 16 ) |
+return ( (uint32_t) address_bytes[0] << 16 ) |
 	   ( (uint32_t) address_bytes[1] << 8  ) |
-	   ( (uint32_t) address_bytes[0] << 0  );
+	   ( (uint32_t) address_bytes[2] << 0  );
 } /* address_to_bytes */
 
 
@@ -731,7 +731,7 @@ hal_status[1] = HAL_SPI_Transmit( &( FLASH_SPI )   ,
 							      HAL_DEFAULT_TIMEOUT );
 
 /* Write bytes */
-hal_status[2] = HAL_SPI_Transmit( &( FLASH_SPI )            ,
+hal_status[2] = HAL_SPI_Transmit( &( FLASH_SPI )           ,
 							     pflash_handle -> pbuffer  ,
 							     pflash_handle -> num_bytes,
 							     HAL_FLASH_TIMEOUT );
