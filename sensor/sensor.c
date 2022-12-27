@@ -72,17 +72,25 @@ SENSOR_STATUS sensor_cmd_execute
 SENSOR_STATUS sensor_subcmd_status;                 /* Status indicating if 
                                                        subcommand function 
                                                        returned properly      */
+USB_STATUS    usb_status;                            /* USB return codes      */
 SENSOR_DATA   sensor_data;                           /* Struct with all sensor 
                                                         data                  */
 uint8_t       sensor_data_bytes[ SENSOR_DATA_SIZE ]; /* Byte array with sensor 
                                                        readouts               */
-uint8_t       num_sensor_bytes = SENSOR_DATA_SIZE;
+uint8_t       num_sensor_bytes = SENSOR_DATA_SIZE;   /* Size of data in bytes */
+uint8_t       num_sensors;                           /* Number of sensors to 
+                                                        use for polling       */
+uint8_t       poll_sensors[ SENSOR_MAX_NUM_POLL ];   /* Codes for sensors to
+                                                        be polled             */
 
 /*------------------------------------------------------------------------------
  Initializations  
 ------------------------------------------------------------------------------*/
-memset ( &sensor_data_bytes[0], 0, sizeof( sensor_data_bytes ) );
-memset ( &sensor_data         , 0, sizeof( sensor_data       ) );
+usb_status  = USB_OK;
+num_sensors = 0;
+memset( &sensor_data_bytes[0], 0, sizeof( sensor_data_bytes ) );
+memset( &sensor_data         , 0, sizeof( sensor_data       ) );
+memset( &poll_sensors[0]     , 0, sizeof( poll_sensors      ) );
 
 
 /*------------------------------------------------------------------------------
@@ -94,8 +102,27 @@ switch ( subcommand )
 	/* Poll Sensors continuously */
     case SENSOR_POLL_CODE:
 		{
-		// TODO: Implement sensor poll function 
-		return ( SENSOR_UNSUPPORTED_OP );
+		/* Determine the number of sensors to poll */
+		usb_status = usb_receive( &num_sensors, 
+		                          sizeof( num_sensors ), 
+								  HAL_DEFAULT_TIMEOUT );
+		if ( usb_status != USB_OK )
+			{
+			return SENSOR_USB_FAIL;
+			}
+
+		/* Determine which sensors to poll */
+		usb_status = usb_receive( &poll_sensors[0],
+		                          num_sensors     , 
+                                  HAL_SENSOR_TIMEOUT );
+		if ( usb_status != USB_OK )
+			{
+			return SENSOR_USB_FAIL;
+			}
+
+		/* Start Polling sensors */
+		
+		return ( SENSOR_OK );
         } /* SENSOR_POLL_CODE */ 
 
 	/* Poll sensors once and dump data on terminal */
@@ -137,16 +164,18 @@ switch ( subcommand )
     }
 
 } /* sensor_cmd_execute */
+
+
 #endif /* #if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) ) */
 
 
 #if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER ) )
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
 * 		sensor_cmd_execute                                                     *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 *       Executes a sensor subcommand                                           *
 *                                                                              *
 *******************************************************************************/
@@ -345,6 +374,184 @@ else
 
 } /* sensor_dump */
 #endif /* #if defined( ENGINE_CONTROLLER ) */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		sensor_poll                                                            *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Poll specific sensors on the board                                     *
+*                                                                              *
+*******************************************************************************/
+SENSOR_STATUS sensor_poll
+	(
+	uint8_t**  sensor_data_ptrs, /* Array of pointers to export data */
+	SENSOR_ID* sensor_ids_ptr  , /* Array containing sensor IDS      */
+	uint8_t    num_sensors       /* Number of sensors to poll        */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+uint8_t*   sensor_data_ptr;  /* Target location of next readout     */
+uint8_t**  sensor_data_pptr; /* Pointer to next target location     */
+SENSOR_ID  sensor_id;        /* ID of sensor currently being polled */
+SENSOR_ID* sensor_id_ptr;    /* Pointer to sensor id                */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+sensor_data_pptr = sensor_data_ptrs;
+sensor_id_ptr    = sensor_ids_ptr;
+sensor_data_ptr  = *(sensor_data_pptr);
+sensor_id        = *(sensor_id_ptr   );
+
+
+/*------------------------------------------------------------------------------
+ API function implementation
+------------------------------------------------------------------------------*/
+
+/* Iterate over each sensor readout */
+for ( int i = 0; i < num_sensors; ++i )
+	{
+	
+	/* Poll sensor */
+	switch ( sensor_id )
+		{
+		#if defined( FLIGHT_COMPUTER )
+			case SENSOR_ACCX:
+				{
+				break;
+				}
+
+			case SENSOR_ACCY:
+				{
+				break;
+				}
+
+			case SENSOR_ACCZ:
+				{
+				break;
+				}
+
+			case SENSOR_GYROX:
+				{
+				break;
+				}
+
+			case SENSOR_GYROY:
+				{
+				break;
+				}
+
+			case SENSOR_GYROZ:
+				{
+				break;
+				}
+
+			case SENSOR_MAGX:
+				{
+				break;
+				}
+
+			case SENSOR_MAGY:
+				{
+				break;
+				}
+
+			case SENSOR_MAGZ:
+				{
+				break;
+				}
+
+			case SENSOR_IMUT:
+				{
+				break;
+				}
+
+			case SENSOR_PRES:
+				{
+				break;
+				}
+
+			case SENSOR_TEMP:
+				{
+				break;
+				}
+
+		#elif defined( ENGINE_CONTROLLER )
+			case SENSOR_PT0:
+				{
+				break;
+				}
+
+			case SENSOR_PT1:
+				{
+				break;
+				}
+
+			case SENSOR_PT2:
+				{
+				break;
+				}
+
+			case SENSOR_PT3:
+				{
+				break;
+				}
+
+			case SENSOR_PT4:
+				{
+				break;
+				}
+
+			case SENSOR_PT5:
+				{
+				break;
+				}
+
+			case SENSOR_PT6:
+				{
+				break;
+				}
+
+			case SENSOR_PT7:
+				{
+				break;
+				}
+
+			case SENSOR_TC:
+				{
+				break;
+				}
+
+			case SENSOR_LC:
+				{
+				break;
+				}
+
+		#endif /* #elif defined( ENGINE_CONTROLLER ) */
+
+		default:
+			{
+			/* Unrecognized sensor id */
+			return SENSOR_UNRECOGNIZED_SENSOR_ID; 
+			}
+		} /* switch( sensor_id ) */
+
+		/* Go to next sensor */
+		sensor_data_pptr++;
+		sensor_id_ptr++;
+		sensor_data_ptr  = *(sensor_data_pptr);
+		sensor_id        = *(sensor_id_ptr   );
+
+	} /*  while( i < num_sensors ) */
+
+return SENSOR_OK;
+} /* sensor_poll */
 
 
 /*******************************************************************************
