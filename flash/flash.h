@@ -80,6 +80,13 @@ Includes
 	#define HAL_FLASH_TIMEOUT       0xFFFFFFFF
 #endif
 
+/* Flash busy/ready boolean codes */
+#define FLASH_BUSY                  true
+#define FLASH_READY                 false
+
+/* Status register bitmasks */
+#define FLASH_BUSY_BITMASK          0b00000001
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -108,7 +115,8 @@ typedef struct _FLASH_BUFFER_TAG {
 } HFLASH_BUFFER; 
 
 /* Flash subcommand codes */
-typedef enum FLASH_SUBCMD_CODES {
+typedef enum FLASH_SUBCMD_CODES 
+	{
 	FLASH_SUBCMD_READ = 0,
 	FLASH_SUBCMD_ENABLE  ,
 	FLASH_SUBCMD_DISABLE ,
@@ -118,10 +126,11 @@ typedef enum FLASH_SUBCMD_CODES {
 	FLASH_SUBCMD_EXTRACT ,
 	FLASH_SUBCMD_HS_READ ,
 	FLASH_SUBCMD_4K_ERASE
-} FLASH_SUBCMD_CODE;
+	} FLASH_SUBCMD_CODE;
 
 /* Flash return value codes */
-typedef enum FLASH_STATUS {
+typedef enum FLASH_STATUS 
+	{
 	FLASH_OK = 0             ,
 	FLASH_FAIL               ,
 	FLASH_UNSUPPORTED_OP     ,
@@ -132,8 +141,9 @@ typedef enum FLASH_STATUS {
 	FLASH_USB_ERROR          ,
 	FLASH_SPI_ERROR          ,
 	FLASH_CANNOT_WRITE_ENABLE,
-	FLASH_INVALID_INPUT
-} FLASH_STATUS;
+	FLASH_INVALID_INPUT      ,
+	FLASH_WRITE_ERROR
+	} FLASH_STATUS;
 
 
 /*------------------------------------------------------------------------------
@@ -167,6 +177,12 @@ FLASH_STATUS flash_set_status
 	uint8_t        flash_status
     );
 
+/* Check if the flash chip is ready for write operations */
+bool flash_is_flash_busy
+	(
+	void
+	);
+
 /* Enable writing to the external flash chip */
 void flash_write_enable 
     (
@@ -180,9 +196,16 @@ void flash_write_disable
     );
 
 /* Write bytes from a flash buffer to the external flash */
-FLASH_STATUS flash_write 
+FLASH_STATUS flash_write
     (
 	HFLASH_BUFFER* pflash_handle
+    );
+
+/* Write a byte to the external flash */
+FLASH_STATUS flash_write_byte 
+    (
+	HFLASH_BUFFER* pflash_handle,
+	uint8_t        byte
     );
 
 /* Read a specified number of bytes using a flash buffer */

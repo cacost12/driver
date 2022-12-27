@@ -573,10 +573,61 @@ else
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
+* 		flash_is_flash_busy                                                    *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Polls the flash status register to see if the chip is busy. False      *
+*       boolean return value indicates the chip is ready for write operations  *
+*                                                                              *
+*******************************************************************************/
+bool flash_is_flash_busy
+	(
+	void
+	)
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HFLASH_BUFFER flash_handle; /* Flash handle to store status reg contents      */
+FLASH_STATUS  flash_status; /* Flash API return codes                         */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+flash_status                 = FLASH_OK;
+flash_handle.status_register = 0xFF;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Read status register */
+flash_status = flash_get_status( &flash_handle );
+if      ( flash_status != FLASH_OK                          )
+	{
+	return FLASH_BUSY;
+	}
+else if ( flash_handle.status_register & FLASH_BUSY_BITMASK )
+	{
+	return FLASH_BUSY;
+	}
+else
+	{
+	return FLASH_READY;
+	}
+
+} /* flash_is_flash_busy */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
 * 		write_enable                                                           *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 *       Enable writing to the external flash chip hardware                     *
 *                                                                              *
 *******************************************************************************/
@@ -668,15 +719,16 @@ write_enabled = false;
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		flash_write                                                            *
+* 		flash_write_byte                                                       *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-*       writes bytes from a flash buffer to the external flash                 *
+*       writes a byte to the external flash                                    *
 *                                                                              *
 *******************************************************************************/
-FLASH_STATUS flash_write 
+FLASH_STATUS flash_write_byte 
     (
-	HFLASH_BUFFER* pflash_handle
+	HFLASH_BUFFER* pflash_handle,
+	uint8_t        byte
     )
 {
 /*------------------------------------------------------------------------------
@@ -731,9 +783,9 @@ hal_status[1] = HAL_SPI_Transmit( &( FLASH_SPI )   ,
 							      HAL_DEFAULT_TIMEOUT );
 
 /* Write bytes */
-hal_status[2] = HAL_SPI_Transmit( &( FLASH_SPI )           ,
-							     pflash_handle -> pbuffer  ,
-							     pflash_handle -> num_bytes,
+hal_status[2] = HAL_SPI_Transmit( &( FLASH_SPI ),
+							     &byte          ,
+							     sizeof( byte ) ,
 							     HAL_FLASH_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
@@ -748,6 +800,91 @@ else
 	{
 	return FLASH_OK;
 	}
+
+} /* flash_write_byte */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		flash_write                                                            *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+*       writes bytes from a flash buffer to the external flash                 *
+*                                                                              *
+*******************************************************************************/
+FLASH_STATUS flash_write 
+    (
+	HFLASH_BUFFER* pflash_handle
+    )
+{
+/*------------------------------------------------------------------------------
+ Local variables 
+------------------------------------------------------------------------------*/
+FLASH_STATUS      flash_status;     /* Status code returned by flash API      */
+uint32_t          timeout;          /* Timeout for flash write calls          */
+uint32_t          timeout_ctr;      /* Counter to trigger timeout             */
+uint8_t*          pbuffer;          /* Pointer to data in flash buffer        */
+uint32_t          init_address;     /* Flash memory address                   */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+flash_status  = FLASH_OK;
+timeout       = 100;
+timeout_ctr   = 0;
+pbuffer       = pflash_handle -> pbuffer;
+init_address  = pflash_handle -> address;
+
+
+/*------------------------------------------------------------------------------
+ Pre-processing 
+------------------------------------------------------------------------------*/
+
+/* Check if write_enabled */
+if( !( write_enabled ) )
+	{
+	return FLASH_WRITE_PROTECTED;
+	}
+
+/*------------------------------------------------------------------------------
+ API function implementation
+------------------------------------------------------------------------------*/
+
+for ( int i = 0; i < pflash_handle -> num_bytes; ++i )
+	{
+	/* Wait for flash to be ready */
+	while( flash_is_flash_busy() == FLASH_BUSY )
+		{
+		if ( timeout_ctr >= timeout )
+			{
+			return FLASH_TIMEOUT;
+			}
+		else
+			{
+			timeout_ctr++;
+			HAL_Delay( 1 );
+			}
+		}
+	
+	/* Write to flash */
+	flash_status = flash_write_byte( pflash_handle, *pbuffer );
+
+	/* Check for errors */
+	if ( flash_status != FLASH_OK )
+		{
+		return FLASH_WRITE_ERROR;
+		}
+
+	/* Update flash parameters */
+	pflash_handle -> address++;
+	pbuffer++;
+	}
+
+/* Reset flash address */
+pflash_handle -> address = init_address;
+return FLASH_OK;
 
 } /* flash_write */
 
