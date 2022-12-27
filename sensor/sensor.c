@@ -14,6 +14,7 @@
  Standard Includes                                                                     
 ------------------------------------------------------------------------------*/
 #include <string.h>
+#include <stdbool.h>
 
 
 /*------------------------------------------------------------------------------
@@ -69,7 +70,7 @@ SENSOR_STATUS sensor_cmd_execute
 /*------------------------------------------------------------------------------
  Local Variables  
 ------------------------------------------------------------------------------*/
-SENSOR_STATUS sensor_subcmd_status;                 /* Status indicating if 
+SENSOR_STATUS sensor_status;                         /* Status indicating if 
                                                        subcommand function 
                                                        returned properly      */
 USB_STATUS    usb_status;                            /* USB return codes      */
@@ -121,8 +122,11 @@ switch ( subcommand )
 			}
 
 		/* Start Polling sensors */
+		sensor_status = sensor_poll( &sensor_data    , 
+		                             &poll_sensors[0],
+									 num_sensors );
 		
-		return ( SENSOR_OK );
+		return sensor_status ;
         } /* SENSOR_POLL_CODE */ 
 
 	/* Poll sensors once and dump data on terminal */
@@ -134,20 +138,20 @@ switch ( subcommand )
                       HAL_DEFAULT_TIMEOUT );
 
 		/* Get the sensor readings */
-	    sensor_subcmd_status = sensor_dump( &sensor_data );	
+	    sensor_status = sensor_dump( &sensor_data );	
 
 		/* Convert to byte array */
 		memcpy( &(sensor_data_bytes[0]), &sensor_data, sizeof( sensor_data ) );
 
 		/* Transmit sensor readings to PC */
-		if ( sensor_subcmd_status == SENSOR_OK )
+		if ( sensor_status == SENSOR_OK )
 			{
 			// readings_to_bytes( &sensor_readings_bytes[0], 
             //                    &sensor_readings[0] );
 			usb_transmit( &sensor_data_bytes[0]      , 
                           sizeof( sensor_data_bytes ), 
                           HAL_SENSOR_TIMEOUT );
-			return ( sensor_subcmd_status );
+			return ( sensor_status );
             }
 		else
 			{
@@ -309,7 +313,7 @@ if      ( accel_status != IMU_OK )
 	}
 else if ( gyro_status  != IMU_OK )
 	{
-	return SENSOR_GRYO_ERROR;
+	return SENSOR_GYRO_ERROR;
 	}
 else if ( mag_status   != IMU_OK )
 	{
@@ -387,27 +391,48 @@ else
 *******************************************************************************/
 SENSOR_STATUS sensor_poll
 	(
-	uint8_t**  sensor_data_ptrs, /* Array of pointers to export data */
-	SENSOR_ID* sensor_ids_ptr  , /* Array containing sensor IDS      */
-	uint8_t    num_sensors       /* Number of sensors to poll        */
+	SENSOR_DATA* sensor_data_ptr, /* Data Export target               */
+	SENSOR_ID*   sensor_ids_ptr , /* Array containing sensor IDS      */
+	uint8_t      num_sensors      /* Number of sensors to poll        */
 	)
 {
 /*------------------------------------------------------------------------------
  Local Variables  
 ------------------------------------------------------------------------------*/
-uint8_t*   sensor_data_ptr;  /* Target location of next readout     */
-uint8_t**  sensor_data_pptr; /* Pointer to next target location     */
 SENSOR_ID  sensor_id;        /* ID of sensor currently being polled */
 SENSOR_ID* sensor_id_ptr;    /* Pointer to sensor id                */
 
+/* Module return codes */
+#if defined( FLIGHT_COMPUTER )
+	IMU_STATUS  imu_status;   /* IMU Module return codes  */ 
+	BARO_STATUS baro_status; /* Baro module return codes */
+#endif
+
+/* Sensor poll memory to prevent multiple calls to same API function */
+#if defined( FLIGHT_COMPUTER )
+	bool imu_accel_read;
+	bool imu_gyro_read;
+	bool imu_mag_read;
+#endif
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-sensor_data_pptr = sensor_data_ptrs;
 sensor_id_ptr    = sensor_ids_ptr;
-sensor_data_ptr  = *(sensor_data_pptr);
 sensor_id        = *(sensor_id_ptr   );
+
+/* Module return codes */
+#if defined( FLIGHT_COMPUTER )
+	imu_status  = IMU_OK;
+	baro_status = BARO_OK;
+#endif
+
+/* Sensor poll memory */
+#if defined( FLIGHT_COMPUTER )
+	imu_accel_read = false;
+	imu_gyro_read  = false;
+	imu_mag_read   = false;
+#endif
 
 
 /*------------------------------------------------------------------------------
@@ -424,61 +449,153 @@ for ( int i = 0; i < num_sensors; ++i )
 		#if defined( FLIGHT_COMPUTER )
 			case SENSOR_ACCX:
 				{
+				if ( !imu_accel_read )
+					{
+					imu_status = imu_get_accel_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_ACCEL_ERROR;
+						}
+					imu_accel_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_ACCY:
 				{
+				if ( !imu_accel_read )
+					{
+					imu_status = imu_get_accel_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_ACCEL_ERROR;
+						}
+					imu_accel_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_ACCZ:
 				{
+				if ( !imu_accel_read )
+					{
+					imu_status = imu_get_accel_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_ACCEL_ERROR;
+						}
+					imu_accel_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_GYROX:
 				{
+				if ( !imu_gyro_read )
+					{
+					imu_status = imu_get_gyro_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_GYRO_ERROR;
+						}
+					imu_gyro_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_GYROY:
 				{
+				if ( !imu_gyro_read )
+					{
+					imu_status = imu_get_gyro_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_GYRO_ERROR;
+						}
+					imu_gyro_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_GYROZ:
 				{
+				if ( !imu_gyro_read )
+					{
+					imu_status = imu_get_gyro_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_GYRO_ERROR;
+						}
+					imu_gyro_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_MAGX:
 				{
+				if ( !imu_mag_read )
+					{
+					imu_status = imu_get_mag_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_GYRO_ERROR;
+						}
+					imu_mag_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_MAGY:
 				{
+				if ( !imu_mag_read )
+					{
+					imu_status = imu_get_mag_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_GYRO_ERROR;
+						}
+					imu_mag_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_MAGZ:
 				{
+				if ( !imu_mag_read )
+					{
+					imu_status = imu_get_mag_xyz( &( sensor_data_ptr -> imu_data ) );
+					if ( imu_status != IMU_OK )
+						{
+						return SENSOR_GYRO_ERROR;
+						}
+					imu_mag_read = true;
+					}
 				break;
 				}
 
 			case SENSOR_IMUT:
 				{
+				sensor_data_ptr -> imu_data.temp = 0;
 				break;
 				}
 
 			case SENSOR_PRES:
 				{
+				baro_status = baro_get_pressure( &( sensor_data_ptr -> baro_pressure ) );
+				if ( baro_status != BARO_OK )
+					{
+					return SENSOR_BARO_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_TEMP:
 				{
+				baro_status = baro_get_temp( &( sensor_data_ptr -> baro_temp ) );
+				if ( baro_status != BARO_OK )
+					{
+					return SENSOR_BARO_ERROR;
+					}
 				break;
 				}
 
@@ -543,9 +660,7 @@ for ( int i = 0; i < num_sensors; ++i )
 		} /* switch( sensor_id ) */
 
 		/* Go to next sensor */
-		sensor_data_pptr++;
 		sensor_id_ptr++;
-		sensor_data_ptr  = *(sensor_data_pptr);
 		sensor_id        = *(sensor_id_ptr   );
 
 	} /*  while( i < num_sensors ) */

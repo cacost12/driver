@@ -204,8 +204,8 @@ else
 * 		imu_get_accel_xyz                                                      *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Return the pointer to structure that updates the 
-        x,y,z acceleration values from the IMU                                 *
+* 		Return the pointer to structure that updates the                       * 
+*       x,y,z acceleration values from the IMU                                 *
 *                                                                              *
 *******************************************************************************/
 IMU_STATUS imu_get_accel_xyz

@@ -64,7 +64,7 @@ typedef enum
 	SENSOR_IMU_FAIL              ,
 	SENSOR_PT_FAIL               ,
 	SENSOR_ACCEL_ERROR           ,
-    SENSOR_GRYO_ERROR            ,
+    SENSOR_GYRO_ERROR            ,
 	SENSOR_MAG_ERROR             ,
 	SENSOR_BARO_ERROR            ,
 	SENSOR_USB_FAIL              ,
@@ -135,7 +135,7 @@ SENSOR_STATUS sensor_cmd_execute
 /* Poll specific sensors on the board */
 SENSOR_STATUS sensor_poll
 	(
-	uint8_t**  sensor_data_ptrs,
+	SENSOR_DATA* sensor_data_ptr,
 	SENSOR_ID* sensor_ids_ptr  ,
 	uint8_t    num_sensors
 	);
