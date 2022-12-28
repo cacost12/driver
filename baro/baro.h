@@ -33,6 +33,9 @@ extern "C" {
 #define BARO_REG_PWR_CTRL       ( 0x1B )
 #define BARO_REG_OSR            ( 0x1C ) 
 
+/* Baro device id */
+#define BARO_DEVICE_ID          ( 0x60 )
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -46,23 +49,24 @@ typedef enum _BARO_STATUS
 	BARO_TIMEOUT                ,
 	BARO_UNRECOGNIZED_HAL_STATUS,
 	BARO_UNSUPPORTED_CONFIG     ,
+	BARO_UNRECOGNIZED_CHIP_ID   ,
 	BARO_I2C_ERROR
 	} BARO_STATUS;
 
 /* Sensor enable encodings */
 typedef enum _BARO_SENSOR_ENABLES
 	{
-	BARO_DISABLED     ,
-    BARO_PRESS_ENABLED,
-	BARO_TEMP_ENABLED ,
-	BARO_PRESS_TEMP_ENABLED
+	BARO_DISABLED           = 0,
+    BARO_PRESS_ENABLED      = 1,
+	BARO_TEMP_ENABLED       = 2,
+	BARO_PRESS_TEMP_ENABLED = 3
 	} BARO_SENSOR_ENABLES;
 
 /* Operating mode of baro sensor */
 typedef enum _BARO_MODE
 	{
-	BARO_SLEEP_MODE = 0,
-	BARO_FORCED_MODE   ,
+	BARO_SLEEP_MODE  = 0,
+	BARO_FORCED_MODE = 1,
 	BARO_NORMAL_MODE = 3
 	} BARO_MODE;
 
@@ -97,6 +101,12 @@ typedef struct _BARO_CONFIG
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+/* Intialize the barometric pressure sensor */
+BARO_STATUS baro_init
+	(
+	BARO_CONFIG* config_ptr
+	);
+	
 /* Configure/intialize the barometric pressure sensor */
 BARO_STATUS baro_config
 	(

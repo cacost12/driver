@@ -37,10 +37,60 @@ Global Variables
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
+*       baro_init                                                              *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Intialize the barometric pressure sensor                               *
+*                                                                              *
+*******************************************************************************/
+BARO_STATUS baro_init
+	(
+	BARO_CONFIG* config_ptr
+	)
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+BARO_STATUS       baro_status;    /* Status code from Baro API calls   */
+uint8_t           baro_device_id; /* Baro device id                    */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+baro_status    = BARO_OK;
+baro_device_id = 0;
+
+
+/*------------------------------------------------------------------------------
+ API Function Implementation 
+------------------------------------------------------------------------------*/
+
+/* Verify functional I2C connection to sensor */
+baro_status = baro_get_device_id( &baro_device_id );
+if      ( baro_status   != BARO_OK         )
+	{
+	return BARO_I2C_ERROR;
+	}
+else if ( baro_device_id != BARO_DEVICE_ID )
+	{
+	return BARO_UNRECOGNIZED_CHIP_ID;
+	}
+
+/* Configure the sensor */
+baro_status = baro_config( config_ptr );
+return baro_status;
+
+} /* baro_init */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
 *       baro_config                                                            *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Configure/intialize the barometric pressure sensor                     *
+* 		Configure the barometric pressure sensor                               *
 *                                                                              *
 *******************************************************************************/
 BARO_STATUS baro_config
@@ -51,17 +101,17 @@ BARO_STATUS baro_config
 /*------------------------------------------------------------------------------
  Local variables  
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;
-uint8_t           pwr_ctrl;   /* Contents of the PWR_CTRL register */
-uint8_t           osr;        /* Contents of the OSR register      */
+HAL_StatusTypeDef hal_status;     /* Status codes from HAL API         */
+uint8_t           pwr_ctrl;       /* Contents of the PWR_CTRL register */
+uint8_t           osr;            /* Contents of the OSR register      */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-hal_status = HAL_OK;
-pwr_ctrl   = 0;
-osr        = 0;
+hal_status     = HAL_OK;
+pwr_ctrl       = 0;
+osr            = 0;
 
 
 /*------------------------------------------------------------------------------
@@ -307,9 +357,8 @@ if ( baro_status == BARO_TIMEOUT )
 	}
 
 /* Combine all bytes value to 24 bit value */
-raw_pressure = ( ( (uint32_t) pressure_bytes[2] << 16 ) |
-                 ( (uint32_t) pressure_bytes[1] << 8  ) |
-                 ( (uint32_t) pressure_bytes[0] ) );
+raw_pressure = ( ( (uint32_t) pressure_bytes[2] << 8 ) |
+                 ( (uint32_t) pressure_bytes[1] ) );
 
 /* Export data */
 *pressure_ptr = raw_pressure;
@@ -364,9 +413,8 @@ if ( baro_status == BARO_TIMEOUT )
 	}
 
 /* Combine all bytes value to 24 bit value */
-raw_temp = ( ( (uint32_t) temp_bytes[2] << 16 ) |
-             ( (uint32_t) temp_bytes[1] << 8  ) |
-             ( (uint32_t) temp_bytes[0] ) );
+raw_temp = ( ( (uint32_t) temp_bytes[2] << 8 ) |
+             ( (uint32_t) temp_bytes[1] ) ); 
 
 /* Export data */
 *temp_ptr = raw_temp;
