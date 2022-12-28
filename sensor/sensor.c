@@ -294,6 +294,19 @@ switch ( subcommand )
 					break;
 					} /* case SENSOR_POLL_STOP */
 
+				/* WAIT, Pause execution */
+				case SENSOR_POLL_WAIT:
+					{
+					/* Poll USB port until resume signal arrives */
+					while( sensor_poll_cmd != SENSOR_POLL_RESUME )
+						{
+						usb_receive( &sensor_poll_cmd, 
+						             sizeof( sensor_poll_cmd ),
+									 HAL_DEFAULT_TIMEOUT );
+						}
+					break;
+					} /* case SENSOR_POLL_WAIT */
+
 				/* Erroneous Command*/
 				default:
 					{
