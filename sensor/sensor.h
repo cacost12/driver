@@ -62,7 +62,7 @@ typedef enum
 	SENSOR_UNRECOGNIZED_OP       ,
 	SENSOR_UNSUPPORTED_OP        ,
 	SENSOR_IMU_FAIL              ,
-	SENSOR_PT_FAIL               ,
+	SENSOR_PT_ERROR              ,
 	SENSOR_ACCEL_ERROR           ,
     SENSOR_GYRO_ERROR            ,
 	SENSOR_MAG_ERROR             ,
@@ -112,14 +112,19 @@ typedef enum
 	#endif
 	} SENSOR_IDS;
 
-#if defined( FLIGHT_COMPUTER )
 typedef struct SENSOR_DATA 
 	{
-	IMU_DATA imu_data;
-	uint32_t baro_pressure;
-	uint32_t baro_temp;	
+	#if defined( FLIGHT_COMPUTER )
+		IMU_DATA imu_data;
+		uint32_t baro_pressure;
+		uint32_t baro_temp;	
+	#elif defined( ENGINE_CONTROLLER )
+		uint32_t pt_pressures[ NUM_PTS ];
+		uint32_t load_cell_force;
+		uint32_t tc_temp;
+	#endif /* #elif defined( ENGINE_CONTROLLER ) */
 	} SENSOR_DATA;
-#endif /* #if defined( FLIGHT_COMPUTER ) */
+
 
 /*------------------------------------------------------------------------------
  Public Function Prototypes 
