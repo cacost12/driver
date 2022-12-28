@@ -27,6 +27,11 @@ Includes
 	#include <stdint.h>
 #endif
 
+/* Project includes */
+#if defined( ENGINE_CONTROLLER )
+	#include "pressure.h"
+#endif
+
 
 /*------------------------------------------------------------------------------
  Macros 
