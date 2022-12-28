@@ -147,25 +147,17 @@ typedef struct SENSOR_DATA_SIZE_OFFSETS
  Public Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+#if defined( TERMINAL ) 
 /* Initialize the sensor module */
 void sensor_init 
 	(
 	void
 	);
 
-#if defined( TERMINAL ) 
 /* Execute a sensor subcommand */
 SENSOR_STATUS sensor_cmd_execute
 	(
 	uint8_t subcommand
-    );
-
-#endif /* #if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) ) */
-
-/* Dump all sensor readings to console */
-SENSOR_STATUS sensor_dump
-	(
-    SENSOR_DATA* sensor_data_ptr 
     );
 
 /* Poll specific sensors on the board */
@@ -175,6 +167,15 @@ SENSOR_STATUS sensor_poll
 	SENSOR_ID* sensor_ids_ptr  ,
 	uint8_t    num_sensors
 	);
+
+#endif /* #if defined( TERMINAL )  */
+
+/* Dump all sensor readings to console */
+SENSOR_STATUS sensor_dump
+	(
+    SENSOR_DATA* sensor_data_ptr 
+    );
+
 
 #endif /* SENSOR_H */
 
