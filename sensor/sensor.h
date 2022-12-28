@@ -46,7 +46,7 @@ Includes
 
 #if   defined( FLIGHT_COMPUTER   )
 	/* General */
-	#define NUM_SENSORS         ( 1    )
+	#define NUM_SENSORS         ( 12   )
 	#define IMU_DATA_SIZE       ( 20   )
 	#define SENSOR_DATA_SIZE	( 28   )
 #elif defined( ENGINE_CONTROLLER )
@@ -75,12 +75,15 @@ typedef enum
 	SENSOR_BARO_ERROR            ,
 	SENSOR_USB_FAIL              ,
 	SENSOR_UNRECOGNIZED_SENSOR_ID,
+	SENSOR_POLL_FAIL_TO_START    ,
+	SENSOR_POLL_FAIL             ,
     SENSOR_FAIL   
     } SENSOR_STATUS;
 
 /* Sensor poll command codes */
 typedef enum
 	{
+	SENSOR_POLL_START   = 0xF3,
 	SENSOR_POLL_REQUEST = 0x51,
 	SENSOR_POLL_STOP    = 0x74
 	} SENSOR_POLL_CMD;
@@ -118,6 +121,7 @@ typedef enum
 	#endif
 	} SENSOR_IDS;
 
+/* Sensor Data in integer format */
 typedef struct SENSOR_DATA 
 	{
 	#if defined( FLIGHT_COMPUTER )
@@ -131,10 +135,23 @@ typedef struct SENSOR_DATA
 	#endif /* #elif defined( ENGINE_CONTROLLER ) */
 	} SENSOR_DATA;
 
+/* Sensor Data sizes and offsets */
+typedef struct SENSOR_DATA_SIZE_OFFSETS
+	{
+	uint8_t offset;  /* Offset of sensor readout in SENSOR_DATA struct  */
+	size_t  size;    /* Size of readout in bytes                        */
+	} SENSOR_DATA_SIZE_OFFSETS;
+
 
 /*------------------------------------------------------------------------------
  Public Function Prototypes 
 ------------------------------------------------------------------------------*/
+
+/* Initialize the sensor module */
+void sensor_init 
+	(
+	void
+	);
 
 #if defined( TERMINAL ) 
 /* Execute a sensor subcommand */

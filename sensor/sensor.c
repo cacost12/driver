@@ -46,18 +46,117 @@
  Global Variables 
 ------------------------------------------------------------------------------*/
 
+/* Hash table of sensor readout sizes and offsets */
+static SENSOR_DATA_SIZE_OFFSETS sensor_size_offsets_table[ NUM_SENSORS ];
+
 
 /*------------------------------------------------------------------------------
- Public procedures 
+ Internal function prototypes 
 ------------------------------------------------------------------------------*/
+
+/* Sensor ID to size and pointer mapping */
+void static sensor_map
+	(
+	SENSOR_DATA* sensor_data_ptr,
+	SENSOR_ID    sensor_id      ,
+	uint8_t**    sensorid_pptr  ,
+	size_t*      sensor_size
+	);
+
+/* Extract bytes for export from SENSOR_ID struct */
+void static extract_sensor_bytes 
+	(
+	SENSOR_DATA* sensor_data_ptr      ,
+	SENSOR_ID*   sensor_ids_ptr       ,
+	uint8_t      num_sensors          ,
+	uint8_t*     sensor_data_bytes_ptr,
+	uint8_t*     num_sensor_bytes
+	);
+
+
+/*------------------------------------------------------------------------------
+ API Functions 
+------------------------------------------------------------------------------*/
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		sensor_init                                                            *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Initialize the sensor module                                           *
+*                                                                              *
+*******************************************************************************/
+void sensor_init 
+	(
+	void
+	)
+{
+/* Setup the sensor id hash table */
+#if defined( FLIGHT_COMPUTER )
+	/* Sensor offsets */
+	sensor_size_offsets_table[ 0  ].offset = 0;  /* SENSOR_ACCX  */
+	sensor_size_offsets_table[ 1  ].offset = 2;  /* SENSOR_ACCY  */
+	sensor_size_offsets_table[ 2  ].offset = 4;  /* SENSOR_ACCZ  */
+	sensor_size_offsets_table[ 3  ].offset = 6;  /* SENSOR_GYROX */
+	sensor_size_offsets_table[ 4  ].offset = 8;  /* SENSOR_GYROY */
+	sensor_size_offsets_table[ 5  ].offset = 10; /* SENSOR_GYROZ */
+	sensor_size_offsets_table[ 6  ].offset = 12; /* SENSOR_MAGX  */
+	sensor_size_offsets_table[ 7  ].offset = 14; /* SENSOR_MAGY  */
+	sensor_size_offsets_table[ 8  ].offset = 16; /* SENSOR_MAGZ  */
+	sensor_size_offsets_table[ 9  ].offset = 18; /* SENSOR_IMUT  */
+	sensor_size_offsets_table[ 10 ].offset = 20; /* SENSOR_PRES  */
+	sensor_size_offsets_table[ 11 ].offset = 24; /* SENSOR_TEMP  */
+
+	/* Sensor Sizes   */
+	sensor_size_offsets_table[ 0  ].size   = 2;  /* SENSOR_ACCX  */
+	sensor_size_offsets_table[ 1  ].size   = 2;  /* SENSOR_ACCY  */
+	sensor_size_offsets_table[ 2  ].size   = 2;  /* SENSOR_ACCZ  */
+	sensor_size_offsets_table[ 3  ].size   = 2;  /* SENSOR_GYROX */
+	sensor_size_offsets_table[ 4  ].size   = 2;  /* SENSOR_GYROY */
+	sensor_size_offsets_table[ 5  ].size   = 2;  /* SENSOR_GYROZ */
+	sensor_size_offsets_table[ 6  ].size   = 2;  /* SENSOR_MAGX  */
+	sensor_size_offsets_table[ 7  ].size   = 2;  /* SENSOR_MAGY  */
+	sensor_size_offsets_table[ 8  ].size   = 2;  /* SENSOR_MAGZ  */
+	sensor_size_offsets_table[ 9  ].size   = 2;  /* SENSOR_IMUT  */
+	sensor_size_offsets_table[ 10 ].size   = 4;  /* SENSOR_PRES  */
+	sensor_size_offsets_table[ 11 ].size   = 4;  /* SENSOR_TEMP  */
+#elif defined( ENGINE_CONTROLLER )
+	/* Sensor offsets */
+	sensor_size_offsets_table[ 0  ].offset = 0;  /* SENSOR_ACCX  */
+	sensor_size_offsets_table[ 1  ].offset = 4;  /* SENSOR_ACCY  */
+	sensor_size_offsets_table[ 2  ].offset = 8;  /* SENSOR_ACCZ  */
+	sensor_size_offsets_table[ 3  ].offset = 12; /* SENSOR_GYROX */
+	sensor_size_offsets_table[ 4  ].offset = 16; /* SENSOR_GYROY */
+	sensor_size_offsets_table[ 5  ].offset = 20; /* SENSOR_GYROZ */
+	sensor_size_offsets_table[ 6  ].offset = 24; /* SENSOR_MAGX  */
+	sensor_size_offsets_table[ 7  ].offset = 28; /* SENSOR_MAGY  */
+	sensor_size_offsets_table[ 8  ].offset = 32; /* SENSOR_MAGZ  */
+	sensor_size_offsets_table[ 9  ].offset = 36; /* SENSOR_IMUT  */
+
+	/* Sensor Sizes   */
+	sensor_size_offsets_table[ 0  ].size   = 4;  /* SENSOR_ACCX  */
+	sensor_size_offsets_table[ 1  ].size   = 4;  /* SENSOR_ACCY  */
+	sensor_size_offsets_table[ 2  ].size   = 4;  /* SENSOR_ACCZ  */
+	sensor_size_offsets_table[ 3  ].size   = 4;  /* SENSOR_GYROX */
+	sensor_size_offsets_table[ 4  ].size   = 4;  /* SENSOR_GYROY */
+	sensor_size_offsets_table[ 5  ].size   = 4;  /* SENSOR_GYROZ */
+	sensor_size_offsets_table[ 6  ].size   = 4;  /* SENSOR_MAGX  */
+	sensor_size_offsets_table[ 7  ].size   = 4;  /* SENSOR_MAGY  */
+	sensor_size_offsets_table[ 8  ].size   = 4;  /* SENSOR_MAGZ  */
+	sensor_size_offsets_table[ 9  ].size   = 4;  /* SENSOR_IMUT  */
+#endif
+
+} /* sensor_init */
+
 
 #if defined( TERMINAL ) 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
 * 		sensor_cmd_execute                                                     *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 *       Executes a sensor subcommand                                           *
 *                                                                              *
 *******************************************************************************/
@@ -83,24 +182,29 @@ uint8_t       num_sensors;                           /* Number of sensors to
                                                         use for polling       */
 uint8_t       poll_sensors[ SENSOR_MAX_NUM_POLL ];   /* Codes for sensors to
                                                         be polled             */
+uint8_t       sensor_poll_cmd;                       /* Command codes used by 
+                                                        sensor poll           */
 
 /*------------------------------------------------------------------------------
  Initializations  
 ------------------------------------------------------------------------------*/
-usb_status  = USB_OK;
-num_sensors = 0;
+usb_status      = USB_OK;
+sensor_status   = SENSOR_OK;
+num_sensors     = 0;
+sensor_poll_cmd = 0;
 memset( &sensor_data_bytes[0], 0, sizeof( sensor_data_bytes ) );
 memset( &sensor_data         , 0, sizeof( sensor_data       ) );
 memset( &poll_sensors[0]     , 0, sizeof( poll_sensors      ) );
 
 
 /*------------------------------------------------------------------------------
- Execute Sensor Subcommand 
+ Implementation 
 ------------------------------------------------------------------------------*/
 switch ( subcommand )
 	{
-
-	/* Poll Sensors continuously */
+	/*--------------------------------------------------------------------------
+	 SENSOR POLL 
+	--------------------------------------------------------------------------*/
     case SENSOR_POLL_CODE:
 		{
 		/* Determine the number of sensors to poll */
@@ -121,15 +225,87 @@ switch ( subcommand )
 			return SENSOR_USB_FAIL;
 			}
 
-		/* Start Polling sensors */
-		sensor_status = sensor_poll( &sensor_data    , 
-		                             &poll_sensors[0],
-									 num_sensors );
+		/* Receive initiating command code  */
+		usb_status = usb_receive( &sensor_poll_cmd,
+		                           sizeof( sensor_poll_cmd ),
+								   HAL_DEFAULT_TIMEOUT );
+		if      ( usb_status      != USB_OK            )
+			{
+			return SENSOR_USB_FAIL; /* USB error */
+			}
+		else if ( sensor_poll_cmd != SENSOR_POLL_START )
+			{
+			/* SDEC fails to initiate sensor poll */
+			return SENSOR_POLL_FAIL_TO_START;
+			}
+
+		/* Start polling sensors */
+		while ( sensor_poll_cmd != SENSOR_POLL_STOP )
+			{
+			/* Get command code */
+			usb_status = usb_receive( &sensor_poll_cmd         ,
+			                          sizeof( sensor_poll_cmd ),
+									  HAL_DEFAULT_TIMEOUT );
+			if ( usb_status != USB_OK ) 
+				{
+				return SENSOR_USB_FAIL;
+				}
+			
+			/* Execute command */
+			switch ( sensor_poll_cmd )
+				{
+
+				/* Poll Sensors */
+				case SENSOR_POLL_REQUEST:
+					{
+					sensor_status = sensor_poll( &sensor_data    , 
+												 &poll_sensors[0],
+												 num_sensors );
+					if ( sensor_status != SENSOR_OK )
+						{
+						return SENSOR_POLL_FAIL;
+						}
+					else
+						{
+						/* Copy over sensor data into buffer */
+						extract_sensor_bytes( &sensor_data, 
+						                      &poll_sensors[0],
+											  num_sensors     ,
+											  &sensor_data_bytes[0],
+											  &num_sensor_bytes );
+
+						/* Transmit sensor bytes back to SDEC */
+						usb_transmit( &sensor_data_bytes[0],
+						              num_sensor_bytes     ,
+									  HAL_SENSOR_TIMEOUT );
+								
+						break;
+						}
+					} /* case SENSOR_POLL_REQUEST */
+
+				/* STOP Executtion */
+				case SENSOR_POLL_STOP:
+					{
+					/* Do nothing */
+					break;
+					} /* case SENSOR_POLL_STOP */
+
+				/* Erroneous Command*/
+				default:
+					{
+					Error_Handler();
+					break;
+					}
+				} /* switch( sensor_poll_cmd ) */
+
+			} /* while( sensor_poll_cmd != SENSOR_POLL_STOP ) */
 		
 		return sensor_status ;
         } /* SENSOR_POLL_CODE */ 
 
-	/* Poll sensors once and dump data on terminal */
+	/*--------------------------------------------------------------------------
+	 SENSOR DUMP 
+	--------------------------------------------------------------------------*/
 	case SENSOR_DUMP_CODE: 
 		{
 		/* Tell the PC how many bytes to expect */
@@ -146,8 +322,6 @@ switch ( subcommand )
 		/* Transmit sensor readings to PC */
 		if ( sensor_status == SENSOR_OK )
 			{
-			// readings_to_bytes( &sensor_readings_bytes[0], 
-            //                    &sensor_readings[0] );
 			usb_transmit( &sensor_data_bytes[0]      , 
                           sizeof( sensor_data_bytes ), 
                           HAL_SENSOR_TIMEOUT );
@@ -160,7 +334,9 @@ switch ( subcommand )
             }
         } /* SENSOR_DUMP_CODE */
 
-	/* Subcommand not recognized */
+	/*--------------------------------------------------------------------------
+	 UNRECOGNIZED SUBCOMMAND 
+	--------------------------------------------------------------------------*/
 	default:
 		{
 		return ( SENSOR_UNRECOGNIZED_OP );
@@ -570,6 +746,103 @@ for ( int i = 0; i < num_sensors; ++i )
 
 return SENSOR_OK;
 } /* sensor_poll */
+
+
+/*------------------------------------------------------------------------------
+ Internal procedures 
+------------------------------------------------------------------------------*/
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		sensor_map                                                             *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Sensor ID to size and pointer mapping                                  *
+*                                                                              *
+*******************************************************************************/
+void static sensor_map
+	(
+	SENSOR_DATA* sensor_data_ptr, /* In:  Base pointer to sensor data   */
+	SENSOR_ID    sensor_id      , /* In:  Sensor id                    */
+	uint8_t**    sensorid_pptr  , /* Out: Pointer to sensor readout in 
+	                                      sensor_data_ptr              */
+	size_t*      sensor_size_ptr  /* Out: Size of readout in bytes     */
+	)
+{
+/* Lookup sensor offset and size from table */
+*sensor_size_ptr = sensor_size_offsets_table[ sensor_id ].size;
+*sensorid_pptr   = ( (uint8_t*) sensor_data_ptr ) + 
+                   sensor_size_offsets_table[ sensor_id ].offset;
+
+} /*  sensor_map */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		extract_sensor_bytes                                                   *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Extract bytes for export from SENSOR_ID struct                         *
+*                                                                              *
+*******************************************************************************/
+void static extract_sensor_bytes 
+	(
+	SENSOR_DATA* sensor_data_ptr      , /* In:  Sensor data in struct         */
+	SENSOR_ID*   sensor_ids_ptr       , /* In:  Sensor ids                    */
+	uint8_t      num_sensors          , /* In:  Number of sensors polled      */
+	uint8_t*     sensor_data_bytes_ptr, /* Out: Sensor data in bytes          */
+	uint8_t*     num_sensor_bytes       /* Out: Size of output data           */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+uint8_t*   output_ptr;    /* Pointer to data export output                    */
+uint8_t*   input_ptr;     /* Pointer to data within SENSOR_ID struct          */
+size_t     sensor_size;   /* Size in bytes of current sensor readout          */
+SENSOR_ID  sensor_id;     /* Current Sensor ID                                */
+SENSOR_ID* sensor_id_ptr; /* Pointer to current sensor ID                     */
+
+
+/*------------------------------------------------------------------------------
+ Initializations  
+------------------------------------------------------------------------------*/
+output_ptr        = sensor_data_bytes_ptr;
+sensor_id_ptr     = sensor_ids_ptr;
+sensor_id         = *(sensor_id_ptr);
+*num_sensor_bytes = 0;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+for ( uint8_t i = 0; i < num_sensors; ++i )
+	{
+	/* Get position info of sensor readout */
+	sensor_map( sensor_data_ptr, 
+	            sensor_id      ,
+				&input_ptr      ,
+				&sensor_size );
+
+	/* Copy data into output buffer */
+	memcpy( output_ptr, input_ptr, sensor_size );
+
+	/* Update size of output */
+	*num_sensor_bytes += (uint8_t) sensor_size;
+
+	/* Go to next sensor */ 
+	if ( i != ( num_sensors-1) )
+		{
+		sensor_id_ptr++;
+		sensor_id = *(sensor_id_ptr);
+		output_ptr += sensor_size;
+		}
+	}
+
+} /* extract_sensor_bytes */
 
 
 /*******************************************************************************
