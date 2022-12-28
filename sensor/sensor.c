@@ -493,51 +493,63 @@ for ( int i = 0; i < num_sensors; ++i )
 		#elif defined( ENGINE_CONTROLLER )
 			case SENSOR_PT0:
 				{
+				sensor_data_ptr -> pt_pressures[0] = pressure_get_pt_reading( PT_NUM0 );
 				break;
 				}
 
 			case SENSOR_PT1:
 				{
+				sensor_data_ptr -> pt_pressures[1] = pressure_get_pt_reading( PT_NUM1 );
 				break;
 				}
 
 			case SENSOR_PT2:
 				{
+				sensor_data_ptr -> pt_pressures[2] = pressure_get_pt_reading( PT_NUM2 );
 				break;
 				}
 
 			case SENSOR_PT3:
 				{
+				sensor_data_ptr -> pt_pressures[3] = pressure_get_pt_reading( PT_NUM3 );
 				break;
 				}
 
 			case SENSOR_PT4:
 				{
+				sensor_data_ptr -> pt_pressures[4] = pressure_get_pt_reading( PT_NUM4 );
 				break;
 				}
 
 			case SENSOR_PT5:
 				{
+				sensor_data_ptr -> pt_pressures[5] = pressure_get_pt_reading( PT_NUM5 );
 				break;
 				}
 
 			case SENSOR_PT6:
 				{
+				sensor_data_ptr -> pt_pressures[6] = pressure_get_pt_reading( PT_NUM6 );
 				break;
 				}
 
 			case SENSOR_PT7:
 				{
+				sensor_data_ptr -> pt_pressures[7] = pressure_get_pt_reading( PT_NUM7 );
 				break;
 				}
 
 			case SENSOR_TC:
 				{
+				// TODO: Thermocouple implementation
+				sensor_data_ptr -> tc_temp = 0;
 				break;
 				}
 
 			case SENSOR_LC:
 				{
+				// TODO: Load Cell implementation
+				sensor_data_ptr -> load_cell_force = 0;
 				break;
 				}
 
