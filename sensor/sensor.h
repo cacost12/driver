@@ -52,6 +52,7 @@ Includes
 #elif defined( ENGINE_CONTROLLER )
 	/* General */
 	#define NUM_SENSORS         ( 10   )
+	#define SENSOR_DATA_SIZE    ( 40   )
 #else
 	#error Board is not compatible with SENSOR module
 #endif
@@ -135,11 +136,19 @@ typedef struct SENSOR_DATA
  Public Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) )
+#if defined( TERMINAL ) 
 /* Execute a sensor subcommand */
 SENSOR_STATUS sensor_cmd_execute
 	(
 	uint8_t subcommand
+    );
+
+#endif /* #if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) ) */
+
+/* Dump all sensor readings to console */
+SENSOR_STATUS sensor_dump
+	(
+    SENSOR_DATA* sensor_data_ptr 
     );
 
 /* Poll specific sensors on the board */
@@ -149,32 +158,6 @@ SENSOR_STATUS sensor_poll
 	SENSOR_ID* sensor_ids_ptr  ,
 	uint8_t    num_sensors
 	);
-#endif /* #if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) ) */
-
-#if ( defined( TERMINAL ) && defined( ENGINE_CONTROLLER ) )
-/* Execute a sensor subcommand */
-uint8_t sensor_cmd_execute
-	(
-	uint8_t subcommand
-    );
-#endif
-
-#if defined( FLIGHT_COMPUTER )
-/* Dump all sensor readings to console */
-SENSOR_STATUS sensor_dump
-	(
-    SENSOR_DATA* sensor_data_ptr 
-    );
-#endif
-
-#if defined( ENGINE_CONTROLLER )
-/* Dump all sensor readings to console */
-SENSOR_STATUS sensor_dump
-	(
-    uint32_t* pSensor_buffer 
-    );
-#endif
-
 
 #endif /* SENSOR_H */
 
