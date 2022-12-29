@@ -28,6 +28,8 @@
 Global Variables  
 ------------------------------------------------------------------------------*/
 
+/* Current Baro Sensor configuration */
+static BARO_CONFIG baro_configuration;
 
 /*------------------------------------------------------------------------------
  Procedures 
@@ -104,6 +106,7 @@ BARO_STATUS baro_config
 HAL_StatusTypeDef hal_status;     /* Status codes from HAL API         */
 uint8_t           pwr_ctrl;       /* Contents of the PWR_CTRL register */
 uint8_t           osr;            /* Contents of the OSR register      */
+uint8_t           odr;            /* Contents of the ODR register      */
 
 
 /*------------------------------------------------------------------------------
@@ -112,15 +115,26 @@ uint8_t           osr;            /* Contents of the OSR register      */
 hal_status     = HAL_OK;
 pwr_ctrl       = 0;
 osr            = 0;
+odr            = 0;
 
 
 /*------------------------------------------------------------------------------
  Extract Baro settings from config struct  
 ------------------------------------------------------------------------------*/
-pwr_ctrl |= config_ptr -> enable;           /* Enable sensors           */
-pwr_ctrl |= config_ptr -> mode << 4;        /* Set operating mode       */
-osr      |= config_ptr -> osr_setting;      /* Pressure oversampling    */
-osr      |= config_ptr -> osr_setting << 3; /* Temperature oversampling */
+
+/* Set register contents */
+pwr_ctrl |= config_ptr -> enable;                /* Enable sensors           */
+pwr_ctrl |= config_ptr -> mode << 4;             /* Set operating mode       */
+osr      |= config_ptr -> press_OSR_setting;     /* Pressure oversampling    */
+osr      |= config_ptr -> temp_OSR_setting << 3; /* Temperature oversampling */
+odr      |= config_ptr -> ODR_setting;           /* Sampling Frequency       */
+
+/* Set global baro configuration */
+baro_configuration.enable            = config_ptr -> enable;
+baro_configuration.mode              = config_ptr -> mode;
+baro_configuration.press_OSR_setting = config_ptr -> press_OSR_setting;
+baro_configuration.temp_OSR_setting  = config_ptr -> temp_OSR_setting;
+baro_configuration.ODR_setting       = config_ptr -> ODR_setting;
 
 
 /*------------------------------------------------------------------------------
@@ -148,6 +162,19 @@ hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
                                 I2C_MEMADD_SIZE_8BIT,
                                 &osr                ,
                                 sizeof( osr )       ,
+                                HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+	{
+	return BARO_I2C_ERROR;
+	}
+
+/* Write to the ODR register -> set the sampling frequency */
+hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
+                                BARO_I2C_ADDR, 
+                                BARO_REG_ODR ,
+                                I2C_MEMADD_SIZE_8BIT,
+                                &odr,
+                                sizeof( odr )       ,
                                 HAL_DEFAULT_TIMEOUT );
 if ( hal_status != HAL_OK )
 	{
@@ -329,9 +356,10 @@ BARO_STATUS baro_get_pressure
 /*------------------------------------------------------------------------------
 Local variables 
 ------------------------------------------------------------------------------*/
-uint8_t     pressure_bytes[3];
-uint32_t    raw_pressure;
-BARO_STATUS baro_status;
+uint8_t     pressure_bytes[3]; /* Pressure raw readout bytes, LSB first   */
+uint32_t    raw_pressure;      /* Pressure raw readout in uint32_t format */
+BARO_STATUS baro_status;       /* Return codes for baro API calls         */
+uint8_t     osr_bitshift;      /* Number of XLS bits due to OSR setting   */
 
 
 /*------------------------------------------------------------------------------
@@ -339,6 +367,7 @@ Initializations
 ------------------------------------------------------------------------------*/
 raw_pressure = 0;
 baro_status  = BARO_OK;
+osr_bitshift = baro_configuration.press_OSR_setting;
 memset( &pressure_bytes[0], 0, sizeof( pressure_bytes ) );
 
 /*------------------------------------------------------------------------------
@@ -357,8 +386,9 @@ if ( baro_status == BARO_TIMEOUT )
 	}
 
 /* Combine all bytes value to 24 bit value */
-raw_pressure = ( ( (uint32_t) pressure_bytes[2] << 8 ) |
-                 ( (uint32_t) pressure_bytes[1] ) );
+raw_pressure = ( ( (uint32_t) pressure_bytes[2] << (8 + osr_bitshift) ) |
+                 ( (uint32_t) pressure_bytes[1] <<      osr_bitshift  ) |
+				 ( (uint32_t) pressure_bytes[0]                ) );
 
 /* Export data */
 *pressure_ptr = raw_pressure;
@@ -384,16 +414,18 @@ BARO_STATUS baro_get_temp
 /*------------------------------------------------------------------------------
 Local variables 
 ------------------------------------------------------------------------------*/
-uint8_t     temp_bytes[3];
-uint32_t    raw_temp;
-BARO_STATUS baro_status;
+uint8_t     temp_bytes[3]; /* Raw temperature readout bytes, LSB first */
+uint32_t    raw_temp;      /* Raw temperature readout in uint32_t format */
+BARO_STATUS baro_status;   /* Status codes returned from baro API calls  */
+uint8_t     osr_bitshift;  /* Bitshift due to XLSB bits from OSR setting */
 
 
 /*------------------------------------------------------------------------------
 Initializations
 ------------------------------------------------------------------------------*/
-raw_temp    = 0;
-baro_status = BARO_OK;
+raw_temp     = 0;
+baro_status  = BARO_OK;
+osr_bitshift = baro_configuration.temp_OSR_setting;
 memset( &temp_bytes[0], 0, sizeof( temp_bytes ) );
 
 
@@ -413,8 +445,9 @@ if ( baro_status == BARO_TIMEOUT )
 	}
 
 /* Combine all bytes value to 24 bit value */
-raw_temp = ( ( (uint32_t) temp_bytes[2] << 8 ) |
-             ( (uint32_t) temp_bytes[1] ) ); 
+raw_temp = ( ( (uint32_t) temp_bytes[2] << (8 + osr_bitshift) ) |
+             ( (uint32_t) temp_bytes[1] <<      osr_bitshift  ) |
+			 ( (uint32_t) temp_bytes[0]                       ) ); 
 
 /* Export data */
 *temp_ptr = raw_temp;

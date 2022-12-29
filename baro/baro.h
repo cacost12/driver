@@ -32,6 +32,7 @@ extern "C" {
 #define BARO_REG_TEMP_DATA      ( 0x07 ) 
 #define BARO_REG_PWR_CTRL       ( 0x1B )
 #define BARO_REG_OSR            ( 0x1C ) 
+#define BARO_REG_ODR            ( 0x1D )
 
 /* Baro device id */
 #define BARO_DEVICE_ID          ( 0x60 )
@@ -70,16 +71,41 @@ typedef enum _BARO_MODE
 	BARO_NORMAL_MODE = 3
 	} BARO_MODE;
 
-/* Sensor Oversampling Settings */
-typedef enum _BARO_OSR_SETTING
+/* Pressure Sensor Oversampling Settings */
+typedef enum _BARO_PRESS_OSR_SETTING
 	{
-	BARO_OSR_X1 = 0,
-    BARO_OSR_X2    ,
-	BARO_OSR_X4    ,
-	BARO_OSR_X8    ,
-	BARO_OSR_X16   ,
-	BARO_OSR_X32
-	} BARO_OSR_SETTING;
+	BARO_PRESS_OSR_X1 = 0,
+    BARO_PRESS_OSR_X2    ,
+	BARO_PRESS_OSR_X4    ,
+	BARO_PRESS_OSR_X8    ,
+	BARO_PRESS_OSR_X16   ,
+	BARO_PRESS_OSR_X32
+	} BARO_PRESS_OSR_SETTING;
+
+/* Temperature Sensor Oversampling Settings */
+typedef enum _BARO_TEMP_OSR_SETTING
+	{
+	BARO_TEMP_OSR_X1 = 0,
+    BARO_TEMP_OSR_X2    ,
+	BARO_TEMP_OSR_X4    ,
+	BARO_TEMP_OSR_X8    ,
+	BARO_TEMP_OSR_X16   ,
+	BARO_TEMP_OSR_X32
+	} BARO_TEMP_OSR_SETTING;
+
+/* Sample Frequency settings */
+typedef enum _BARO_ODR_SETTING
+	{
+	BARO_ODR_200HZ = 0,
+	BARO_ODR_100HZ    ,
+	BARO_ODR_50HZ     ,
+	BARO_ODR_25HZ     ,
+	BARO_ODR_25_2HZ   ,
+	BARO_ODR_25_4HZ   ,
+	BARO_ODR_25_8HZ   ,
+	BARO_ODR_25_16HZ  ,
+	BARO_ODR_25_32HZ
+	} BARO_ODR_SETTING;
 
 /* Baro sensor configuration settings struct */
 typedef struct _BARO_CONFIG
@@ -90,11 +116,16 @@ typedef struct _BARO_CONFIG
 	/* Operating mode */
 	BARO_MODE mode;
 
-	/* Oversampling setting  */
-	BARO_OSR_SETTING osr_setting;
+	/* Pressure Oversampling setting  */
+	BARO_PRESS_OSR_SETTING press_OSR_setting;
+
+	/* Temperature Oversampling setting */
+	BARO_TEMP_OSR_SETTING temp_OSR_setting;
+
+	/* Sampling frequency */
+	BARO_ODR_SETTING ODR_setting;
 
 	} BARO_CONFIG;
-
 
 
 /*------------------------------------------------------------------------------
