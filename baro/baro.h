@@ -28,11 +28,13 @@ extern "C" {
 
 /* Barometric Pressure Sensor register addresses */
 #define BARO_REG_CHIP_ID        ( 0x00 )
+#define BARO_REG_ERR_REG        ( 0x02 )
 #define BARO_REG_PRESS_DATA     ( 0x04 )  
 #define BARO_REG_TEMP_DATA      ( 0x07 ) 
 #define BARO_REG_PWR_CTRL       ( 0x1B )
 #define BARO_REG_OSR            ( 0x1C ) 
 #define BARO_REG_ODR            ( 0x1D )
+#define BARO_REG_CONFIG         ( 0x1F )
 
 /* Baro device id */
 #define BARO_DEVICE_ID          ( 0x60 )
@@ -51,6 +53,7 @@ typedef enum _BARO_STATUS
 	BARO_UNRECOGNIZED_HAL_STATUS,
 	BARO_UNSUPPORTED_CONFIG     ,
 	BARO_UNRECOGNIZED_CHIP_ID   ,
+	BARO_ERROR                  ,
 	BARO_I2C_ERROR
 	} BARO_STATUS;
 
@@ -107,6 +110,19 @@ typedef enum _BARO_ODR_SETTING
 	BARO_ODR_25_32HZ
 	} BARO_ODR_SETTING;
 
+/* IIR Filter coefficient selection */
+typedef enum _BARO_IIR_SETTING
+	{
+	BARO_IIR_COEF_0   = 0,
+	BARO_IIR_COEF_1   = 1,
+	BARO_IIR_COEF_3   = 2,
+	BARO_IIR_COEF_7   = 3,
+	BARO_IIR_COEF_15  = 4,
+	BARO_IIR_COEF_31  = 5,
+	BARO_IIR_COEF_63  = 6,
+	BARO_IIR_COEF_127 = 7 
+	} BARO_IIR_SETTING;
+
 /* Baro sensor configuration settings struct */
 typedef struct _BARO_CONFIG
 	{
@@ -124,6 +140,9 @@ typedef struct _BARO_CONFIG
 
 	/* Sampling frequency */
 	BARO_ODR_SETTING ODR_setting;
+
+	/* IIR Filter Coefficient Selection */
+	BARO_IIR_SETTING IIR_setting;
 
 	} BARO_CONFIG;
 

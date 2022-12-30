@@ -55,6 +55,7 @@ BARO_STATUS baro_init
 ------------------------------------------------------------------------------*/
 BARO_STATUS       baro_status;    /* Status code from Baro API calls   */
 uint8_t           baro_device_id; /* Baro device id                    */
+uint8_t           baro_err_reg;   /* Contents of error register        */
 
 
 /*------------------------------------------------------------------------------
@@ -62,6 +63,7 @@ uint8_t           baro_device_id; /* Baro device id                    */
 ------------------------------------------------------------------------------*/
 baro_status    = BARO_OK;
 baro_device_id = 0;
+baro_err_reg   = 0xFF;
 
 
 /*------------------------------------------------------------------------------
@@ -77,6 +79,17 @@ if      ( baro_status   != BARO_OK         )
 else if ( baro_device_id != BARO_DEVICE_ID )
 	{
 	return BARO_UNRECOGNIZED_CHIP_ID;
+	}
+
+/* Check the Baro error register */
+baro_status = BARO_Read_Register( BARO_REG_ERR_REG, &baro_err_reg );
+if ( baro_status != BARO_OK )
+	{
+	return BARO_I2C_ERROR;
+	}
+else if ( baro_err_reg )
+	{
+	return BARO_ERROR;
 	}
 
 /* Configure the sensor */
@@ -103,10 +116,11 @@ BARO_STATUS baro_config
 /*------------------------------------------------------------------------------
  Local variables  
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;     /* Status codes from HAL API         */
-uint8_t           pwr_ctrl;       /* Contents of the PWR_CTRL register */
-uint8_t           osr;            /* Contents of the OSR register      */
-uint8_t           odr;            /* Contents of the ODR register      */
+HAL_StatusTypeDef hal_status;  /* Status codes from HAL API                   */
+uint8_t           pwr_ctrl;    /* Contents of PWR_CTRL register               */
+uint8_t           osr;         /* Contents of OSR register                    */
+uint8_t           odr;         /* Contents of ODR register                    */
+uint8_t           iir;         /* Contents of CONFIG register (IIR Filter)    */
 
 
 /*------------------------------------------------------------------------------
@@ -116,6 +130,7 @@ hal_status     = HAL_OK;
 pwr_ctrl       = 0;
 osr            = 0;
 odr            = 0;
+iir            = 0;
 
 
 /*------------------------------------------------------------------------------
@@ -128,6 +143,7 @@ pwr_ctrl |= config_ptr -> mode << 4;             /* Set operating mode       */
 osr      |= config_ptr -> press_OSR_setting;     /* Pressure oversampling    */
 osr      |= config_ptr -> temp_OSR_setting << 3; /* Temperature oversampling */
 odr      |= config_ptr -> ODR_setting;           /* Sampling Frequency       */
+iir      |= config_ptr -> IIR_setting;           /* IIR Filter Selection     */
 
 /* Set global baro configuration */
 baro_configuration.enable            = config_ptr -> enable;
@@ -135,6 +151,7 @@ baro_configuration.mode              = config_ptr -> mode;
 baro_configuration.press_OSR_setting = config_ptr -> press_OSR_setting;
 baro_configuration.temp_OSR_setting  = config_ptr -> temp_OSR_setting;
 baro_configuration.ODR_setting       = config_ptr -> ODR_setting;
+baro_configuration.IIR_setting       = config_ptr -> IIR_setting;
 
 
 /*------------------------------------------------------------------------------
@@ -175,6 +192,19 @@ hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
                                 I2C_MEMADD_SIZE_8BIT,
                                 &odr,
                                 sizeof( odr )       ,
+                                HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+	{
+	return BARO_I2C_ERROR;
+	}
+
+/* Write to the CONFIG register -> Configure the IIR filter */
+hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
+                                BARO_I2C_ADDR, 
+                                BARO_REG_CONFIG ,
+                                I2C_MEMADD_SIZE_8BIT,
+                                &iir,
+                                sizeof( iir )       ,
                                 HAL_DEFAULT_TIMEOUT );
 if ( hal_status != HAL_OK )
 	{
