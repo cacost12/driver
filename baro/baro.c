@@ -31,8 +31,30 @@ Global Variables
 /* Current Baro Sensor configuration */
 static BARO_CONFIG baro_configuration;
 
+
 /*------------------------------------------------------------------------------
- Procedures 
+ Internal function prototypes 
+------------------------------------------------------------------------------*/
+
+/* Read from the baro's registers at a specified address  */
+static BARO_STATUS baro_read_regs
+	(
+	uint8_t  reg_addr, /* In:  Register address            */
+	uint8_t  num_regs, /* In:  Number of registers to read */
+	uint8_t* pData     /* Out: Register contents           */
+	);
+
+
+/* Write to one of the baro's registers at a specified address */
+static BARO_STATUS baro_write_reg
+	(
+	uint8_t  reg_addr, /* In: Register address            */
+	uint8_t  data      /* In: Register contents           */
+	);
+
+
+/*------------------------------------------------------------------------------
+ API Functions 
 ------------------------------------------------------------------------------*/
 
 
@@ -82,7 +104,9 @@ else if ( baro_device_id != BARO_DEVICE_ID )
 	}
 
 /* Check the Baro error register */
-baro_status = BARO_Read_Register( BARO_REG_ERR_REG, &baro_err_reg );
+baro_status = baro_read_regs( BARO_REG_ERR_REG      , 
+                              sizeof( baro_err_reg ), 
+							  &baro_err_reg );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
@@ -116,21 +140,21 @@ BARO_STATUS baro_config
 /*------------------------------------------------------------------------------
  Local variables  
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;  /* Status codes from HAL API                   */
-uint8_t           pwr_ctrl;    /* Contents of PWR_CTRL register               */
-uint8_t           osr;         /* Contents of OSR register                    */
-uint8_t           odr;         /* Contents of ODR register                    */
-uint8_t           iir;         /* Contents of CONFIG register (IIR Filter)    */
+BARO_STATUS   baro_status; /* Baro API call return codes                  */
+uint8_t       pwr_ctrl;    /* Contents of PWR_CTRL register               */
+uint8_t       osr;         /* Contents of OSR register                    */
+uint8_t       odr;         /* Contents of ODR register                    */
+uint8_t       iir;         /* Contents of CONFIG register (IIR Filter)    */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-hal_status     = HAL_OK;
-pwr_ctrl       = 0;
-osr            = 0;
-odr            = 0;
-iir            = 0;
+baro_status = BARO_OK;
+pwr_ctrl    = 0;
+osr         = 0;
+odr         = 0;
+iir         = 0;
 
 
 /*------------------------------------------------------------------------------
@@ -159,155 +183,37 @@ baro_configuration.IIR_setting       = config_ptr -> IIR_setting;
 ------------------------------------------------------------------------------*/
 
 /* Write to the PWR_CTRL register -> Operating mode and enable sensors */
-hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ), 
-                                BARO_I2C_ADDR       , 
-								BARO_REG_PWR_CTRL   ,
-				                I2C_MEMADD_SIZE_8BIT,
-							    &pwr_ctrl           ,
-								sizeof( pwr_ctrl )  ,
-								HAL_DEFAULT_TIMEOUT );
-
-if ( hal_status != HAL_OK )
+baro_status = baro_write_reg( BARO_REG_PWR_CTRL, pwr_ctrl );
+if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
 	}
 
 /* Write to the OSR register -> set the oversampling rate */
-hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
-                                BARO_I2C_ADDR, 
-                                BARO_REG_OSR ,
-                                I2C_MEMADD_SIZE_8BIT,
-                                &osr                ,
-                                sizeof( osr )       ,
-                                HAL_DEFAULT_TIMEOUT );
-if ( hal_status != HAL_OK )
+baro_status = baro_write_reg( BARO_REG_OSR, osr );
+if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
 	}
 
 /* Write to the ODR register -> set the sampling frequency */
-hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
-                                BARO_I2C_ADDR, 
-                                BARO_REG_ODR ,
-                                I2C_MEMADD_SIZE_8BIT,
-                                &odr,
-                                sizeof( odr )       ,
-                                HAL_DEFAULT_TIMEOUT );
-if ( hal_status != HAL_OK )
+baro_status = baro_write_reg( BARO_REG_ODR, odr );
+if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
 	}
 
 /* Write to the CONFIG register -> Configure the IIR filter */
-hal_status = HAL_I2C_Mem_Write( &( BARO_I2C ),
-                                BARO_I2C_ADDR, 
-                                BARO_REG_CONFIG ,
-                                I2C_MEMADD_SIZE_8BIT,
-                                &iir,
-                                sizeof( iir )       ,
-                                HAL_DEFAULT_TIMEOUT );
-if ( hal_status != HAL_OK )
+baro_status = baro_write_reg( BARO_REG_CONFIG, iir );
+if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
 	}
-else
-	{
-	return BARO_OK;
-	}
+
+/* Configuration complete */
+return BARO_OK;
 
 } /* baro_config */
-
-
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-*       BARO_Read_Register                                                     *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-*       Read one register for BARO                                             *
-*                                                                              *
-*******************************************************************************/
-BARO_STATUS BARO_Read_Register
-	(
-	uint8_t reg_addr, 
-	uint8_t *pData
-	)
-{   
-
-/*------------------------------------------------------------------------------
-Local variables  
-------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;
-
-
-/*------------------------------------------------------------------------------
-API function implementation 
-------------------------------------------------------------------------------*/
-
-/* Read I2C register*/
-hal_status = HAL_I2C_Mem_Read( &( BARO_I2C ),
-				               BARO_I2C_ADDR,
-				               reg_addr,
-				               I2C_MEMADD_SIZE_8BIT,
-				               pData,
-				               sizeof( uint8_t ),
-				               HAL_DEFAULT_TIMEOUT
-				             );
-
-if (hal_status != HAL_TIMEOUT)
-	{
-	return BARO_OK;
-	}
-else
-	{
-	return BARO_TIMEOUT;
-	}
-} /* BARO_Read_Register */
-
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-*       BARO_Read_Registers                                                    *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-*       Read the specific numbers of registers at one time for BARO            *
-*                                                                              *
-*******************************************************************************/
-BARO_STATUS BARO_Read_Registers
-	(
-	uint8_t reg_addr,
-	uint8_t *pData,
-	uint8_t num_registers
-	)
-{
-/*------------------------------------------------------------------------------
-Local variables  
-------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;
-
-
-/*------------------------------------------------------------------------------
-API function implementation 
-------------------------------------------------------------------------------*/
-
-/*Read I2C register*/
-hal_status = HAL_I2C_Mem_Read( &( BARO_I2C ),
-                               BARO_I2C_ADDR,
-                               reg_addr,
-                               I2C_MEMADD_SIZE_8BIT,
-                               pData,
-                               num_registers,
-                               HAL_DEFAULT_TIMEOUT );
-
-if (hal_status != HAL_TIMEOUT)
-	{
-	return BARO_OK;
-	}
-else
-	{
-	return BARO_TIMEOUT;
-	}
-} /* BARO_Read_Registers */
 
 
 /*******************************************************************************
@@ -322,13 +228,13 @@ else
 *******************************************************************************/
 BARO_STATUS baro_get_device_id
 	(
-   	uint8_t* baro_id_ptr /* reference to memory where id is returned */ 
+   	uint8_t* baro_id_ptr /* Out: Baro device id */ 
 	)
 {
 /*------------------------------------------------------------------------------
  Local Variables 
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;
+BARO_STATUS baro_status; /* Status codes returned from baro API calls */
 
 
 /*------------------------------------------------------------------------------
@@ -336,36 +242,10 @@ HAL_StatusTypeDef hal_status;
 ------------------------------------------------------------------------------*/
 
 /* Read baro register with I2C */
-hal_status = HAL_I2C_Mem_Read (
-                               &( BARO_I2C ),
-                               BARO_I2C_ADDR       ,
-                               BARO_REG_CHIP_ID    ,
-                               I2C_MEMADD_SIZE_8BIT,
-							   baro_id_ptr         ,
-							   sizeof( uint8_t )   ,
-                               HAL_DEFAULT_TIMEOUT
-                              );
-
-/* Check HAL Status and return data if okay */
-switch ( hal_status )
-	{
-	case HAL_OK: 
-		return BARO_OK;
-		break;
-
-	case HAL_TIMEOUT:
-		return BARO_TIMEOUT;
-		break;
-
-	case HAL_ERROR:
-		return BARO_I2C_ERROR;
-		break;
-
-	default:
-		return BARO_UNRECOGNIZED_HAL_STATUS;
-		break;
-	}
-
+baro_status = baro_read_regs( BARO_REG_CHIP_ID, 
+                              sizeof( uint8_t ), 
+							  baro_id_ptr );
+return baro_status;
 } /* baro_get_device_id */
 
 
@@ -380,7 +260,7 @@ switch ( hal_status )
 *******************************************************************************/
 BARO_STATUS baro_get_pressure
 	(
-    uint32_t* pressure_ptr 
+    uint32_t* pressure_ptr  /* Out: Baro pressure */
 	)
 {
 /*------------------------------------------------------------------------------
@@ -400,19 +280,18 @@ baro_status  = BARO_OK;
 osr_bitshift = baro_configuration.press_OSR_setting;
 memset( &pressure_bytes[0], 0, sizeof( pressure_bytes ) );
 
+
 /*------------------------------------------------------------------------------
 API function implementation 
 ------------------------------------------------------------------------------*/
 
 /* Read 3 consecutive pressure data registers */
-baro_status = BARO_Read_Registers( BARO_REG_PRESS_DATA,
-                                   &pressure_bytes[0] ,
-                                   3 );
-
-/* Check for HAL BARO error */
-if ( baro_status == BARO_TIMEOUT )
+baro_status = baro_read_regs( BARO_REG_PRESS_DATA, 
+                              sizeof( pressure_bytes ), 
+							  &pressure_bytes[0] );
+if ( baro_status != BARO_OK )
 	{
-	return BARO_TIMEOUT;
+	return BARO_I2C_ERROR;
 	}
 
 /* Combine all bytes value to 24 bit value */
@@ -464,14 +343,12 @@ API function implementation
 ------------------------------------------------------------------------------*/
 
 /* Read 3 consecutive temperature data registers */
-baro_status = BARO_Read_Registers( BARO_REG_TEMP_DATA,
-                                   &temp_bytes[0]    ,
-                                   3 );
-
-/* Check for HAL BARO error */
-if ( baro_status == BARO_TIMEOUT )
+baro_status = baro_read_regs( BARO_REG_TEMP_DATA  , 
+                              sizeof( temp_bytes ), 
+							  &temp_bytes[0] );
+if ( baro_status != BARO_OK )
 	{
-	return BARO_TIMEOUT;
+	return BARO_I2C_ERROR;
 	}
 
 /* Combine all bytes value to 24 bit value */
@@ -503,6 +380,102 @@ BARO_STATUS baro_get_altitude
 {
 return BARO_OK;
 } /* baro_get_altitude */
+
+
+/*------------------------------------------------------------------------------
+ Internal procedures 
+------------------------------------------------------------------------------*/
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+*       baro_read_regs                                                         *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+*       Read from the baro's registers at a specified address                  *
+*                                                                              *
+*******************************************************************************/
+static BARO_STATUS baro_read_regs
+	(
+	uint8_t  reg_addr, /* In:  Register address            */
+	uint8_t  num_regs, /* In:  Number of registers to read */
+	uint8_t* pData     /* Out: Register contents           */
+	)
+{   
+/*------------------------------------------------------------------------------
+Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status; /* HAL API Return codes */
+
+
+/*------------------------------------------------------------------------------
+API function implementation 
+------------------------------------------------------------------------------*/
+
+/* Read I2C register*/
+hal_status = HAL_I2C_Mem_Read( &( BARO_I2C )       ,
+				               BARO_I2C_ADDR       ,
+				               reg_addr            ,
+				               I2C_MEMADD_SIZE_8BIT,
+				               pData               ,
+				               num_regs            , 
+				               HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+	{
+	return BARO_I2C_ERROR;
+	}
+else
+	{
+	return BARO_OK;
+	}
+
+} /* baro_read_reg */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+*       baro_write_reg                                                         *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+*       Write to one of the baro's registers at a specified address            *
+*                                                                              *
+*******************************************************************************/
+static BARO_STATUS baro_write_reg
+	(
+	uint8_t  reg_addr, /* In: Register address            */
+	uint8_t  data      /* In: Register contents           */
+	)
+{   
+/*------------------------------------------------------------------------------
+Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status; /* HAL API Return codes */
+
+
+/*------------------------------------------------------------------------------
+API function implementation 
+------------------------------------------------------------------------------*/
+
+/* Write to register with I2C */
+hal_status = HAL_I2C_Mem_Write( &( BARO_I2C )       ,
+				                BARO_I2C_ADDR       ,
+				                reg_addr            ,
+				                I2C_MEMADD_SIZE_8BIT,
+				                &data               ,
+				                sizeof( uint8_t )   , 
+				                HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+	{
+	return BARO_I2C_ERROR;
+	}
+else
+	{
+	return BARO_OK;
+	}
+
+} /* baro_read_reg */
 
 
 /*******************************************************************************

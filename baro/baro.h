@@ -163,29 +163,6 @@ BARO_STATUS baro_config
 	BARO_CONFIG* config_ptr 
 	);
 
-/* read one register for BARO */
-BARO_STATUS BARO_Read_Register
-	(
-	uint8_t reg_addr,
-	uint8_t *pData
-	);
-
-/* read multiple registers for BARO */
-BARO_STATUS BARO_Read_Registers
-	(
-	uint8_t reg_addr,
-	uint8_t *pData,
-	uint8_t num_registers
-	);
-
-/* write a register to BARO */
-BARO_STATUS BARO_Write_Register
-	(
-	uint8_t reg_addr,
-	uint8_t *pData
-	);
-
-
 /* verifies sensor can be accessed */
 BARO_STATUS baro_get_device_id
 	(
