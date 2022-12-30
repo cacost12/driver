@@ -55,7 +55,7 @@ static int16_t bytes_to_int16_t
 	);
 
 /* Read from the baro's registers at a specified address  */
-static BARO_STATUS baro_read_regs
+static BARO_STATUS read_regs
 	(
 	uint8_t  reg_addr, /* In:  Register address            */
 	uint8_t  num_regs, /* In:  Number of registers to read */
@@ -64,7 +64,7 @@ static BARO_STATUS baro_read_regs
 
 
 /* Write to one of the baro's registers at a specified address */
-static BARO_STATUS baro_write_reg
+static BARO_STATUS write_reg
 	(
 	uint8_t  reg_addr, /* In: Register address            */
 	uint8_t  data      /* In: Register contents           */
@@ -127,9 +127,9 @@ else if ( baro_device_id != BARO_DEVICE_ID )
 	}
 
 /* Check the Baro error register */
-baro_status = baro_read_regs( BARO_REG_ERR_REG      , 
-                              sizeof( baro_err_reg ), 
-							  &baro_err_reg );
+baro_status = read_regs( BARO_REG_ERR_REG      , 
+                         sizeof( baro_err_reg ), 
+						 &baro_err_reg );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
@@ -213,28 +213,28 @@ baro_configuration.IIR_setting       = config_ptr -> IIR_setting;
 ------------------------------------------------------------------------------*/
 
 /* Write to the PWR_CTRL register -> Operating mode and enable sensors */
-baro_status = baro_write_reg( BARO_REG_PWR_CTRL, pwr_ctrl );
+baro_status = write_reg( BARO_REG_PWR_CTRL, pwr_ctrl );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
 	}
 
 /* Write to the OSR register -> set the oversampling rate */
-baro_status = baro_write_reg( BARO_REG_OSR, osr );
+baro_status = write_reg( BARO_REG_OSR, osr );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
 	}
 
 /* Write to the ODR register -> set the sampling frequency */
-baro_status = baro_write_reg( BARO_REG_ODR, odr );
+baro_status = write_reg( BARO_REG_ODR, odr );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
 	}
 
 /* Write to the CONFIG register -> Configure the IIR filter */
-baro_status = baro_write_reg( BARO_REG_CONFIG, iir );
+baro_status = write_reg( BARO_REG_CONFIG, iir );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
@@ -272,9 +272,9 @@ BARO_STATUS baro_status; /* Status codes returned from baro API calls */
 ------------------------------------------------------------------------------*/
 
 /* Read baro register with I2C */
-baro_status = baro_read_regs( BARO_REG_CHIP_ID, 
-                              sizeof( uint8_t ), 
-							  baro_id_ptr );
+baro_status = read_regs( BARO_REG_CHIP_ID, 
+                         sizeof( uint8_t ), 
+						 baro_id_ptr );
 return baro_status;
 } /* baro_get_device_id */
 
@@ -316,9 +316,9 @@ API function implementation
 ------------------------------------------------------------------------------*/
 
 /* Read 3 consecutive pressure data registers */
-baro_status = baro_read_regs( BARO_REG_PRESS_DATA, 
-                              sizeof( pressure_bytes ), 
-							  &pressure_bytes[0] );
+baro_status = read_regs( BARO_REG_PRESS_DATA, 
+                         sizeof( pressure_bytes ), 
+						 &pressure_bytes[0] );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
@@ -373,9 +373,9 @@ API function implementation
 ------------------------------------------------------------------------------*/
 
 /* Read 3 consecutive temperature data registers */
-baro_status = baro_read_regs( BARO_REG_TEMP_DATA  , 
-                              sizeof( temp_bytes ), 
-							  &temp_bytes[0] );
+baro_status = read_regs( BARO_REG_TEMP_DATA  , 
+                         sizeof( temp_bytes ), 
+						 &temp_bytes[0] );
 if ( baro_status != BARO_OK )
 	{
 	return BARO_I2C_ERROR;
@@ -461,13 +461,13 @@ return ( (int16_t) bytes_comb );
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
-*       baro_read_regs                                                         *
+*       read_regs                                                              *
 *                                                                              *
 * DESCRIPTION:                                                                 *
 *       Read from the baro's registers at a specified address                  *
 *                                                                              *
 *******************************************************************************/
-static BARO_STATUS baro_read_regs
+static BARO_STATUS read_regs
 	(
 	uint8_t  reg_addr, /* In:  Register address            */
 	uint8_t  num_regs, /* In:  Number of registers to read */
@@ -509,19 +509,19 @@ else
 	return BARO_OK;
 	}
 
-} /* baro_read_reg */
+} /* read_reg */
 
 
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-*       baro_write_reg                                                         *
+*       write_reg                                                              *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
 *       Write to one of the baro's registers at a specified address            *
 *                                                                              *
 *******************************************************************************/
-static BARO_STATUS baro_write_reg
+static BARO_STATUS write_reg
 	(
 	uint8_t  reg_addr, /* In: Register address            */
 	uint8_t  data      /* In: Register contents           */
@@ -554,7 +554,7 @@ else
 	return BARO_OK;
 	}
 
-} /* baro_read_reg */
+} /* write_reg */
 
 
 /*******************************************************************************
@@ -591,9 +591,9 @@ memset( &buffer[0]   , 0, sizeof( buffer       ) );
 ------------------------------------------------------------------------------*/
 
 /* Get Data */
-baro_status = baro_read_regs( BARO_REG_NVM_PAR_T1, 
-                              BARO_CAL_BUFFER_SIZE, 
-							  &buffer[0] );
+baro_status = read_regs( BARO_REG_NVM_PAR_T1, 
+                         BARO_CAL_BUFFER_SIZE, 
+						 &buffer[0] );
 if ( baro_status != BARO_OK )
 	{
 	return baro_status;
