@@ -14,6 +14,7 @@
 ------------------------------------------------------------------------------*/
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 
 /*------------------------------------------------------------------------------
@@ -29,12 +30,29 @@ Global Variables
 ------------------------------------------------------------------------------*/
 
 /* Current Baro Sensor configuration */
-static BARO_CONFIG baro_configuration;
+static BARO_CONFIG   baro_configuration;
+
+/* Baro calibration coefficients for measurement compensation */
+static BARO_CAL_DATA baro_cal_data;
 
 
 /*------------------------------------------------------------------------------
  Internal function prototypes 
 ------------------------------------------------------------------------------*/
+
+/* Converts two bytes to uint16_t format */
+static uint16_t bytes_to_uint16_t
+	(
+	uint8_t lsb_byte, /* In: Least significant byte */
+	uint8_t msb_byte  /* In: Most significant byte  */
+	);
+
+/* Converts two bytes to int16_t format */
+static int16_t bytes_to_int16_t
+	(
+	uint8_t lsb_byte, /* In: Least significant byte */
+	uint8_t msb_byte  /* In: Most significant byte  */
+	);
 
 /* Read from the baro's registers at a specified address  */
 static BARO_STATUS baro_read_regs
@@ -52,6 +70,11 @@ static BARO_STATUS baro_write_reg
 	uint8_t  data      /* In: Register contents           */
 	);
 
+/* Load the compensation data from the baro sensor */
+static BARO_STATUS load_cal_data
+	(
+	void
+	);
 
 /*------------------------------------------------------------------------------
  API Functions 
@@ -114,6 +137,13 @@ if ( baro_status != BARO_OK )
 else if ( baro_err_reg )
 	{
 	return BARO_ERROR;
+	}
+
+/* Load the calibration coefficients */
+baro_status = load_cal_data();
+if ( baro_status != BARO_OK )
+	{
+	return BARO_CAL_ERROR;
 	}
 
 /* Configure the sensor */
@@ -389,10 +419,51 @@ return BARO_OK;
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
+*       bytes_to_uin16_t                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Converts two bytes to uint16_t format                                  *
+*                                                                              *
+*******************************************************************************/
+static uint16_t bytes_to_uint16_t
+	(
+	uint8_t lsb_byte, /* In: Least significant byte */
+	uint8_t msb_byte  /* In: Most significant byte  */
+	)
+{
+return ( ( (uint16_t) lsb_byte      ) |
+         ( (uint16_t) msb_byte << 8 ) );
+} /* bytes_to_uint16_t */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       bytes_to_in16_t                                                        *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Converts two bytes to int16_t format                                   *
+*                                                                              *
+*******************************************************************************/
+static int16_t bytes_to_int16_t
+	(
+	uint8_t lsb_byte, /* In: Least significant byte */
+	uint8_t msb_byte  /* In: Most significant byte  */
+	)
+{
+uint16_t bytes_comb = ( ( (uint16_t) lsb_byte      ) |
+                        ( (uint16_t) msb_byte << 8 ) );
+return ( (int16_t) bytes_comb );
+} /* bytes_to_uint16_t */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
 *       baro_read_regs                                                         *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 *       Read from the baro's registers at a specified address                  *
 *                                                                              *
 *******************************************************************************/
@@ -404,13 +475,21 @@ static BARO_STATUS baro_read_regs
 	)
 {   
 /*------------------------------------------------------------------------------
-Local variables  
+ Local variables  
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status; /* HAL API Return codes */
+HAL_StatusTypeDef hal_status;  /* HAL API Return codes */
+uint32_t          i2c_timeout; /* I2C read timeout     */
 
 
 /*------------------------------------------------------------------------------
-API function implementation 
+ Initializations
+------------------------------------------------------------------------------*/
+hal_status  = HAL_OK;
+i2c_timeout = BARO_DEFAULT_TIMEOUT*num_regs;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
 ------------------------------------------------------------------------------*/
 
 /* Read I2C register*/
@@ -420,7 +499,7 @@ hal_status = HAL_I2C_Mem_Read( &( BARO_I2C )       ,
 				               I2C_MEMADD_SIZE_8BIT,
 				               pData               ,
 				               num_regs            , 
-				               HAL_DEFAULT_TIMEOUT );
+				               i2c_timeout );
 if ( hal_status != HAL_OK )
 	{
 	return BARO_I2C_ERROR;
@@ -449,13 +528,13 @@ static BARO_STATUS baro_write_reg
 	)
 {   
 /*------------------------------------------------------------------------------
-Local variables  
+ Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status; /* HAL API Return codes */
 
 
 /*------------------------------------------------------------------------------
-API function implementation 
+ Implementation 
 ------------------------------------------------------------------------------*/
 
 /* Write to register with I2C */
@@ -465,7 +544,7 @@ hal_status = HAL_I2C_Mem_Write( &( BARO_I2C )       ,
 				                I2C_MEMADD_SIZE_8BIT,
 				                &data               ,
 				                sizeof( uint8_t )   , 
-				                HAL_DEFAULT_TIMEOUT );
+				                BARO_DEFAULT_TIMEOUT );
 if ( hal_status != HAL_OK )
 	{
 	return BARO_I2C_ERROR;
@@ -476,6 +555,95 @@ else
 	}
 
 } /* baro_read_reg */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       load_cal_data                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Load the compensation data from the baro sensor                        *
+*                                                                              *
+*******************************************************************************/
+static BARO_STATUS load_cal_data
+	(
+	void
+	)
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+BARO_CAL_DATA_INT cal_data_int;       /* Raw calibration data from baro       */
+uint8_t           buffer[BARO_CAL_BUFFER_SIZE]; /* Buffer for cal data        */
+BARO_STATUS       baro_status;        /* Baro API return codes                */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+memset( &cal_data_int, 0, sizeof( cal_data_int ) );
+memset( &buffer[0]   , 0, sizeof( buffer       ) );
+
+
+/*------------------------------------------------------------------------------
+ Read Baro Registers 
+------------------------------------------------------------------------------*/
+
+/* Get Data */
+baro_status = baro_read_regs( BARO_REG_NVM_PAR_T1, 
+                              BARO_CAL_BUFFER_SIZE, 
+							  &buffer[0] );
+if ( baro_status != BARO_OK )
+	{
+	return baro_status;
+	}
+
+/* Convert to proper integer format */
+cal_data_int.par_t1  = bytes_to_uint16_t( buffer[0], buffer[1] );
+cal_data_int.par_t2  = bytes_to_uint16_t( buffer[2], buffer[3] );
+cal_data_int.par_t3  = (int8_t) buffer[4];
+cal_data_int.par_p1  = bytes_to_int16_t( buffer[5], buffer[6] );
+cal_data_int.par_p2  = bytes_to_int16_t( buffer[7], buffer[8] );
+cal_data_int.par_p3  = (int8_t)  buffer[9];
+cal_data_int.par_p4  = (int8_t)  buffer[10];
+cal_data_int.par_p5  = bytes_to_uint16_t( buffer[11], buffer[12] );
+cal_data_int.par_p6  = bytes_to_uint16_t( buffer[13], buffer[14] );
+cal_data_int.par_p7  = (int8_t)  buffer[15];
+cal_data_int.par_p8  = (int8_t)  buffer[16];
+cal_data_int.par_p9  = bytes_to_int16_t( buffer[17], buffer[18] );
+cal_data_int.par_p10 = (int8_t) buffer[19];
+cal_data_int.par_p11 = (int8_t) buffer[20];
+
+
+/*------------------------------------------------------------------------------
+ Convert to floating point format ( BMP390 Datasheet pg. 55 ) 
+------------------------------------------------------------------------------*/
+
+/* Temp Compensation */
+baro_cal_data.par_t1   = ( ( (float) cal_data_int.par_t1  )/powf( 2, -8 ) );
+baro_cal_data.par_t2   = ( ( (float) cal_data_int.par_t1  )/powf( 2, 30 ) );
+baro_cal_data.par_t3   = ( ( (float) cal_data_int.par_t3  )/powf( 2, 48 ) );
+
+/* Pressure Compensation */
+baro_cal_data.par_p1   = ( ( (float) cal_data_int.par_p1  ) - powf( 2, 14 ) );
+baro_cal_data.par_p1  /= powf( 2, 20 );
+baro_cal_data.par_p2   = ( ( (float) cal_data_int.par_p2  ) - powf( 2, 14 ) );
+baro_cal_data.par_p2  /= powf( 2, 29 );
+baro_cal_data.par_p3   = ( ( (float) cal_data_int.par_p3  )/powf( 2, 32 ) );
+baro_cal_data.par_p4   = ( ( (float) cal_data_int.par_p4  )/powf( 2, 37 ) );
+baro_cal_data.par_p5   = ( ( (float) cal_data_int.par_p5  )/powf( 2, -3 ) );
+baro_cal_data.par_p6   = ( ( (float) cal_data_int.par_p6  )/powf( 2,  6 ) );
+baro_cal_data.par_p7   = ( ( (float) cal_data_int.par_p7  )/powf( 2,  8 ) );
+baro_cal_data.par_p8   = ( ( (float) cal_data_int.par_p8  )/powf( 2, 15 ) );
+baro_cal_data.par_p9   = ( ( (float) cal_data_int.par_p9  )/powf( 2, 48 ) );
+baro_cal_data.par_p10  = ( ( (float) cal_data_int.par_p10 )/powf( 2, 48 ) );
+baro_cal_data.par_p11  = ( ( (float) cal_data_int.par_p11 )/powf( 2, 65 ) );
+
+/* Load Successful */
+return BARO_OK;
+
+} /* load_cal_data */
 
 
 /*******************************************************************************

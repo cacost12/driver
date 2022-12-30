@@ -35,9 +35,29 @@ extern "C" {
 #define BARO_REG_OSR            ( 0x1C ) 
 #define BARO_REG_ODR            ( 0x1D )
 #define BARO_REG_CONFIG         ( 0x1F )
+#define BARO_REG_NVM_PAR_T1     ( 0x31 )
+#define BARO_REG_NVM_PAR_T2     ( 0x33 )
+#define BARO_REG_NVM_PAR_T3     ( 0x35 )
+#define BARO_REG_NVM_PAR_P1     ( 0x36 )
+#define BARO_REG_NVM_PAR_P2     ( 0x38 )
+#define BARO_REG_NVM_PAR_P3     ( 0x3A )
+#define BARO_REG_NVM_PAR_P4     ( 0x3B )
+#define BARO_REG_NVM_PAR_P5     ( 0x3C )
+#define BARO_REG_NVM_PAR_P6     ( 0x3E )
+#define BARO_REG_NVM_PAR_P7     ( 0x40 )
+#define BARO_REG_NVM_PAR_P8     ( 0x41 )
+#define BARO_REG_NVM_PAR_P9     ( 0x42 )
+#define BARO_REG_NVM_PAR_P10    ( 0x44 )
+#define BARO_REG_NVM_PAR_P11    ( 0x45 )
 
 /* Baro device id */
 #define BARO_DEVICE_ID          ( 0x60 )
+
+/* Size of calibration data in bytes */
+#define BARO_CAL_BUFFER_SIZE    ( 21   )
+
+/* Default I2C HAL timeout */
+#define BARO_DEFAULT_TIMEOUT    ( 1    )
 
 
 /*------------------------------------------------------------------------------
@@ -54,6 +74,7 @@ typedef enum _BARO_STATUS
 	BARO_UNSUPPORTED_CONFIG     ,
 	BARO_UNRECOGNIZED_CHIP_ID   ,
 	BARO_ERROR                  ,
+	BARO_CAL_ERROR              ,
 	BARO_I2C_ERROR
 	} BARO_STATUS;
 
@@ -145,6 +166,51 @@ typedef struct _BARO_CONFIG
 	BARO_IIR_SETTING IIR_setting;
 
 	} BARO_CONFIG;
+
+/* Baro calibration data struct in integer format */
+typedef struct _BARO_CAL_DATA_INT
+	{
+	/* Temperature Compensation Coefficients */
+	uint16_t par_t1;
+	uint16_t par_t2;
+	int8_t   par_t3;
+
+	/* Pressure Compensation Coefficients */
+	int16_t  par_p1;
+	int16_t  par_p2;
+	int8_t   par_p3;
+	int8_t   par_p4;
+	uint16_t par_p5;
+	uint16_t par_p6;
+	int8_t   par_p7;
+	int8_t   par_p8;
+	int16_t  par_p9;
+	int8_t   par_p10;
+	int8_t   par_p11;
+	} BARO_CAL_DATA_INT;
+
+/* Baro calibration data struct in floating point format */
+typedef struct _BARO_CAL_DATA
+	{
+	/* Temperature Compensation Coefficients */
+	float par_t1;
+	float par_t2;
+	float par_t3;
+
+	/* Pressure Compensation Coefficients */
+	float par_p1;
+	float par_p2;
+	float par_p3;
+	float par_p4;
+	float par_p5;
+	float par_p6;
+	float par_p7;
+	float par_p8;
+	float par_p9;
+	float par_p10;
+	float par_p11;
+
+	} BARO_CAL_DATA;
 
 
 /*------------------------------------------------------------------------------
