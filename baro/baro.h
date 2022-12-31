@@ -210,6 +210,9 @@ typedef struct _BARO_CAL_DATA
 	float par_p10;
 	float par_p11;
 
+	/* Temperature Compensated Measurement, for pressure compensation */
+	float comp_temp;
+
 	} BARO_CAL_DATA;
 
 
@@ -239,13 +242,13 @@ BARO_STATUS baro_get_device_id
 /* gets pressure data from sensor */
 BARO_STATUS baro_get_pressure
 	(
-    uint32_t* pressure_ptr 
+    float* pressure_ptr 
 	);
 
 /* gets temp data from sensor */
 BARO_STATUS baro_get_temp
 	(
-    uint32_t* temp_ptr 
+    float* temp_ptr 
 	);
 
 /* converts pressure and temp data into altitude --> do research on formula */

@@ -76,6 +76,19 @@ static BARO_STATUS load_cal_data
 	void
 	);
 
+/* Apply the compensation formula to raw temperature readouts */
+static float temp_compensate
+	(
+	uint32_t raw_readout
+	);
+
+/* Apply the compensation formula to raw pressure readouts */
+static float press_compensate 
+	(
+	uint32_t raw_readout
+	);
+
+
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
@@ -290,7 +303,7 @@ return baro_status;
 *******************************************************************************/
 BARO_STATUS baro_get_pressure
 	(
-    uint32_t* pressure_ptr  /* Out: Baro pressure */
+    float* pressure_ptr  /* Out: Baro pressure */
 	)
 {
 /*------------------------------------------------------------------------------
@@ -329,8 +342,9 @@ raw_pressure = ( ( (uint32_t) pressure_bytes[2] << (8 + osr_bitshift) ) |
                  ( (uint32_t) pressure_bytes[1] <<      osr_bitshift  ) |
 				 ( (uint32_t) pressure_bytes[0]                ) );
 
-/* Export data */
-*pressure_ptr = raw_pressure;
+
+/* Compensate using calibration data */
+*pressure_ptr = press_compensate( raw_pressure );
 
 return BARO_OK;
 } /* baro_get_pressure */
@@ -347,7 +361,7 @@ return BARO_OK;
 *******************************************************************************/
 BARO_STATUS baro_get_temp
 	(
-    uint32_t* temp_ptr 
+    float* temp_ptr 
 	)
 {
 /*------------------------------------------------------------------------------
@@ -386,8 +400,8 @@ raw_temp = ( ( (uint32_t) temp_bytes[2] << (8 + osr_bitshift) ) |
              ( (uint32_t) temp_bytes[1] <<      osr_bitshift  ) |
 			 ( (uint32_t) temp_bytes[0]                       ) ); 
 
-/* Export data */
-*temp_ptr = raw_temp;
+/* Adjust using calibration data */
+*temp_ptr = temp_compensate( raw_temp );
 
 return BARO_OK;
 
@@ -644,6 +658,111 @@ baro_cal_data.par_p11  = ( ( (float) cal_data_int.par_p11 )/powf( 2, 65 ) );
 return BARO_OK;
 
 } /* load_cal_data */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       temp_compensate                                                        *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Apply the compensation formula to raw temperature readout              *
+*                                                                              *
+*******************************************************************************/
+static float temp_compensate
+	(
+	uint32_t raw_readout
+	)
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+float partial_data1; /* Intermediate compensation results */
+float partial_data2;
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+partial_data1 = 0;
+partial_data2 = 0;
+
+
+/*------------------------------------------------------------------------------
+ Calculations 
+------------------------------------------------------------------------------*/
+partial_data1 = ( (float) raw_readout ) - baro_cal_data.par_t1;
+partial_data2 = partial_data1*baro_cal_data.par_t2;
+baro_cal_data.comp_temp = ( partial_data2 + 
+                            powf( partial_data1, 2)*baro_cal_data.par_t3 );
+return baro_cal_data.comp_temp;
+
+} /* temp_compensate */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       press_compensate                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Apply the compensation formula to raw pressure readouts                *
+*                                                                              *
+*******************************************************************************/
+static float press_compensate 
+	(
+	uint32_t raw_readout
+	)
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+float partial_data1; /* Intermediate compensation results */
+float partial_data2;
+float partial_data3;
+float partial_data4;
+float partial_out1;
+float partial_out2;
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+partial_data1 = 0;
+partial_data2 = 0;
+partial_data3 = 0;
+partial_data3 = 0;
+partial_out1  = 0;
+partial_out2  = 0;
+
+
+/*------------------------------------------------------------------------------
+ Calculations 
+------------------------------------------------------------------------------*/
+partial_data1 = baro_cal_data.par_p6*baro_cal_data.comp_temp;
+partial_data2 = baro_cal_data.par_p7*powf( baro_cal_data.comp_temp, 2 );
+partial_data3 = baro_cal_data.par_p8*powf( baro_cal_data.comp_temp, 3 );
+partial_out1  =  ( baro_cal_data.par_p5 + partial_data1 + 
+                   partial_data2        + partial_data3 );
+
+partial_data1 = baro_cal_data.par_p2*baro_cal_data.comp_temp;
+partial_data2 = baro_cal_data.par_p3*powf( baro_cal_data.comp_temp, 2 );
+partial_data3 = baro_cal_data.par_p4*powf( baro_cal_data.comp_temp, 3 );
+partial_out2  = ( (float) raw_readout )*( baro_cal_data.par_p1 + 
+                                          partial_data1        +
+										  partial_data2        +
+										  partial_data3 );
+
+partial_data1 = powf( ( (float) raw_readout ), 2 );
+partial_data2 = ( baro_cal_data.par_p9 + 
+                  baro_cal_data.par_p10*baro_cal_data.comp_temp );
+partial_data3 = partial_data1*partial_data2;
+partial_data4 = ( partial_data3 + 
+                  powf( ( (float) raw_readout ), 3 )*baro_cal_data.par_p11 );
+
+return partial_out1 + partial_out2 + partial_data4;
+
+} /* press_compensate */
 
 
 /*******************************************************************************

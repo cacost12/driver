@@ -128,8 +128,8 @@ typedef struct SENSOR_DATA
 	{
 	#if defined( FLIGHT_COMPUTER )
 		IMU_DATA imu_data;
-		uint32_t baro_pressure;
-		uint32_t baro_temp;	
+		float    baro_pressure;
+		float    baro_temp;	
 	#elif defined( ENGINE_CONTROLLER )
 		uint32_t pt_pressures[ NUM_PTS ];
 		uint32_t load_cell_force;
