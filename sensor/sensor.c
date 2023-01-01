@@ -409,8 +409,8 @@ SENSOR_STATUS sensor_dump
 											  // as struct padding
 
 	/* Baro sensors */
-	press_status = baro_get_pressure( &(sensor_data_ptr -> baro_pressure ) );
 	temp_status  = baro_get_temp    ( &(sensor_data_ptr -> baro_temp     ) );
+	press_status = baro_get_pressure( &(sensor_data_ptr -> baro_pressure ) );
 
 #elif defined( ENGINE_CONTROLLER )
 	/* Pressure Transducers */
@@ -665,6 +665,11 @@ for ( int i = 0; i < num_sensors; ++i )
 
 			case SENSOR_PRES:
 				{
+				baro_status = baro_get_temp(     &( sensor_data_ptr -> baro_temp     ) );
+				if ( baro_status != BARO_OK )
+					{
+					return SENSOR_BARO_ERROR;
+					}
 				baro_status = baro_get_pressure( &( sensor_data_ptr -> baro_pressure ) );
 				if ( baro_status != BARO_OK )
 					{

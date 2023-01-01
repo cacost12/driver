@@ -114,6 +114,7 @@ BARO_STATUS baro_init
 BARO_STATUS       baro_status;    /* Status code from Baro API calls   */
 uint8_t           baro_device_id; /* Baro device id                    */
 uint8_t           baro_err_reg;   /* Contents of error register        */
+float             init_temp;      /* Temperature read after init       */
 
 
 /*------------------------------------------------------------------------------
@@ -122,6 +123,7 @@ uint8_t           baro_err_reg;   /* Contents of error register        */
 baro_status    = BARO_OK;
 baro_device_id = 0;
 baro_err_reg   = 0xFF;
+init_temp      = 0;
 
 
 /*------------------------------------------------------------------------------
@@ -157,6 +159,13 @@ baro_status = load_cal_data();
 if ( baro_status != BARO_OK )
 	{
 	return BARO_CAL_ERROR;
+	}
+
+/* Initialize the compensation temperature */
+baro_status = baro_get_temp( &init_temp );
+if ( baro_status != BARO_OK )
+	{ 
+	return baro_status;
 	}
 
 /* Configure the sensor */
@@ -311,16 +320,16 @@ Local variables
 ------------------------------------------------------------------------------*/
 uint8_t     pressure_bytes[3]; /* Pressure raw readout bytes, LSB first   */
 uint32_t    raw_pressure;      /* Pressure raw readout in uint32_t format */
+float       comp_temp;         /* Compensation temperature                */
 BARO_STATUS baro_status;       /* Return codes for baro API calls         */
-uint8_t     osr_bitshift;      /* Number of XLS bits due to OSR setting   */
 
 
 /*------------------------------------------------------------------------------
 Initializations
 ------------------------------------------------------------------------------*/
 raw_pressure = 0;
+comp_temp    = 0;
 baro_status  = BARO_OK;
-osr_bitshift = baro_configuration.press_OSR_setting;
 memset( &pressure_bytes[0], 0, sizeof( pressure_bytes ) );
 
 
@@ -338,10 +347,12 @@ if ( baro_status != BARO_OK )
 	}
 
 /* Combine all bytes value to 24 bit value */
-raw_pressure = ( ( (uint32_t) pressure_bytes[2] << (8 + osr_bitshift) ) |
-                 ( (uint32_t) pressure_bytes[1] <<      osr_bitshift  ) |
-				 ( (uint32_t) pressure_bytes[0]                ) );
+raw_pressure = ( ( (uint32_t) pressure_bytes[2] << 16 ) |
+                 ( (uint32_t) pressure_bytes[1] <<  8 ) |
+				 ( (uint32_t) pressure_bytes[0]       ) );
 
+/* Get compensation temperature for pressure compensation calculation */
+baro_status   = baro_get_temp( &comp_temp );
 
 /* Compensate using calibration data */
 *pressure_ptr = press_compensate( raw_pressure );
@@ -370,7 +381,6 @@ Local variables
 uint8_t     temp_bytes[3]; /* Raw temperature readout bytes, LSB first */
 uint32_t    raw_temp;      /* Raw temperature readout in uint32_t format */
 BARO_STATUS baro_status;   /* Status codes returned from baro API calls  */
-uint8_t     osr_bitshift;  /* Bitshift due to XLSB bits from OSR setting */
 
 
 /*------------------------------------------------------------------------------
@@ -378,7 +388,6 @@ Initializations
 ------------------------------------------------------------------------------*/
 raw_temp     = 0;
 baro_status  = BARO_OK;
-osr_bitshift = baro_configuration.temp_OSR_setting;
 memset( &temp_bytes[0], 0, sizeof( temp_bytes ) );
 
 
@@ -396,9 +405,9 @@ if ( baro_status != BARO_OK )
 	}
 
 /* Combine all bytes value to 24 bit value */
-raw_temp = ( ( (uint32_t) temp_bytes[2] << (8 + osr_bitshift) ) |
-             ( (uint32_t) temp_bytes[1] <<      osr_bitshift  ) |
-			 ( (uint32_t) temp_bytes[0]                       ) ); 
+raw_temp = ( ( (uint32_t) temp_bytes[2] << 16 ) |
+             ( (uint32_t) temp_bytes[1] <<  8 ) |
+			 ( (uint32_t) temp_bytes[0]       ) ); 
 
 /* Adjust using calibration data */
 *temp_ptr = temp_compensate( raw_temp );
@@ -636,7 +645,7 @@ cal_data_int.par_p11 = (int8_t) buffer[20];
 
 /* Temp Compensation */
 baro_cal_data.par_t1   = ( ( (float) cal_data_int.par_t1  )/powf( 2, -8 ) );
-baro_cal_data.par_t2   = ( ( (float) cal_data_int.par_t1  )/powf( 2, 30 ) );
+baro_cal_data.par_t2   = ( ( (float) cal_data_int.par_t2  )/powf( 2, 30 ) );
 baro_cal_data.par_t3   = ( ( (float) cal_data_int.par_t3  )/powf( 2, 48 ) );
 
 /* Pressure Compensation */
@@ -691,9 +700,9 @@ partial_data2 = 0;
 /*------------------------------------------------------------------------------
  Calculations 
 ------------------------------------------------------------------------------*/
-partial_data1 = ( (float) raw_readout ) - baro_cal_data.par_t1;
-partial_data2 = partial_data1*baro_cal_data.par_t2;
-baro_cal_data.comp_temp = ( partial_data2 + 
+partial_data1 = (float)( raw_readout - baro_cal_data.par_t1 );
+partial_data2 = (float)( partial_data1*baro_cal_data.par_t2 );
+baro_cal_data.comp_temp = (float)( partial_data2 + 
                             powf( partial_data1, 2)*baro_cal_data.par_t3 );
 return baro_cal_data.comp_temp;
 
@@ -748,10 +757,10 @@ partial_out1  =  ( baro_cal_data.par_p5 + partial_data1 +
 partial_data1 = baro_cal_data.par_p2*baro_cal_data.comp_temp;
 partial_data2 = baro_cal_data.par_p3*powf( baro_cal_data.comp_temp, 2 );
 partial_data3 = baro_cal_data.par_p4*powf( baro_cal_data.comp_temp, 3 );
-partial_out2  = ( (float) raw_readout )*( baro_cal_data.par_p1 + 
-                                          partial_data1        +
-										  partial_data2        +
-										  partial_data3 );
+partial_out2  = (float) raw_readout*( baro_cal_data.par_p1 + 
+                                      partial_data1        +
+									  partial_data2        +
+									  partial_data3 );
 
 partial_data1 = powf( ( (float) raw_readout ), 2 );
 partial_data2 = ( baro_cal_data.par_p9 + 
