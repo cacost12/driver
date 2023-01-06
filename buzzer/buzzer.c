@@ -49,7 +49,7 @@ Global Variables
 * 		Beep the flight computer buzzer                                        *
 *                                                                              *
 *******************************************************************************/
-void buzzer_beep 
+BUZZ_STATUS buzzer_beep 
 	(
 	void
 	)
@@ -57,17 +57,26 @@ void buzzer_beep
 /*------------------------------------------------------------------------------
  Local variables  
 ------------------------------------------------------------------------------*/
-
+HAL_StatusTypeDef hal_status; /* Return codes from HAL API */
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
 
 
 /*------------------------------------------------------------------------------
  API Function Implementation 
 ------------------------------------------------------------------------------*/
-
+hal_status = HAL_TIM_PWM_Start( &(BUZZ_TIM), BUZZ_TIM_CHANNEL );
+if ( hal_status != HAL_OK )
+	{
+	return BUZZ_HAL_ERROR;
+	}
+else
+	{
+	return BUZZ_OK;
+	}
 
 } /* buzzer_beep */
 

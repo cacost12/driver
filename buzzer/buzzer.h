@@ -27,13 +27,21 @@ extern "C" {
  Typdefs 
 ------------------------------------------------------------------------------*/
 
+/* Buzzer API return codes */
+typedef enum _BUZZ_STATUS
+	{
+	BUZZ_OK    = 0,
+	BUZZ_HAL_ERROR,
+	BUZZ_FAIL
+	} BUZZ_STATUS;
+
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
 /* Beep the flight computer buzzer */
-void buzzer_beep
+BUZZ_STATUS buzzer_beep
 	(
 	void
 	);
