@@ -43,7 +43,7 @@ typedef enum _BUZZ_STATUS
 /* Beep the flight computer buzzer */
 BUZZ_STATUS buzzer_beep
 	(
-	void
+	uint32_t duration /* Length of beep in milliseconds */
 	);
 
 

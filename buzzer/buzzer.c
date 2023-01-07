@@ -51,7 +51,7 @@ Global Variables
 *******************************************************************************/
 BUZZ_STATUS buzzer_beep 
 	(
-	void
+	uint32_t duration /* Length of beep in milliseconds */
 	)
 {
 /*------------------------------------------------------------------------------
@@ -68,7 +68,19 @@ hal_status = HAL_OK;
 /*------------------------------------------------------------------------------
  API Function Implementation 
 ------------------------------------------------------------------------------*/
+
+/* Start generating PWM pulses */
 hal_status = HAL_TIM_PWM_Start( &(BUZZ_TIM), BUZZ_TIM_CHANNEL );
+if ( hal_status != HAL_OK )
+	{
+	return BUZZ_HAL_ERROR;
+	}
+
+/* Wait for beep duration */
+HAL_Delay( duration );
+
+/* Stop the PWM pulses */
+hal_status = HAL_TIM_PWM_Stop( &( BUZZ_TIM ), BUZZ_TIM_CHANNEL );
 if ( hal_status != HAL_OK )
 	{
 	return BUZZ_HAL_ERROR;
