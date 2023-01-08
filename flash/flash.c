@@ -781,21 +781,24 @@ FLASH_STATUS flash_write
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-FLASH_STATUS      flash_status;     /* Status code returned by flash API      */
+HAL_StatusTypeDef hal_status[3];    /* Status codes returned by HAL           */
+FLASH_STATUS      flash_status;     /* Status codes returned by flash API     */
+uint8_t           flash_opcode;     /* Opcode for flash instructions          */
 uint32_t          timeout;          /* Timeout for flash write calls          */
 uint32_t          timeout_ctr;      /* Counter to trigger timeout             */
 uint8_t*          pbuffer;          /* Pointer to data in flash buffer        */
-uint32_t          init_address;     /* Flash memory address                   */
+uint8_t           address_bytes[3]; /* Flash memory address in byte form      */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
+flash_opcode  = FLASH_OP_HW_AAI_PROGRAM; 
 flash_status  = FLASH_OK;
 timeout       = 100;
 timeout_ctr   = 0;
 pbuffer       = pflash_handle -> pbuffer;
-init_address  = pflash_handle -> address;
+address_to_bytes( pflash_handle -> address, &address_bytes[0] );
 
 
 /*------------------------------------------------------------------------------
@@ -808,12 +811,58 @@ if( !( write_enabled ) )
 	return FLASH_WRITE_PROTECTED;
 	}
 
+/* Check for 1/0 byte edge case */
+if      ( pflash_handle -> num_bytes == 1 )
+	{
+	return flash_write_byte( pflash_handle, *( pflash_handle -> pbuffer ) );
+	}
+else if ( pflash_handle -> num_bytes == 0 )
+	{
+	return FLASH_ERROR_MISSING_DATA;
+	}
+
+
 /*------------------------------------------------------------------------------
  API function implementation
 ------------------------------------------------------------------------------*/
 
-for ( int i = 0; i < pflash_handle -> num_bytes; ++i )
+/* Enable the chip for writing */
+flash_status = write_enable( pflash_handle );
+if ( flash_status != FLASH_OK )
 	{
+	return FLASH_CANNOT_WRITE_ENABLE;
+	}
+
+/* Initial SPI transmission */
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
+hal_status[0] = HAL_SPI_Transmit( &( FLASH_SPI )        ,
+							      &flash_opcode         ,
+							      sizeof( flash_opcode ),
+							      HAL_DEFAULT_TIMEOUT );
+hal_status[1] = HAL_SPI_Transmit( &( FLASH_SPI )         ,
+							      &address_bytes[0]      ,
+							      sizeof( address_bytes ),
+							      HAL_DEFAULT_TIMEOUT );
+hal_status[2] = HAL_SPI_Transmit( &( FLASH_SPI ), 
+                                  pbuffer       ,
+								  2             , 
+								  HAL_DEFAULT_TIMEOUT );						
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
+
+/* Check for SPI errors */
+if ( hal_status[0] != HAL_OK ||
+     hal_status[1] != HAL_OK ||
+	 hal_status[2] != HAL_OK )
+	{
+	return FLASH_SPI_ERROR;
+	}
+
+/* Transmit remaining data */
+for ( int i = 2; i < pflash_handle -> num_bytes; i += 2 )
+	{
+	/* Setup buffer pointer  */
+	pbuffer += 2;
+
 	/* Wait for flash to be ready */
 	while( flash_is_flash_busy() == FLASH_BUSY )
 		{
@@ -827,24 +876,37 @@ for ( int i = 0; i < pflash_handle -> num_bytes; ++i )
 			HAL_Delay( 1 );
 			}
 		}
-	
-	/* Write to flash */
-	flash_status = flash_write_byte( pflash_handle, *pbuffer );
+
+	/* SPI Transmission */	
+	HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
+	hal_status[0] = HAL_SPI_Transmit( &( FLASH_SPI )        ,
+									&flash_opcode         ,
+									sizeof( flash_opcode ),
+									HAL_DEFAULT_TIMEOUT );
+	hal_status[1] = HAL_SPI_Transmit( &( FLASH_SPI ), 
+									pbuffer       ,
+									2             , 
+									HAL_DEFAULT_TIMEOUT );						
+	HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 	/* Check for errors */
-	if ( flash_status != FLASH_OK )
+	if ( hal_status[0] != HAL_OK || hal_status[1] != HAL_OK )
 		{
 		return FLASH_WRITE_ERROR;
 		}
+	} /* for ( i < pflash_handle -> num_bytes )*/
 
-	/* Update flash parameters */
-	pflash_handle -> address++;
-	pbuffer++;
+/* Transmit final byte if num_bytes is odd */
+if ( ( pflash_handle -> num_bytes ) %2 == 1 )
+	{
+	pbuffer += 1;
+	return flash_write_byte( pflash_handle, *pbuffer );
 	}
-
-/* Reset flash address */
-pflash_handle -> address = init_address;
-return FLASH_OK;
+else
+	{
+	/* Flash write successful */
+	return FLASH_OK;
+	}
 
 } /* flash_write */
 
