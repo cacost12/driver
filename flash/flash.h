@@ -212,20 +212,13 @@ FLASH_STATUS flash_write_byte
 FLASH_STATUS flash_read
     (
 	HFLASH_BUFFER* pflash_handle,
-    uint8_t        num_bytes
+    uint32_t       num_bytes
     );
 
 /* Erase the entire flash chip */
 FLASH_STATUS flash_erase
     (
     HFLASH_BUFFER* pflash_handle	
-    );
-
-/* High speed reads a specified number of bytes using a flash buffer */
-FLASH_STATUS flash_high_speed_read
-    (
-	HFLASH_BUFFER* pflash_handle,
-    uint8_t        num_bytes
     );
 
 

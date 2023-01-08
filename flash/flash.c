@@ -110,7 +110,7 @@ uint8_t          num_bytes;           /* Number of bytes on which to
                                          operate                              */
 uint8_t          address[3];          /* flash address in byte form           */
 uint8_t*         pbuffer;             /* Position within flash buffer         */
-uint8_t          buffer;              /* Single byte buffer (flash extract)   */
+uint8_t          buffer[256];         /* Single byte buffer (flash extract)   */
 FLASH_STATUS     flash_status;        /* Return value of flash API calls      */
 USB_STATUS       usb_status;          /* Return value of USB API calls        */
 
@@ -121,6 +121,8 @@ USB_STATUS       usb_status;          /* Return value of USB API calls        */
 opcode    = ( subcommand & FLASH_SUBCMD_OP_BITMASK ) >>  5;
 num_bytes = ( subcommand & FLASH_NBYTES_BITMASK    ); 
 pflash_handle -> num_bytes = num_bytes;
+pbuffer   = &buffer[0];
+memset( pbuffer, 0, sizeof( buffer ) );
 address_to_bytes( pflash_handle -> address, &address[0] );
 
 
@@ -268,16 +270,16 @@ switch ( opcode )
     case FLASH_SUBCMD_EXTRACT:
         {
 		/* Extracts the entire flash chip, flash chip address from 0 to 0x7FFFF */
-		pflash_handle->pbuffer = &buffer;
+		pflash_handle->pbuffer = &buffer[0];
 		pflash_handle->address = 0;
 		while( pflash_handle->address <= FLASH_MAX_ADDR )
 			{
 			flash_status = flash_read( pflash_handle, sizeof( buffer ) );
 			if( flash_status == FLASH_OK )
 				{
-				usb_transmit( &buffer,
-						      sizeof( buffer )      ,
-						      HAL_DEFAULT_TIMEOUT );
+				usb_transmit( &buffer  ,
+						      sizeof( buffer ),
+						      HAL_FLASH_TIMEOUT );
 				}
 			else
 				{
@@ -286,7 +288,7 @@ switch ( opcode )
 				}
 
 			/* Read from next address */
-			(pflash_handle->address)++;
+			(pflash_handle->address) += sizeof( buffer ) ;
 			}
 
 		return FLASH_OK;
@@ -859,7 +861,7 @@ return FLASH_OK;
 FLASH_STATUS flash_read
     (
 	HFLASH_BUFFER* pflash_handle,
-    uint8_t        num_bytes
+    uint32_t       num_bytes
     )
 {
 /*------------------------------------------------------------------------------
