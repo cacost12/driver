@@ -110,7 +110,7 @@ uint8_t          num_bytes;           /* Number of bytes on which to
                                          operate                              */
 uint8_t          address[3];          /* flash address in byte form           */
 uint8_t*         pbuffer;             /* Position within flash buffer         */
-uint8_t          buffer[256];         /* Single byte buffer (flash extract)   */
+uint8_t          buffer[512];         /* buffer (flash extract)               */
 FLASH_STATUS     flash_status;        /* Return value of flash API calls      */
 USB_STATUS       usb_status;          /* Return value of USB API calls        */
 
