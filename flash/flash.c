@@ -42,49 +42,38 @@ static bool write_enabled = false;
 
 
 /*------------------------------------------------------------------------------
- Procedures 
+ Internal function prototypes 
 ------------------------------------------------------------------------------*/
 
-
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		address_to_bytes                                                       *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Converts a flash memory address in uint32_t format to a byte array     *
-*                                                                              *
-*******************************************************************************/
+/* Converts a flash memory address in uint32_t format to a byte array */
 static void address_to_bytes
 	(
 	uint32_t address,
 	uint8_t* address_bytes
-	)
-{
-address_bytes[0] = (address >> 16) & 0xFF;
-address_bytes[1] = (address >> 8 ) & 0xFF;
-address_bytes[2] =  address        & 0xFF;
-} /* address_to_bytes */
+	);
 
-
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		bytes_to_address                                                       *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Converts a flash memory address in byte format to uint32_t format      *
-*                                                                              *
-*******************************************************************************/
+/* Converts a flash memory address in byte format to uint32_t format */
 static inline uint32_t bytes_to_address 
 	(
 	uint8_t address_bytes[3]
-	)
-{
-return ( (uint32_t) address_bytes[0] << 16 ) |
-	   ( (uint32_t) address_bytes[1] << 8  ) |
-	   ( (uint32_t) address_bytes[2] << 0  );
-} /* address_to_bytes */
+	);
+
+/* Enable writing to the external flash chip hardware */
+static FLASH_STATUS write_enable
+    (
+    void 
+    );
+
+/* Disable writing to the external flash chip hardware */
+static FLASH_STATUS write_disable 
+    (
+    void 
+    );
+
+
+/*------------------------------------------------------------------------------
+ Procedures 
+------------------------------------------------------------------------------*/
 
 
 /*******************************************************************************
@@ -324,14 +313,14 @@ FLASH_STATUS flash_init
  Local variables 
 ------------------------------------------------------------------------------*/
 FLASH_STATUS flash_status;    /* Flash API function return codes        */
-uint32_t     timeout_counter; /* Counts to 1000 while waiting for flash */
+uint8_t      status_register; /* Desired status register contents       */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
 flash_status    = FLASH_OK;
-timeout_counter = 0;
+status_register = FLASH_REG_RESET_VAL;
 
 
 /*------------------------------------------------------------------------------
@@ -343,6 +332,9 @@ if ( bpl_bits > 15 || bpl_bits < 0 )
 	{
 	return FLASH_INVALID_INPUT; 
 	}
+
+/* Determined the desired status register contents */
+status_register &= ( bpl_bits << 2 );
 
 
 /*------------------------------------------------------------------------------
@@ -360,25 +352,33 @@ else
 	flash_write_enable();
 	}
 
-/* Check that flash chip is functional */
+/* Check the flash chip status register */
 flash_status = flash_get_status( pflash_handle );
 if ( flash_status != FLASH_OK )
 	{
 	return flash_status;
 	}
-while ( ( pflash_handle -> status_register == 0xFF ) )
+
+/* Disable writing to the chip in case of prior interrupted write operation */
+if ( write_disable() != FLASH_OK )
 	{
-	flash_get_status( pflash_handle );
-	timeout_counter++;
-	if ( timeout_counter == 1000 )
-		{
-		return FLASH_FAIL;
-		}
+	return FLASH_CANNOT_WRITE_DISABLE;
 	}
 
 /* Set the bpl bits in the flash chip */
-flash_status = flash_set_status( ( bpl_bits << 2 ) );
-return flash_status;
+flash_status = flash_set_status( status_register );
+
+/* Confirm Status register contents */
+while( flash_is_flash_busy() == FLASH_BUSY ){}
+flash_status = flash_get_status( pflash_handle );
+if ( pflash_handle -> status_register != status_register )
+	{
+	return FLASH_INIT_FAIL;
+	}
+else
+	{
+	return flash_status;
+	}
 
 } /* flash_init */
 
@@ -584,63 +584,6 @@ else
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   *
-* 		write_enable                                                           *
-*                                                                              *
-* DESCRIPTION:                                                                 *
-*       Enable writing to the external flash chip hardware                     *
-*                                                                              *
-*******************************************************************************/
-static FLASH_STATUS write_enable
-    (
-    HFLASH_BUFFER* pflash_handle
-    )
-{
-/*------------------------------------------------------------------------------
- Local variables  
-------------------------------------------------------------------------------*/
-uint8_t hal_status;        /* Status code return by hal spi functions         */
-uint8_t flash_opcode;      /* Flash operation/instruction cyle byte           */
-
-
-/*------------------------------------------------------------------------------
- Local variables  
-------------------------------------------------------------------------------*/
-hal_status    = HAL_OK;
-flash_opcode  = FLASH_OP_HW_WREN;
-
-
-/*------------------------------------------------------------------------------
- API function implementation 
-------------------------------------------------------------------------------*/
-
-/* Send the write enable instruction to the flash over SPI */
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_RESET );
-hal_status = HAL_SPI_Transmit( &( FLASH_SPI )        ,
-                               &flash_opcode         ,
-                               sizeof( flash_opcode ),
-                               HAL_DEFAULT_TIMEOUT );
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_SET );
-
-/* Set write enabled bit in flash buffer handle */
-if ( hal_status != HAL_OK )
-	{
-	return FLASH_SPI_ERROR;
-    }
-else
-	{
-	return FLASH_OK;
-    }
-
-} /* write_enable */
-
-
-/*******************************************************************************
-*                                                                              *
 * PROCEDURE:                                                                   * 
 * 		flash_write_enable                                                     *
 *                                                                              *
@@ -723,7 +666,7 @@ if( !( write_enabled ) )
 ------------------------------------------------------------------------------*/
 
 /* Enable the chip for writing */
-flash_status = write_enable( pflash_handle );
+flash_status = write_enable();
 if ( flash_status != FLASH_OK )
 	{
 	return FLASH_CANNOT_WRITE_ENABLE;
@@ -827,7 +770,7 @@ else if ( pflash_handle -> num_bytes == 0 )
 ------------------------------------------------------------------------------*/
 
 /* Enable the chip for writing */
-flash_status = write_enable( pflash_handle );
+flash_status = write_enable();
 if ( flash_status != FLASH_OK )
 	{
 	return FLASH_CANNOT_WRITE_ENABLE;
@@ -895,6 +838,19 @@ for ( int i = 2; i < pflash_handle -> num_bytes; i += 2 )
 		return FLASH_WRITE_ERROR;
 		}
 	} /* for ( i < pflash_handle -> num_bytes )*/
+
+/* Wait for AAI to complete */
+while ( flash_is_flash_busy() == FLASH_BUSY ){}
+
+/* Terminate AAI Programming */
+flash_status = write_disable();
+if ( flash_status != FLASH_OK )
+	{
+	return FLASH_CANNOT_EXIT_AAI;
+	}
+
+/* Wait for WRDI to complete */
+while ( flash_is_flash_busy() == FLASH_BUSY ){}
 
 /* Transmit final byte if num_bytes is odd */
 if ( ( pflash_handle -> num_bytes ) %2 == 1 )
@@ -1045,7 +1001,7 @@ if( !( write_enabled ) )
 ------------------------------------------------------------------------------*/
 
 /* Enable writing to flash */
-flash_status = write_enable( pflash_handle );
+flash_status = write_enable();
 
 /* Full chip erase */
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
@@ -1146,6 +1102,166 @@ return FLASH_OK;
 
 } /* flash_block_erase */
 #endif /* #ifdef WIP */
+
+
+/*------------------------------------------------------------------------------
+ Internal procedures 
+------------------------------------------------------------------------------*/
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		address_to_bytes                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Converts a flash memory address in uint32_t format to a byte array     *
+*                                                                              *
+*******************************************************************************/
+static void address_to_bytes
+	(
+	uint32_t address,
+	uint8_t* address_bytes
+	)
+{
+address_bytes[0] = (address >> 16) & 0xFF;
+address_bytes[1] = (address >> 8 ) & 0xFF;
+address_bytes[2] =  address        & 0xFF;
+} /* address_to_bytes */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		bytes_to_address                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Converts a flash memory address in byte format to uint32_t format      *
+*                                                                              *
+*******************************************************************************/
+static inline uint32_t bytes_to_address 
+	(
+	uint8_t address_bytes[3]
+	)
+{
+return ( (uint32_t) address_bytes[0] << 16 ) |
+	   ( (uint32_t) address_bytes[1] << 8  ) |
+	   ( (uint32_t) address_bytes[2] << 0  );
+} /* address_to_bytes */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		write_enable                                                           *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Enable writing to the external flash chip hardware                     *
+*                                                                              *
+*******************************************************************************/
+static FLASH_STATUS write_enable
+    (
+    void 
+    )
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+uint8_t hal_status;        /* Status code return by hal spi functions         */
+uint8_t flash_opcode;      /* Flash operation/instruction cyle byte           */
+
+
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+hal_status    = HAL_OK;
+flash_opcode  = FLASH_OP_HW_WREN;
+
+
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+
+/* Send the write enable instruction to the flash over SPI */
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
+                   FLASH_SS_PIN      ,
+                   GPIO_PIN_RESET );
+hal_status = HAL_SPI_Transmit( &( FLASH_SPI )        ,
+                               &flash_opcode         ,
+                               sizeof( flash_opcode ),
+                               HAL_DEFAULT_TIMEOUT );
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
+                   FLASH_SS_PIN      ,
+                   GPIO_PIN_SET );
+
+/* Set write enabled bit in flash buffer handle */
+if ( hal_status != HAL_OK )
+	{
+	return FLASH_SPI_ERROR;
+    }
+else
+	{
+	return FLASH_OK;
+    }
+
+} /* write_enable */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		write_disable                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Disable writing to the external flash chip hardware                    *
+*                                                                              *
+*******************************************************************************/
+static FLASH_STATUS write_disable 
+    (
+    void 
+    )
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+uint8_t hal_status;        /* Status code return by hal spi functions         */
+uint8_t flash_opcode;      /* Flash operation/instruction cyle byte           */
+
+
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+hal_status    = HAL_OK;
+flash_opcode  = FLASH_OP_HW_WRDI;
+
+
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+
+/* Send the write enable instruction to the flash over SPI */
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
+                   FLASH_SS_PIN      ,
+                   GPIO_PIN_RESET );
+hal_status = HAL_SPI_Transmit( &( FLASH_SPI )        ,
+                               &flash_opcode         ,
+                               sizeof( flash_opcode ),
+                               HAL_DEFAULT_TIMEOUT );
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
+                   FLASH_SS_PIN      ,
+                   GPIO_PIN_SET );
+
+/* Return results of SPI HAL calls */
+if ( hal_status != HAL_OK )
+	{
+	return FLASH_SPI_ERROR;
+    }
+else
+	{
+	return FLASH_OK;
+    }
+
+} /* write_disable */
 
 
 /*******************************************************************************
