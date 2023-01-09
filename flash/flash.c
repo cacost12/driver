@@ -304,9 +304,7 @@ switch ( opcode )
 *******************************************************************************/
 FLASH_STATUS flash_init 
 	(
-	HFLASH_BUFFER* pflash_handle  , /* Flash handle */
-	bool           write_protected, /* False for write enabled */
-	uint8_t        bpl_bits         /* Block level protection  */
+	HFLASH_BUFFER* pflash_handle  /* Flash handle */
 	)
 {
 /*------------------------------------------------------------------------------
@@ -328,13 +326,14 @@ status_register = FLASH_REG_RESET_VAL;
 ------------------------------------------------------------------------------*/
 
 /* Check for invalid BPL setting */
-if ( bpl_bits > 15 || bpl_bits < 0 )
+if ( pflash_handle -> bpl_bits > FLASH_BPL_ALL )
 	{
 	return FLASH_INVALID_INPUT; 
 	}
 
-/* Determined the desired status register contents */
-status_register &= ( bpl_bits << 2 );
+/* Determine the desired status register contents */
+status_register &= pflash_handle -> bpl_bits;
+status_register |= pflash_handle -> bpl_write_protect;
 
 
 /*------------------------------------------------------------------------------
@@ -342,7 +341,7 @@ status_register &= ( bpl_bits << 2 );
 ------------------------------------------------------------------------------*/
 
 /* Configure write protection */
-if ( write_protected )
+if ( pflash_handle -> write_protected )
 	{
 	flash_write_disable();
 	return FLASH_OK;
@@ -352,11 +351,15 @@ else
 	flash_write_enable();
 	}
 
-/* Check the flash chip status register */
+/* Check the flash chip status register to confirm chip can be reached */
 flash_status = flash_get_status( pflash_handle );
 if ( flash_status != FLASH_OK )
 	{
 	return flash_status;
+	}
+else if ( pflash_handle -> status_register == 0xFF )
+	{
+	return FLASH_INIT_FAIL;
 	}
 
 /* Disable writing to the chip in case of prior interrupted write operation */

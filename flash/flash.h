@@ -61,12 +61,6 @@ Includes
 #define FLASH_OP_HW_EBSY            0x70
 #define FLASH_OP_HW_DBSY            0x80
 
-/* BP bit write protection levels */
-#define FLASH_BP0                   0b00000100
-#define FLASH_BP1                   0b00001000
-#define FLASH_BP2                   0b00010000
-#define FLASH_BP3                   0b00100000
-
 /* Maximum Flash address */
 #define FLASH_MAX_ADDR              0x07FFFF
 
@@ -92,25 +86,49 @@ Includes
  Typdefs 
 ------------------------------------------------------------------------------*/
 
+/* Block Protection Codes from datasheet (pg.7) */
+typedef enum FLASH_BPL_BITS
+	{
+	FLASH_BPL_NONE       = 0b11000011, /* No write protection               */
+	FLASH_BPL_UPPER_1_16 = 0b11000111, /* 0x070000 - 0x07FFFF protected     */
+	FLASH_BPL_UPPER_1_8  = 0b11001011, /* 0x060000 - 0x07FFFF protected     */
+	FLASH_BPL_UPPER_1_4  = 0b11001111, /* 0x040000 - 0x07FFFF protected     */
+	FLASH_BPL_UPPER_1_2  = 0b11010011, /* 0x000000 - 0x07FFFF protected (?) */
+	FLASH_BPL_ALL        = 0b11011100  /* 0x000000 - 0x07FFFF protected     */
+	} FLASH_BPL_BITS;
+
+/* Write protect setting for BPL bits in status register */
+typedef enum FLASH_BPL_WP
+	{
+	FLASH_BPL_READ_WRITE = 0b0000000,
+	FLASH_BPL_READ_ONLY  = 0b1000000
+	} FLASH_BPL_WP;
+
 /* Buffer object with handle to a user-definable buffer. FLASH_BUFFER struct 
    should be filled with info about the buffer size, a reference to the buffer,
    and an SPI handle */
 typedef struct _FLASH_BUFFER_TAG {
 	
 	/* Number of bytes in buffer */
-	uint8_t num_bytes;
+	uint8_t        num_bytes;
 
 	/* Base flash address for read/write operations */
-	uint32_t address;
+	uint32_t       address;
 
 	/* Buffer reference */
-	uint8_t* pbuffer;
+	uint8_t*       pbuffer;
 
     /* Write protection state */
-    bool write_enabled;
+    bool           write_protected;
+
+	/* BPL settings for block protection */
+	FLASH_BPL_BITS bpl_bits;
+
+	/* Write protection setting of flash BPL bits */
+	FLASH_BPL_WP   bpl_write_protect;
 
 	/* Contents of status register */
-	uint8_t status_register;
+	uint8_t        status_register;
 
 } HFLASH_BUFFER; 
 
@@ -164,9 +182,7 @@ FLASH_STATUS flash_cmd_execute
 /* Initializes the flash chip */
 FLASH_STATUS flash_init 
 	(
-	HFLASH_BUFFER* pflash_handle  , /* Flash handle */
-	bool           write_protected, 
-	uint8_t        bpl_bits         
+	HFLASH_BUFFER* pflash_handle  
 	);
 
 /* Read the status register of the flash chip */
