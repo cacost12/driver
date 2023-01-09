@@ -39,8 +39,8 @@ Includes
 #define FLASH_NBYTES_BITMASK        0b00011111
 
 /* Write protection ON/OFF States */
-#define FLASH_WP_READ_ONLY          false
-#define FLASH_WP_WRITE_ENABLED      true
+#define FLASH_WP_READ_ONLY          true 
+#define FLASH_WP_WRITE_ENABLED      false 
 
 /* Flash Chip operation codes from datasheet */
 #define FLASH_OP_HW_READ	        0x03
