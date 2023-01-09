@@ -403,13 +403,14 @@ FLASH_STATUS flash_get_status
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-uint8_t hal_status[2];  /* Status codes returned by hal spi functions         */
-uint8_t flash_opcode;   /* Data to be transmitted over SPI                    */
+HAL_StatusTypeDef hal_status[2];  /* Status codes returned by SPI HAL         */
+uint8_t           flash_opcode;   /* Data to be transmitted over SPI          */
 
 /*------------------------------------------------------------------------------
  Initialiazations 
 ------------------------------------------------------------------------------*/
 flash_opcode = FLASH_OP_HW_RDSR;
+
 
 /*------------------------------------------------------------------------------
  API function implementation 
