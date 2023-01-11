@@ -242,13 +242,6 @@ FLASH_STATUS flash_erase
     );
 
 
-/* Block erase 4 bit of data from Flash chip */
-FLASH_STATUS flash_4k_erase
-    (
-    HFLASH_BUFFER* pflash_handle,
-    uint8_t        num_bytes
-    );
-
 #endif /* FLASH_H */
 
 /*******************************************************************************
