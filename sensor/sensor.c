@@ -393,6 +393,18 @@ SENSOR_STATUS sensor_dump
 	PRESSURE_STATUS pt_status;              /* Pressure status codes       */
 #endif
 
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+#if defined( FLIGHT_COMPUTER )
+	accel_status = IMU_OK;           /* IMU sensor status codes     */       
+	gyro_status  = IMU_OK;
+	mag_status   = IMU_OK; 
+	press_status = BARO_OK;           /* Baro Sensor status codes    */
+	temp_status  = BARO_OK;
+#elif defined( ENGINE_CONTROLLER )
+	pt_status    = PRESSURE_OK;              /* Pressure status codes       */
+#endif
 
 /*------------------------------------------------------------------------------
  Call sensor API functions 
