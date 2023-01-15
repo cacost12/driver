@@ -39,6 +39,7 @@
 #include "sensor.h"
 #if defined( ENGINE_CONTROLLER )
 	#include "pressure.h"
+	#include "loadcell.h"
 #endif
 
 
@@ -128,28 +129,28 @@ void sensor_init
 	sensor_size_offsets_table[ 11 ].size   = 4;  /* SENSOR_TEMP  */
 #elif defined( ENGINE_CONTROLLER )
 	/* Sensor offsets */
-	sensor_size_offsets_table[ 0  ].offset = 0;  /* SENSOR_ACCX  */
-	sensor_size_offsets_table[ 1  ].offset = 4;  /* SENSOR_ACCY  */
-	sensor_size_offsets_table[ 2  ].offset = 8;  /* SENSOR_ACCZ  */
-	sensor_size_offsets_table[ 3  ].offset = 12; /* SENSOR_GYROX */
-	sensor_size_offsets_table[ 4  ].offset = 16; /* SENSOR_GYROY */
-	sensor_size_offsets_table[ 5  ].offset = 20; /* SENSOR_GYROZ */
-	sensor_size_offsets_table[ 6  ].offset = 24; /* SENSOR_MAGX  */
-	sensor_size_offsets_table[ 7  ].offset = 28; /* SENSOR_MAGY  */
-	sensor_size_offsets_table[ 8  ].offset = 32; /* SENSOR_MAGZ  */
-	sensor_size_offsets_table[ 9  ].offset = 36; /* SENSOR_IMUT  */
+	sensor_size_offsets_table[ 0  ].offset = 0;  /* SENSOR_PT0  */
+	sensor_size_offsets_table[ 1  ].offset = 4;  /* SENSOR_PT1  */
+	sensor_size_offsets_table[ 2  ].offset = 8;  /* SENSOR_PT2  */
+	sensor_size_offsets_table[ 3  ].offset = 12; /* SENSOR_PT3  */
+	sensor_size_offsets_table[ 4  ].offset = 16; /* SENSOR_PT4  */
+	sensor_size_offsets_table[ 5  ].offset = 20; /* SENSOR_PT5  */
+	sensor_size_offsets_table[ 6  ].offset = 24; /* SENSOR_PT6  */
+	sensor_size_offsets_table[ 7  ].offset = 28; /* SENSOR_PT7  */
+	sensor_size_offsets_table[ 8  ].offset = 32; /* SENSOR_TC   */
+	sensor_size_offsets_table[ 9  ].offset = 36; /* SENSOR_LC   */
 
 	/* Sensor Sizes   */
-	sensor_size_offsets_table[ 0  ].size   = 4;  /* SENSOR_ACCX  */
-	sensor_size_offsets_table[ 1  ].size   = 4;  /* SENSOR_ACCY  */
-	sensor_size_offsets_table[ 2  ].size   = 4;  /* SENSOR_ACCZ  */
-	sensor_size_offsets_table[ 3  ].size   = 4;  /* SENSOR_GYROX */
-	sensor_size_offsets_table[ 4  ].size   = 4;  /* SENSOR_GYROY */
-	sensor_size_offsets_table[ 5  ].size   = 4;  /* SENSOR_GYROZ */
-	sensor_size_offsets_table[ 6  ].size   = 4;  /* SENSOR_MAGX  */
-	sensor_size_offsets_table[ 7  ].size   = 4;  /* SENSOR_MAGY  */
-	sensor_size_offsets_table[ 8  ].size   = 4;  /* SENSOR_MAGZ  */
-	sensor_size_offsets_table[ 9  ].size   = 4;  /* SENSOR_IMUT  */
+	sensor_size_offsets_table[ 0  ].size   = 4;  /* SENSOR_PT0  */
+	sensor_size_offsets_table[ 1  ].size   = 4;  /* SENSOR_PT1  */
+	sensor_size_offsets_table[ 2  ].size   = 4;  /* SENSOR_PT2  */
+	sensor_size_offsets_table[ 3  ].size   = 4;  /* SENSOR_PT3  */
+	sensor_size_offsets_table[ 4  ].size   = 4;  /* SENSOR_PT4  */
+	sensor_size_offsets_table[ 5  ].size   = 4;  /* SENSOR_PT5  */
+	sensor_size_offsets_table[ 6  ].size   = 4;  /* SENSOR_PT6  */
+	sensor_size_offsets_table[ 7  ].size   = 4;  /* SENSOR_PT7  */
+	sensor_size_offsets_table[ 8  ].size   = 4;  /* SENSOR_TC   */
+	sensor_size_offsets_table[ 9  ].size   = 4;  /* SENSOR_LC   */
 #endif
 
 } /* sensor_init */
@@ -428,11 +429,11 @@ SENSOR_STATUS sensor_dump
 	/* Pressure Transducers */
 	pt_status    = pressure_poll_pts( &( sensor_data_ptr -> pt_pressures[0] ) );
 
-	// TODO: Implement thermocouple and load cell functionality
-	/* Thermocouple */
-	sensor_data_ptr -> load_cell_force = 0;
-
 	/* Load cell */
+	sensor_data_ptr -> load_cell_force = loadcell_get_reading();
+
+	// TODO: Implement thermocouple functionality
+	/* Thermocouple */
 	sensor_data_ptr -> tc_temp         = 0;
 #endif
 
@@ -758,8 +759,7 @@ for ( int i = 0; i < num_sensors; ++i )
 
 			case SENSOR_LC:
 				{
-				// TODO: Load Cell implementation
-				sensor_data_ptr -> load_cell_force = 0;
+				sensor_data_ptr -> load_cell_force = loadcell_get_reading();
 				break;
 				}
 
