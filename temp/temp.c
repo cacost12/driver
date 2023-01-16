@@ -30,6 +30,21 @@
  Internal function prototypes 
 ------------------------------------------------------------------------------*/
 
+/* Write to a thermocouple register */
+static THERMO_STATUS write_reg
+    (
+    uint8_t reg_id,  /* Thermocouple register id  */
+    uint8_t reg_data /* Data to write to register */
+    );
+
+/* Read a specified number of bytes from a thermocouple register */
+static THERMO_STATUS read_reg
+    (
+    uint8_t  reg_id,       /* Thermocouple register id  */
+    uint8_t* reg_data_ptr, /* Pointer to output         */
+    uint8_t  num_bytes     /* Number of bytes to read   */
+    );
+
 
 /*------------------------------------------------------------------------------
  API Functions 
@@ -38,14 +53,14 @@
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
 * 		thermo_get_device_id                                                   *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 *       Get the device id of the thermcouple                                   *
 *                                                                              *
 *******************************************************************************/
-THERMO_STATUS thermo_get_device_id 
+THERMO_STATUS temp_get_device_id 
 	(
     uint8_t* device_id_ptr
     )
@@ -53,17 +68,29 @@ THERMO_STATUS thermo_get_device_id
 /*------------------------------------------------------------------------------
  Local Variables  
 ------------------------------------------------------------------------------*/
+THERMO_STATUS thermo_status; /* Return codes from temp API calls */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
+thermo_status = THERMO_OK;
 
 
 /*------------------------------------------------------------------------------
  Implementation 
 ------------------------------------------------------------------------------*/
-return THERMO_OK;
+thermo_status = read_reg( THERMO_DEV_ID_REG_ID, 
+                          device_id_ptr       ,
+                          sizeof( uint8_t ) );
+if ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+else
+    {
+    return THERMO_OK;
+    }
 
 } /* thermo_get_device_id */
 
@@ -71,6 +98,127 @@ return THERMO_OK;
 /*------------------------------------------------------------------------------
  Internal procedures 
 ------------------------------------------------------------------------------*/
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		write_reg                                                              *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Write to a thermocouple register                                       *
+*                                                                              *
+*******************************************************************************/
+static THERMO_STATUS write_reg
+    (
+    uint8_t reg_id,  /* Thermocouple register id  */
+    uint8_t reg_data /* Data to write to register */
+    )
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status; /* Return codes from I2C HAL */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Load the thermocouple pointer register */
+hal_status = HAL_I2C_Master_Transmit( &( THERMO_I2C ) , 
+                                      THERMO_I2C_ADDR , 
+                                      &reg_id         ,
+                                      sizeof( reg_id ), 
+                                      HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+    {
+    return THERMO_I2C_ERROR;
+    }
+
+/* Send the data */
+hal_status = HAL_I2C_Master_Transmit( &( THERMO_I2C )   , 
+                                      THERMO_I2C_ADDR   , 
+                                      &reg_data         ,
+                                      sizeof( reg_data ), 
+                                      HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+    {
+    return THERMO_I2C_ERROR;
+    }
+else
+    {
+    return THERMO_OK;
+    }
+
+} /* write_reg */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		read_reg                                                               *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Read a specified number of bytes from a thermocouple register          *
+*                                                                              *
+*******************************************************************************/
+static THERMO_STATUS read_reg
+    (
+    uint8_t  reg_id,       /* Thermocouple register id  */
+    uint8_t* reg_data_ptr, /* Pointer to output         */
+    uint8_t  num_bytes     /* Number of bytes to read   */
+    )
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status; /* Return codes from I2C HAL     */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Load the thermocouple pointer register */
+hal_status = HAL_I2C_Master_Transmit( &( THERMO_I2C ) , 
+                                     THERMO_I2C_ADDR , 
+                                     &reg_id         ,
+                                     sizeof( reg_id ), 
+                                     HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+    {
+    return THERMO_I2C_ERROR;
+    }
+
+/* Load the data */
+hal_status = HAL_I2C_Master_Receive( &( THERMO_I2C )   , 
+                                     THERMO_I2C_ADDR   , 
+                                     reg_data_ptr      ,
+                                     num_bytes         , 
+                                     HAL_DEFAULT_TIMEOUT );
+if ( hal_status != HAL_OK )
+    {
+    return THERMO_I2C_ERROR;
+    }
+else
+    {
+    return THERMO_OK;
+    }
+return THERMO_OK;
+} /* read_reg */
 
 
 /*******************************************************************************
