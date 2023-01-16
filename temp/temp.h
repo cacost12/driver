@@ -58,8 +58,9 @@ extern "C" {
 /* Thermocouple return codes */
 typedef enum THERMO_STATUS 
     {
-	THERMO_OK = 0   ,
-    THERMO_I2C_ERROR,
+	THERMO_OK = 0         ,
+    THERMO_I2C_ERROR      ,
+    THERMO_UNRECOGNIZED_ID,
     THERMO_FAIL 
     } THERMO_STATUS;
 
@@ -120,6 +121,12 @@ typedef struct THERMO_CONFIG
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
+
+/* Initialize the thermocouple cold junction compensation chip */
+THERMO_STATUS temp_init
+    (
+    THERMO_CONFIG* thermo_config_ptr /* Pointer to thermocouple settings */
+    );
 
 /* Read the status of the thermocouple cold junction compensation chip */
 THERMO_STATUS temp_get_status

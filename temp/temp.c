@@ -54,6 +54,84 @@ static THERMO_STATUS read_reg
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
+* 		temp_init                                                              *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Initialize the thermocouple cold junction compensation chip            *
+*                                                                              *
+*******************************************************************************/
+THERMO_STATUS temp_init
+    (
+    THERMO_CONFIG* thermo_config_ptr /* Pointer to thermocouple settings */
+    )
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+THERMO_STATUS thermo_status;     /* Return codes from temp functions       */
+uint8_t       sensor_config_reg; /* Contents of thermocouple sensor config 
+                                    register                               */
+uint8_t       dev_config_reg;    /* Contents of thermocouple device config 
+                                    register                               */
+uint8_t       device_id;         /* Chip identification code               */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+thermo_status     = THERMO_OK;
+sensor_config_reg = 0;
+dev_config_reg    = 0;
+device_id         = 0;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Shift configuration bits into correct position */
+sensor_config_reg |= thermo_config_ptr -> type                 << 4;
+sensor_config_reg |= thermo_config_ptr -> filter_coeff;
+dev_config_reg    |= thermo_config_ptr -> cold_junc_resolution << 7;
+dev_config_reg    |= thermo_config_ptr -> adc_resolution       << 5;
+
+/* Check that device can be reached */
+thermo_status = temp_get_device_id( &device_id );
+if      ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+else if ( device_id != THERMO_DEV_ID )
+    {
+    return THERMO_UNRECOGNIZED_ID;
+    }
+
+/* Write to the configuration registers */
+thermo_status = write_reg( THERMO_SENSOR_CONFIG_REG_ID, sensor_config_reg );
+if ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+thermo_status = write_reg( THERMO_DEV_CONFIG_REG_ID, dev_config_reg );
+if ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+
+/* Get the device status */
+thermo_status = temp_get_status( &( thermo_config_ptr -> status ) );
+if ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+
+return THERMO_OK;
+} /* temp_init */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
 * 		temp_get_status                                                        *
 *                                                                              *
 * DESCRIPTION:                                                                 *
