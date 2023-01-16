@@ -40,6 +40,7 @@
 #if defined( ENGINE_CONTROLLER )
 	#include "pressure.h"
 	#include "loadcell.h"
+	#include "temp.h"
 #endif
 
 
@@ -392,19 +393,21 @@ SENSOR_STATUS sensor_dump
 	BARO_STATUS     temp_status;
 #elif defined( ENGINE_CONTROLLER )
 	PRESSURE_STATUS pt_status;              /* Pressure status codes       */
+	THERMO_STATUS   tc_status;              /* Thermocouple status codes   */
 #endif
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
 #if defined( FLIGHT_COMPUTER )
-	accel_status = IMU_OK;           /* IMU sensor status codes     */       
+	accel_status = IMU_OK;         
 	gyro_status  = IMU_OK;
 	mag_status   = IMU_OK; 
-	press_status = BARO_OK;           /* Baro Sensor status codes    */
+	press_status = BARO_OK;           
 	temp_status  = BARO_OK;
 #elif defined( ENGINE_CONTROLLER )
-	pt_status    = PRESSURE_OK;              /* Pressure status codes       */
+	pt_status    = PRESSURE_OK;          
+	tc_status    = THERMO_OK;        
 #endif
 
 /*------------------------------------------------------------------------------
@@ -432,9 +435,9 @@ SENSOR_STATUS sensor_dump
 	/* Load cell */
 	sensor_data_ptr -> load_cell_force = loadcell_get_reading();
 
-	// TODO: Implement thermocouple functionality
 	/* Thermocouple */
-	sensor_data_ptr -> tc_temp         = 0;
+	tc_status    = temp_get_temp( &( sensor_data_ptr -> tc_temp ), 
+	                              THERMO_HOT_JUNCTION );
 #endif
 
 
@@ -464,9 +467,13 @@ SENSOR_STATUS sensor_dump
 		return SENSOR_OK;
 		}
 #elif defined( ENGINE_CONTROLLER )
-	if ( pt_status != PRESSURE_OK )
+	if      ( pt_status != PRESSURE_OK )
 		{
 		return SENSOR_PT_ERROR;
+		}
+	else if ( tc_status != THERMO_OK   )
+		{
+		return SENSOR_TC_ERROR;
 		}
 	else
 		{
@@ -500,9 +507,11 @@ SENSOR_ID  sensor_id;        /* ID of sensor currently being polled */
 SENSOR_ID* sensor_id_ptr;    /* Pointer to sensor id                */
 
 /* Module return codes */
-#if defined( FLIGHT_COMPUTER )
-	IMU_STATUS  imu_status;   /* IMU Module return codes  */ 
-	BARO_STATUS baro_status; /* Baro module return codes */
+#if   defined( FLIGHT_COMPUTER   )
+	IMU_STATUS    imu_status;      /* IMU Module return codes   */ 
+	BARO_STATUS   baro_status;     /* Baro module return codes  */
+#elif defined( ENGINE_CONTROLLER )
+	THERMO_STATUS thermo_status;   /* Thermocouple return codes */
 #endif
 
 /* Sensor poll memory to prevent multiple calls to same API function */
@@ -515,13 +524,15 @@ SENSOR_ID* sensor_id_ptr;    /* Pointer to sensor id                */
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-sensor_id_ptr    = sensor_ids_ptr;
-sensor_id        = *(sensor_id_ptr   );
+sensor_id_ptr     = sensor_ids_ptr;
+sensor_id         = *(sensor_id_ptr   );
 
 /* Module return codes */
-#if defined( FLIGHT_COMPUTER )
-	imu_status  = IMU_OK;
-	baro_status = BARO_OK;
+#if   defined( FLIGHT_COMPUTER   )
+	imu_status    = IMU_OK;
+	baro_status   = BARO_OK;
+#elif defined( ENGINE_CONTROLLER )
+	thermo_status = THERMO_OK;
 #endif
 
 /* Sensor poll memory */
@@ -752,8 +763,12 @@ for ( int i = 0; i < num_sensors; ++i )
 
 			case SENSOR_TC:
 				{
-				// TODO: Thermocouple implementation
-				sensor_data_ptr -> tc_temp = 0;
+				thermo_status = temp_get_temp( &( sensor_data_ptr -> tc_temp ),
+				                               THERMO_HOT_JUNCTION );
+				if ( thermo_status != THERMO_OK )
+					{
+					return SENSOR_TC_ERROR;
+					}
 				break;
 				}
 

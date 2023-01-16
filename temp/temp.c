@@ -143,7 +143,7 @@ return THERMO_OK;
 *******************************************************************************/
 THERMO_STATUS temp_get_temp
     (
-    uint16_t*       temp_ptr, /* Pointer to write temperature     */
+    uint32_t*       temp_ptr, /* Pointer to write temperature     */
     THERMO_JUNCTION junction  /* Cold or hot junction measurement */
     )
 {
@@ -203,8 +203,8 @@ if ( thermo_status != THERMO_OK )
     }
 
 /* Export data */
-*temp_ptr = ( (uint16_t) temp_bytes[0] << 8 ) |
-            ( (uint16_t) temp_bytes[1] << 0 );
+*temp_ptr = ( (uint32_t) temp_bytes[0] << 8 ) |
+            ( (uint32_t) temp_bytes[1] << 0 );
 return THERMO_OK;
 
 } /* temp_get_temp */

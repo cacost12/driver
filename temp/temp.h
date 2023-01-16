@@ -174,7 +174,7 @@ THERMO_STATUS temp_init
 /* Get the thermocouple temperature */
 THERMO_STATUS temp_get_temp
     (
-    uint16_t*       temp_ptr, /* Pointer to write temperature     */
+    uint32_t*       temp_ptr, /* Pointer to write temperature     */
     THERMO_JUNCTION junction  /* Cold or hot junction measurement */
     );
 

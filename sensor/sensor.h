@@ -69,6 +69,7 @@ typedef enum
 	SENSOR_UNSUPPORTED_OP        ,
 	SENSOR_IMU_FAIL              ,
 	SENSOR_PT_ERROR              ,
+	SENSOR_TC_ERROR              ,
 	SENSOR_ACCEL_ERROR           ,
     SENSOR_GYRO_ERROR            ,
 	SENSOR_MAG_ERROR             ,
