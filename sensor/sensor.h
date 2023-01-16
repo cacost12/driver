@@ -119,8 +119,8 @@ typedef enum
 		SENSOR_PT5   = 0x05,
 		SENSOR_PT6   = 0x06,
 		SENSOR_PT7   = 0x07,
-		SENSOR_TC    = 0x08,
-		SENSOR_LC    = 0x09
+		SENSOR_LC    = 0x09,
+		SENSOR_TC    = 0x08
 	#endif
 	} SENSOR_IDS;
 

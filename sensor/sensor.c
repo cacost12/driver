@@ -138,8 +138,8 @@ void sensor_init
 	sensor_size_offsets_table[ 5  ].offset = 20; /* SENSOR_PT5  */
 	sensor_size_offsets_table[ 6  ].offset = 24; /* SENSOR_PT6  */
 	sensor_size_offsets_table[ 7  ].offset = 28; /* SENSOR_PT7  */
-	sensor_size_offsets_table[ 8  ].offset = 32; /* SENSOR_TC   */
-	sensor_size_offsets_table[ 9  ].offset = 36; /* SENSOR_LC   */
+	sensor_size_offsets_table[ 8  ].offset = 36; /* SENSOR_TC   */
+	sensor_size_offsets_table[ 9  ].offset = 32; /* SENSOR_LC   */
 
 	/* Sensor Sizes   */
 	sensor_size_offsets_table[ 0  ].size   = 4;  /* SENSOR_PT0  */
