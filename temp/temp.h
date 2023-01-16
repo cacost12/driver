@@ -50,6 +50,16 @@ extern "C" {
 /* Thermocouple factory device ID */
 #define THERMO_DEV_ID                     0x41
 
+/* Status register bitmasks */
+#define THERMO_STATUS_ALERT1_BITMASK     0b00000001
+#define THERMO_STATUS_ALERT2_BITMASK     0b00000010
+#define THERMO_STATUS_ALERT3_BITMASK     0b00000100
+#define THERMO_STATUS_ALERT4_BITMASK     0b00001000
+#define THERMO_STATUS_OC_BITMASK         0b00010000
+#define THERMO_STATUS_SC_BITMASK         0b00100000
+#define THERMO_STATUS_DATA_RDY_BITMASK   0b01000000
+#define THERMO_STATUS_BURST_BITMASK      0b10000000
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -58,11 +68,19 @@ extern "C" {
 /* Thermocouple return codes */
 typedef enum THERMO_STATUS 
     {
-	THERMO_OK = 0         ,
-    THERMO_I2C_ERROR      ,
-    THERMO_UNRECOGNIZED_ID,
+	THERMO_OK = 0          ,
+    THERMO_I2C_ERROR       ,
+    THERMO_UNRECOGNIZED_ID ,
+    THERMO_INVALID_JUNCTION,
     THERMO_FAIL 
     } THERMO_STATUS;
+
+/* Thermocouple junctions */
+typedef enum THERMO_JUNCTION
+    {
+    THERMO_COLD_JUNCTION,
+    THERMO_HOT_JUNCTION
+    } THERMO_JUNCTION;
 
 /* Thermocouple types */
 typedef enum THERMO_TYPE
@@ -106,15 +124,40 @@ typedef enum THERMO_COLD_JUNC_RES
     THERMO_COLD_JUNC_MAX_RES      /* 0.25 deg C */
     } THERMO_COLD_JUNC_RES;
 
+/* Burst Mode Temperature samples */
+typedef enum THERMO_BURST_MODE_SAMPLES
+    {
+    THERMO_BURST_MODE_1 = 0,
+    THERMO_BURST_MODE_2    ,
+    THERMO_BURST_MODE_4    ,
+    THERMO_BURST_MODE_8    ,
+    THERMO_BURST_MODE_16   ,
+    THERMO_BURST_MODE_32   ,
+    THERMO_BURST_MODE_64   ,
+    THERMO_BURST_MODE_128  
+    } THERMO_BURST_MODE_SAMPLES;
+
+/* Shutdown modes */
+typedef enum THERMO_POWER_MODE
+    {
+    THERMO_NORMAL_MODE = 0, 
+    THERMO_SHUTDOWN_MODE  , 
+    THERMO_BURST_MODE
+    } THERMO_POWER_MODE;
+
 /* Thermocouple configuration/state */
 typedef struct THERMO_CONFIG
     {
-    THERMO_TYPE          type;                 /* Thermocouple type (ex K, T) */
-    THERMO_FILTER_COEFF  filter_coeff;         /* Filter setting              */
-    THERMO_ADC_RES       adc_resolution;       /* ADC Resolution, 12-18 bits  */
-    THERMO_COLD_JUNC_RES cold_junc_resolution; /* Cold junction sensor 
-                                                  resolution                  */
-    uint8_t              status;               /* Status register contents    */
+    THERMO_TYPE               type;                 /* Thermocouple type 
+                                                       (ex K, T)              */
+    THERMO_FILTER_COEFF       filter_coeff;         /* Filter setting         */
+    THERMO_ADC_RES            adc_resolution;       /* ADC Resolution, 12-18 
+                                                       bits                   */
+    THERMO_COLD_JUNC_RES      cold_junc_resolution; /* Cold junction sensor 
+                                                       resolution             */
+    THERMO_BURST_MODE_SAMPLES burst_mode;           /* Burst mode setting     */
+    THERMO_POWER_MODE         shutdown_mode;        /* Shutdown mode setting  */
+    uint8_t                   status;               /* Status register        */
     } THERMO_CONFIG;
 
 
@@ -126,6 +169,20 @@ typedef struct THERMO_CONFIG
 THERMO_STATUS temp_init
     (
     THERMO_CONFIG* thermo_config_ptr /* Pointer to thermocouple settings */
+    );
+
+/* Get the thermocouple temperature */
+THERMO_STATUS temp_get_temp
+    (
+    uint16_t*       temp_ptr, /* Pointer to write temperature     */
+    THERMO_JUNCTION junction  /* Cold or hot junction measurement */
+    );
+
+/* Poll the thermocouple status register to determine if a measurement is 
+   available, returns true if a measurement is ready */
+bool temp_is_temp_ready
+    (
+    void
     );
 
 /* Read the status of the thermocouple cold junction compensation chip */

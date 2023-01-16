@@ -12,7 +12,8 @@
 /*------------------------------------------------------------------------------
  Standard Includes                                                                     
 ------------------------------------------------------------------------------*/
-
+#include <stdbool.h>
+#include <string.h>
 
 /*------------------------------------------------------------------------------
  Project Includes                                                                     
@@ -94,6 +95,8 @@ sensor_config_reg |= thermo_config_ptr -> type                 << 4;
 sensor_config_reg |= thermo_config_ptr -> filter_coeff;
 dev_config_reg    |= thermo_config_ptr -> cold_junc_resolution << 7;
 dev_config_reg    |= thermo_config_ptr -> adc_resolution       << 5;
+dev_config_reg    |= thermo_config_ptr -> burst_mode           << 2;
+dev_config_reg    |= thermo_config_ptr -> shutdown_mode;
 
 /* Check that device can be reached */
 thermo_status = temp_get_device_id( &device_id );
@@ -127,6 +130,137 @@ if ( thermo_status != THERMO_OK )
 
 return THERMO_OK;
 } /* temp_init */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		temp_get_temp                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Get the thermocouple temperature                                       *
+*                                                                              *
+*******************************************************************************/
+THERMO_STATUS temp_get_temp
+    (
+    uint16_t*       temp_ptr, /* Pointer to write temperature     */
+    THERMO_JUNCTION junction  /* Cold or hot junction measurement */
+    )
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+THERMO_STATUS thermo_status; /* Return codes from temp functions    */
+uint8_t       temp_bytes[2]; /* Bytes read from thermocouple        */
+uint8_t       data_reg_id;   /* ID of register containing temp data */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+thermo_status = THERMO_OK;
+memset( &temp_bytes[0], 0, sizeof( temp_bytes ) );
+switch ( junction )
+    {
+    case THERMO_COLD_JUNCTION:
+        {
+        data_reg_id = THERMO_COLD_JUNC_TEMP_REG_ID;
+        break;
+        }
+    case THERMO_HOT_JUNCTION:
+        {
+        data_reg_id = THERMO_HOT_JUNC_TEMP_REG_ID;
+        break;
+        }
+    default:
+        {
+        return THERMO_INVALID_JUNCTION;
+        }
+    }
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Wait for temperature measurement ready flag */
+while ( !temp_is_temp_ready() ){}
+
+/* Read temperature data register */
+thermo_status = read_reg( data_reg_id   , 
+                          &temp_bytes[0],
+                          sizeof( temp_bytes ) );
+if ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+
+/* Clear Data Ready flag */
+thermo_status = write_reg( THERMO_STATUS_REG_ID, 0 );
+if ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+
+/* Export data */
+*temp_ptr = ( (uint16_t) temp_bytes[0] << 8 ) |
+            ( (uint16_t) temp_bytes[1] << 0 );
+return THERMO_OK;
+
+} /* temp_get_temp */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		temp_is_temp_ready                                                     *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Poll the thermocouple status register to determine if a measurement is *
+*       available, returns true if a measurement is ready                      *
+*                                                                              *
+*******************************************************************************/
+bool temp_is_temp_ready
+    (
+    void
+    )
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+THERMO_STATUS thermo_status; /* Return codes from temp functions */
+uint8_t       status;        /* Contents of status register      */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+thermo_status = THERMO_OK;
+status        = 0;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Read status register */
+thermo_status = temp_get_status( &status );
+if ( thermo_status != THERMO_OK )
+    {
+    return false;
+    }
+
+/* Check data ready bit */
+if ( status & THERMO_STATUS_DATA_RDY_BITMASK )
+    {
+    return true;
+    }
+else
+    {
+    return false;
+    }
+
+} /* temp_is_temp_ready */
 
 
 /*******************************************************************************
