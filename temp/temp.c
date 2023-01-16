@@ -54,7 +54,51 @@ static THERMO_STATUS read_reg
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
-* 		thermo_get_device_id                                                   *
+* 		temp_get_status                                                        *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Read the status of the thermocouple cold junction compensation chip    *
+*                                                                              *
+*******************************************************************************/
+THERMO_STATUS temp_get_status
+    (
+    uint8_t* status_ptr /* Pointer to output data */
+    )
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+THERMO_STATUS thermo_status; /* Return codes from temp functions */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+thermo_status = THERMO_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+thermo_status = read_reg( THERMO_STATUS_REG_ID, 
+                          status_ptr          ,
+                          sizeof( uint8_t ) );
+if ( thermo_status != THERMO_OK )
+    {
+    return thermo_status;
+    }
+else
+    {
+    return THERMO_OK;
+    }
+
+} /* temp_get_status */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		temp_get_device_id                                                     *
 *                                                                              *
 * DESCRIPTION:                                                                 *
 *       Get the device id of the thermcouple                                   *
@@ -92,7 +136,7 @@ else
     return THERMO_OK;
     }
 
-} /* thermo_get_device_id */
+} /* temp_get_device_id */
 
 
 /*------------------------------------------------------------------------------

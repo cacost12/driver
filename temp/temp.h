@@ -63,10 +63,69 @@ typedef enum THERMO_STATUS
     THERMO_FAIL 
     } THERMO_STATUS;
 
+/* Thermocouple types */
+typedef enum THERMO_TYPE
+    {
+    THERMO_TYPE_K = 0,
+    THERMO_TYPE_J    ,
+    THERMO_TYPE_T    ,
+    THERMO_TYPE_N    ,
+    THERMO_TYPE_S    ,
+    THERMO_TYPE_E    ,
+    THERMO_TYPE_B    ,
+    THERMO_TYPE_R
+    } THERMO_TYPE;
+
+/* Filter settings */
+typedef enum THERMO_FILTER_COEFF
+    {
+    THERMO_FILTER_OFF = 0,
+    THERMO_FILTER_MIN    ,
+    THERMO_FILTER_N_2    ,
+    THERMO_FILTER_N_3    ,
+    THERMO_FILTER_MID    ,
+    THERMO_FILTER_N_5    ,
+    THERMO_FILTER_N_6    ,
+    THERMO_FILTER_MAX
+    } THERMO_FILTER_COEFF;
+
+/* ADC Measurement Resolution */
+typedef enum THERMO_ADC_RES
+    {
+    THERMO_18BIT_ADC = 0,
+    THERMO_16BIT_ADC    ,
+    THERMO_14BIT_ADC    ,
+    THERMO_12BIT_ADC 
+    } THERMO_ADC_RES;
+
+/* Cold junction sensor resolution */
+typedef enum THERMO_COLD_JUNC_RES
+    {
+    THERMO_COLD_JUNC_MIN_RES = 0, /* 0.0625 deg C */
+    THERMO_COLD_JUNC_MAX_RES      /* 0.25 deg C */
+    } THERMO_COLD_JUNC_RES;
+
+/* Thermocouple configuration/state */
+typedef struct THERMO_CONFIG
+    {
+    THERMO_TYPE          type;                 /* Thermocouple type (ex K, T) */
+    THERMO_FILTER_COEFF  filter_coeff;         /* Filter setting              */
+    THERMO_ADC_RES       adc_resolution;       /* ADC Resolution, 12-18 bits  */
+    THERMO_COLD_JUNC_RES cold_junc_resolution; /* Cold junction sensor 
+                                                  resolution                  */
+    uint8_t              status;               /* Status register contents    */
+    } THERMO_CONFIG;
+
 
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
+
+/* Read the status of the thermocouple cold junction compensation chip */
+THERMO_STATUS temp_get_status
+    (
+    uint8_t* status_ptr /* Pointer to output data */
+    );
 
 /* Get the device id of the thermcouple */
 THERMO_STATUS temp_get_device_id 
