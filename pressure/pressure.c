@@ -188,6 +188,7 @@ for ( uint8_t i = 0; i < NUM_PTS; ++i )
 	HAL_GPIO_WritePin( PRESSURE_GPIO_PORT    ,
 					   gain_GPIO_pins_bitmask,
 					   GPIO_PIN_SET );
+    HAL_Delay( 1 );
 
 	/*--------------------------------------------------------------------------
 	 Poll ADC once 
