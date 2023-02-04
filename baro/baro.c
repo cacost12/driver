@@ -136,7 +136,8 @@ if      ( baro_status   != BARO_OK         )
 	{
 	return BARO_I2C_ERROR;
 	}
-else if ( baro_device_id != BARO_DEVICE_ID )
+else if ( baro_device_id != BMP390_DEVICE_ID &&
+          baro_device_id != BMP388_DEVICE_ID )
 	{
 	return BARO_UNRECOGNIZED_CHIP_ID;
 	}

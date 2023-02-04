@@ -40,6 +40,9 @@ extern "C" {
 #elif defined( L0005_REV2 )
 	/* Rev 2 */
 	#define PING_RESPONSE_CODE    ( 0x02 )
+#elif defined( A0002_REV2 )
+	/* Rev 2 */
+	#define PING_RESPONSE_CODE    ( 0x05 )
 #endif
 
 

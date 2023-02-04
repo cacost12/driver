@@ -51,13 +51,18 @@ extern "C" {
 #define BARO_REG_NVM_PAR_P11    ( 0x45 )
 
 /* Baro device id */
-#define BARO_DEVICE_ID          ( 0x60 )
+#define BMP390_DEVICE_ID        ( 0x60 )
+#define BMP388_DEVICE_ID        ( 0x50 )
 
 /* Size of calibration data in bytes */
 #define BARO_CAL_BUFFER_SIZE    ( 21   )
 
 /* Default I2C HAL timeout */
-#define BARO_DEFAULT_TIMEOUT    ( 1    )
+#ifndef SDR_DEBUG
+	#define BARO_DEFAULT_TIMEOUT    ( 1    )
+#else
+	#define BARO_DEFAULT_TIMEOUT    ( 0xFFFFFFFF )
+#endif /* ifndef SDR_DEBUG */
 
 
 /*------------------------------------------------------------------------------

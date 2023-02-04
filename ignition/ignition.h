@@ -23,7 +23,9 @@ extern "C" {
  MCU Peripheral Configuration 
 ------------------------------------------------------------------------------*/
 
-#if !( defined( A0002_REV1 ) || defined( L0002_REV4 ) ) 
+#if !( defined( A0002_REV1 ) || \
+       defined( L0002_REV4 ) || \
+	   defined( A0002_REV2 ) ) 
 	#error No IGNITION compatible device specified
 #endif
 

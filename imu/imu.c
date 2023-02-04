@@ -26,6 +26,63 @@
  Global Variables 
 ------------------------------------------------------------------------------*/
 
+/* BMI270 Initialization File */
+#ifdef A0002_REV2
+    const uint8_t bmi270_init_file[] = {
+        #include "bmi270_init_file.tbin"
+    };
+#endif
+
+/*------------------------------------------------------------------------------
+ Internal function prototypes 
+------------------------------------------------------------------------------*/
+
+/* Read IMU registers */
+static IMU_STATUS read_imu_reg
+    (
+    uint8_t  reg_addr, /* Register address    */
+    uint8_t* data_ptr, /* Register data       */
+    uint8_t  num_regs  /* Number of registers */
+    ); 
+
+/* Write to a specified IMU register */
+static IMU_STATUS write_imu_reg 
+    (
+    uint8_t reg_addr, /* Register address    */
+    uint8_t data      /* Register data       */
+    );
+
+/* Write IMU registers */
+static IMU_STATUS write_imu_regs 
+    (
+    uint8_t  reg_addr, /* Register address    */
+    uint8_t* data_ptr, /* Register data       */
+    uint8_t  num_regs  /* Number of registers */
+    ); 
+
+/* Read Magnetometer registers */
+static IMU_STATUS read_mag_regs
+    (
+    uint8_t  reg_addr, /* Register address    */
+    uint8_t* data_ptr, /* Register data       */
+    uint8_t  num_regs  /* Number of registers */
+    ); 
+
+/* Write to a specified magnetometer register */
+static IMU_STATUS write_mag_reg 
+    (
+    uint8_t reg_addr, /* Register address    */
+    uint8_t data      /* Register data       */
+    ); 
+
+/* Write Magnetometer registers */
+static IMU_STATUS write_mag_regs 
+    (
+    uint8_t  reg_addr, /* Register address    */
+    uint8_t* data_ptr, /* Register data       */
+    uint8_t  num_regs  /* Number of registers */
+    ); 
+
 
 /*------------------------------------------------------------------------------
  Procedures 
@@ -34,168 +91,155 @@
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
-* 		imu_config                                                             *
+* PROCEDURE:                                                                   *
+* 		imu_init                                                               *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Configures/initializes the IMU settings                                *
+* DESCRIPTION:                                                                 *
+*       Initialize the IMU                                                     *
 *                                                                              *
 *******************************************************************************/
-IMU_STATUS imu_config
+IMU_STATUS imu_init 
 	(
-	IMU_CONFIG config
+    IMU_CONFIG* imu_config_ptr /* IMU Configuration */ 
 	)
 {
-return IMU_OK;
-} /* imu_config */
+/*------------------------------------------------------------------------------
+ Local variables 
+------------------------------------------------------------------------------*/
+IMU_STATUS imu_status;          /* IMU API call return codes       */
+uint8_t    imu_dev_id;          /* IMU identification code         */
+uint8_t    imu_status_reg;      /* Contents of IMU status register */
+uint8_t    imu_acc_conf;        /* IMU ACC_CONF Register contents  */
+uint8_t    imu_gyr_conf;        /* IMU GYR_CONF Register contents  */
+uint8_t    imu_sensor_data[12]; /* IMU Sensor Data                 */
 
 
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		IMU_MAG_Read_Registers                                                 *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Read the specific numbers of registers at one time from magnetometer   *
-*       module in the IMU                                                      *
-*                                                                              *
-*******************************************************************************/
-static IMU_STATUS IMU_MAG_Read_Registers
-    (
-    uint8_t  reg_addr    ,
-    uint8_t* reg_data_ptr, 
-    uint8_t  num_registers
-    )
-{
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+imu_status     = IMU_OK;
+imu_dev_id     = 0;
+imu_status_reg = 0;
+imu_acc_conf   = ( imu_config_ptr -> acc_odr         ) |
+                 ( imu_config_ptr -> acc_filter      ) |
+                 ( imu_config_ptr -> acc_filter_mode );
+imu_gyr_conf   = ( imu_config_ptr -> gyro_odr        ) |
+                 ( imu_config_ptr -> gyro_filter     ) |
+                 ( 1 << 7 );
+memset( &imu_sensor_data[0], 0, sizeof( imu_sensor_data ) );
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Read IMU ID and verify correct ID */
+imu_status = imu_get_device_id( &imu_dev_id );
+if ( imu_status != IMU_OK )
+    {
+    return imu_status;
+    }
+
+/* BMI270 Initialization Sequence */
+#if defined( A0002_REV2 )
+    /* Disable advanced power save */
+    imu_status = write_imu_reg( IMU_REG_PWR_CONF, 0x00 );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_INIT_FAIL;
+        }
+    HAL_Delay( 1 );
+
+    /* Prepare Config Load */
+    imu_status = write_imu_reg( IMU_REG_INIT_CTRL, 0x00 );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_INIT_FAIL;
+        }
     
-/*------------------------------------------------------------------------------
- Local variables  
-------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;     /* Status return code of I2C HAL */
+    /* Load the initialization data */
+    imu_status = write_imu_regs( IMU_REG_INIT_DATA, 
+                                 &bmi270_init_file, 
+                                 sizeof( bmi270_init_file ) );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_INIT_FAIL;
+        }
 
+    /* Complete config load */
+    imu_status = write_imu_reg( IMU_REG_INIT_CTRL, 0x01 );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_INIT_FAIL;
+        }
 
-/*------------------------------------------------------------------------------
- API function implementation 
-------------------------------------------------------------------------------*/
+    /* Check if Initialization was Successful */
+    HAL_Delay( 150 );
+    imu_status = read_imu_regs( IMU_REG_INTERNAL_STATUS, 
+                                &imu_status_reg        ,
+                                sizeof( imu_status_reg ) );
+    if ( imu_status != IMU_OK || !( imu_status_reg & 0b00000001 ) )
+        {
+        return IMU_INIT_FAIL;
+        }
+#endif /* #if defined( A0002_REV2 ) */
 
-/* Read I2C registers */
-hal_status = HAL_I2C_Mem_Read( &( IMU_I2C )        , 
-                               IMU_MAG_ADDR        , 
-                               reg_addr            , 
-                               I2C_MEMADD_SIZE_8BIT, 
-                               reg_data_ptr        , 
-                               num_registers       , 
-                               HAL_DEFAULT_TIMEOUT
-                             );
+/* Initial IMU Configuration */
+#if defined( A0002_REV2 )
+    /* Enable Sensors */
+    imu_status = imu_write_reg( IMU_REG_PWR_CTRL, 
+                                imu_config_ptr -> sensor_enable );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_CONFIG_FAIL;
+        }
 
-/* Return status code of I2C HAL */
-if ( hal_status != HAL_TIMEOUT ) 
-	{
-	return IMU_OK;
-	}
-else 
-	{
-	return IMU_TIMEOUT;
-	}
+    /* Configure the Accelerometer */
+    imu_status = imu_write_reg( IMU_REG_ACC_CONF, imu_acc_conf );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_CONFIG_FAIL;
+        }
+    imu_status = imu_write_reg( IMU_REG_ACC_RANGE,
+                                imu_config_ptr -> acc_range );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_CONFIG_FAIL;
+        }
+    
+    /* Configure the Gyroscope */
+    imu_status = imu_write_reg( IMU_REG_GYR_CONF, imu_gyr_conf );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_CONFIG_FAIL;
+        }
+    imu_status = imu_write_reg( IMU_REG_GYR_RANGE, 
+                                imu_config_ptr -> gyro_range );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_CONFIG_FAIL;
+        }
 
-} /* IMU_MAG_Read_Registers */
+    /* Disable Advanced Power Save */
+    imu_status = imu_write_reg( IMU_REG_PWR_CONF, 0x02 );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_CONFIG_FAIL;
+        }
 
+    /* Readout sensor registers */
+    imu_status = imu_read_regs( IMU_REG_DATA_8     , 
+                                &imu_sensor_data[0], 
+                                sizeof( imu_sensor_data ) );
+    if ( imu_status != IMU_OK )
+        {
+        return IMU_CONFIG_FAIL; 
+        }
+#endif /* #if defined( A0002_REV2 ) */
 
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		IMU_Read_Register                                                      *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Read one register from acceleration and gyroscope module in the IMU    *
-*                                                                              *
-*******************************************************************************/
-static IMU_STATUS IMU_Read_Register
-    (
-    uint8_t  reg_addr, 
-    uint8_t* reg_data_ptr
-    )
-{
-/*------------------------------------------------------------------------------
- Local variables  
-------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
-
-
-/*------------------------------------------------------------------------------
- API function implementation 
-------------------------------------------------------------------------------*/
-
-/* Read I2C register */
-hal_status = HAL_I2C_Mem_Read ( &( IMU_I2C )        , 
-                                IMU_ADDR            , 
-                                reg_addr            , 
-                                I2C_MEMADD_SIZE_8BIT, 
-                                reg_data_ptr        , 
-                                sizeof( uint8_t )   , 
-                                HAL_DEFAULT_TIMEOUT ); 
-
-/* Return I2C HAL status */
-if ( hal_status != HAL_TIMEOUT )
-	{
-	return IMU_OK;
-	}
-else
-	{
-	return IMU_TIMEOUT;
-	}
-
-} /* IMU_Read_Register */
-
-
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		IMU_Read_Registers                                                     *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Read the specific numbers of registers at one time from acceleration   *
-*       and gyroscope module in the IMU                                        *
-*                                                                              *
-*******************************************************************************/
-static IMU_STATUS IMU_Read_Registers
-    (
-    uint8_t  reg_addr    , 
-    uint8_t* reg_data_ptr, 
-    uint8_t  num_registers
-    )
-{
-/*------------------------------------------------------------------------------
- Local variables  
-------------------------------------------------------------------------------*/
-HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
-
-
-/*------------------------------------------------------------------------------
- API function implementation 
-------------------------------------------------------------------------------*/
-
-/*Read I2C register*/
-hal_status = HAL_I2C_Mem_Read( &( IMU_I2C )        , 
-                               IMU_ADDR            , 
-                               reg_addr            , 
-                               I2C_MEMADD_SIZE_8BIT, 
-                               reg_data_ptr        , 
-                               num_registers       , 
-                               HAL_MAX_DELAY
-                              );
-
-if (hal_status != HAL_TIMEOUT)
-	{
-	return IMU_OK;
-	}
-else
-	{
-	return IMU_TIMEOUT;
-	}
-
-} /* IMU_Read_Registers */
-
+/* IMU Inititialization Successful */
+return IMU_OK;
+} /* imu_init */
 
 
 /*******************************************************************************
@@ -383,7 +427,7 @@ return IMU_OK;
 * 		imu_get_device_id                                                      *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		return the device ID of the IMU to verify that the 
+* 		return the device ID of the IMU to verify that the                     *
 *       IMU registers are accessible                                           *
 *                                                                              *
 *******************************************************************************/
@@ -403,15 +447,315 @@ IMU_STATUS  imu_status;
 ------------------------------------------------------------------------------*/
 
 /* Read Device ID register */
-imu_status = IMU_Read_Register( WHO_AM_I, pdevice_id );
+#if defined( A0002_REV1 )
+    imu_status = IMU_Read_Register( WHO_AM_I       , pdevice_id );
+#elif defined( A0002_REV2 )
+    imu_status = IMU_Read_Register( IMU_REG_CHIP_ID, pdevice_id );
+#endif
 
-if ( *pdevice_id !=IMU_ID)
+if ( *pdevice_id != IMU_ID )
     {
     imu_status = IMU_UNRECOGNIZED_OP;
     }
 
 return imu_status;
 } /* imu_get_device_id */
+
+
+/*------------------------------------------------------------------------------
+ Internal procedures 
+------------------------------------------------------------------------------*/
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		read_mag_regs                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Read the specific numbers of registers at one time from magnetometer   *
+*       module in the IMU                                                      *
+*                                                                              *
+*******************************************************************************/
+static IMU_STATUS read_mag_regs 
+    (
+    uint8_t  reg_addr,
+    uint8_t* data_ptr, 
+    uint8_t  num_regs
+    )
+{
+    
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;     /* Status return code of I2C HAL */
+
+
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+
+/* Read I2C registers */
+hal_status = HAL_I2C_Mem_Read( &( IMU_I2C )        , 
+                               IMU_MAG_ADDR        , 
+                               reg_addr            , 
+                               I2C_MEMADD_SIZE_8BIT, 
+                               data_ptr            , 
+                               num_regs            , 
+                               HAL_DEFAULT_TIMEOUT );
+
+/* Return status code of I2C HAL */
+if ( hal_status != HAL_OK ) 
+	{
+	return IMU_MAG_ERROR;
+	}
+else 
+	{
+	return IMU_OK;
+	}
+
+} /* read_mag_regs */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		read_imu_regs                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+* 		Read the specific numbers of registers at one time from acceleration   *
+*       and gyroscope module in the IMU                                        *
+*                                                                              *
+*******************************************************************************/
+static IMU_STATUS read_imu_regs 
+    (
+    uint8_t  reg_addr, /* Register address            */
+    uint8_t* data_ptr, /* Register data               */ 
+    uint8_t  num_regs  /* Number of registers to read */
+    )
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Read I2C register */
+hal_status = HAL_I2C_Mem_Read( &( IMU_I2C )        , 
+                               IMU_ADDR            , 
+                               reg_addr            , 
+                               I2C_MEMADD_SIZE_8BIT, 
+                               data_ptr            , 
+                               num_regs            , 
+                               HAL_MAX_DELAY );
+
+if ( hal_status != HAL_OK )
+	{
+	return IMU_ERROR;
+	}
+else
+	{
+	return IMU_OK;
+	}
+} /* read_imu_regs */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		write_imu_reg                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       write to a specified IMU register                                      *
+*                                                                              *
+*******************************************************************************/
+static IMU_STATUS write_imu_reg 
+    (
+    uint8_t reg_addr, /* Register address    */
+    uint8_t data      /* Register data       */
+    ) 
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+hal_status = HAL_I2C_Mem_Write( &( IMU_I2C )        , 
+                                IMU_ADDR            , 
+                                reg_addr            , 
+                                I2C_MEMADD_SIZE_8BIT, 
+                                &data               , 
+                                sizeof( uint8_t )   , 
+                                HAL_MAX_DELAY );
+if ( hal_status != HAL_OK )
+    {
+    return IMU_I2C_ERROR;
+    }
+else
+    {
+    return IMU_OK;
+    }
+} /* write_imu_regs */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		write_imu_regs                                                         *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       write to specified IMU registers                                       *
+*                                                                              *
+*******************************************************************************/
+static IMU_STATUS write_imu_regs 
+    (
+    uint8_t  reg_addr, /* Register address    */
+    uint8_t* data_ptr, /* Register data       */
+    uint8_t  num_regs  /* Number of registers */
+    ) 
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+hal_status = HAL_I2C_Mem_Write( &( IMU_I2C ), 
+                                IMU_ADDR            , 
+                                reg_addr            , 
+                                I2C_MEMADD_SIZE_8BIT, 
+                                data_ptr            , 
+                                num_regs            , 
+                                HAL_MAX_DELAY );
+if ( hal_status != HAL_OK )
+    {
+    return IMU_I2C_ERROR;
+    }
+else
+    {
+    return IMU_OK;
+    }
+} /* write_imu_regs */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		write_mag_reg                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       write to a specified magnetometer register                             *
+*                                                                              *
+*******************************************************************************/
+static IMU_STATUS write_mag_reg 
+    (
+    uint8_t reg_addr, /* Register address    */
+    uint8_t data      /* Register data       */
+    ) 
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+hal_status = HAL_I2C_Mem_Write( &( IMU_I2C )        , 
+                                IMU_MAG_ADDR        , 
+                                reg_addr            , 
+                                I2C_MEMADD_SIZE_8BIT, 
+                                &data               , 
+                                sizeof( uint8_t )   , 
+                                HAL_MAX_DELAY );
+if ( hal_status != HAL_OK )
+    {
+    return IMU_I2C_ERROR;
+    }
+else
+    {
+    return IMU_OK;
+    }
+} /* write_mag_regs */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		write_mag_regs                                                         *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       write to specified magnetometer registers                              *
+*                                                                              *
+*******************************************************************************/
+static IMU_STATUS write_mag_regs 
+    (
+    uint8_t  reg_addr, /* Register address    */
+    uint8_t* data_ptr, /* Register data       */
+    uint8_t  num_regs  /* Number of registers */
+    ) 
+{
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Status of I2C HAL */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+hal_status = HAL_I2C_Mem_Write( &( IMU_I2C )        , 
+                                IMU_MAG_ADDR        , 
+                                reg_addr            , 
+                                I2C_MEMADD_SIZE_8BIT, 
+                                data_ptr            , 
+                                num_regs            , 
+                                HAL_MAX_DELAY );
+if ( hal_status != HAL_OK )
+    {
+    return IMU_I2C_ERROR;
+    }
+else
+    {
+    return IMU_OK;
+    }
+} /* write_mag_regs */
 
 
 /*******************************************************************************
