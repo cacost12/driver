@@ -21,26 +21,40 @@ extern "C" {
 
 
 /*------------------------------------------------------------------------------
- Defines 
+ Macros 
 ------------------------------------------------------------------------------*/
 
 /* I2C Addresses */
 #define IMU_ADDR                0x68<<1
-#define IMU_MAG_ADDR            0x0C<<1
+#if   defined( A0002_REV1 )
+    #define IMU_MAG_ADDR        0x0C<<1
+#elif defined( A0002_REV2 )
+    #define IMU_MAG_ADDR        0x10<<1
+#endif
 
 /* Device IDs */
 #if   defined( A0002_REV1 )
     #define IMU_ID                  0x71
 #elif defined( A0002_REV2 )
     #define IMU_ID                  0x24
+    #define MAG_ID                  0x32
 #endif
 
-/*------------------------------------------------------------------------------
- Defines subcommand codes
-------------------------------------------------------------------------------*/
+/* SDEC Subcommand Codes */
 #define IMU_DUMP_CODE               0x01
 #define IMU_POLL_CODE               0x02
 #define IMU_LIST_CODE               0x03
+
+/* Timeouts */
+#define HAL_IMU_TIMEOUT             10
+
+/* Register Bitmasks/Bitshifts */
+#define MAG_XY_LSB_BITMASK          0b11111000
+#define MAG_XY_LSB_BITSHIFT         3 /* Bit 3 to position 0 */
+#define MAG_XY_MSB_BITSHIFT         5 /* Bit 0 to position 5 */
+#define MAG_Z_LSB_BITMASK           0b11111110
+#define MAG_Z_LSB_BITSHIFT          1 /* Bit 1 to position 0 */
+#define MAG_Z_MSB_BITSHIFT          7 /* Bit 0 to position 7 */
 
 
 /*------------------------------------------------------------------------------
@@ -48,54 +62,54 @@ extern "C" {
 ------------------------------------------------------------------------------*/
 #if defined( A0002_REV1 )
     /* MPU 9250 Registers */
-    #define GYRO_CONFIG                 0x1B
-    #define ACCEL_CONFIG                0x1C
-    #define ACCEL_XOUT_H                0x3B
-    #define ACCEL_XOUT_L                0x3C
-    #define ACCEL_YOUT_H                0X3D
-    #define ACCEL_YOUT_L                0x3E
-    #define ACCEL_ZOUT_H                0x3F
-    #define ACCEL_ZOUT_L                0x40
-    #define TEMP_OUT_H                  0x41
-    #define TEMP_OUT_L                  0x42
-    #define GYRO_XOUT_H                 0x43
-    #define GYRO_XOUT_L                 0x44
-    #define GYRO_YOUT_H                 0X45
-    #define GYRO_YOUT_L                 0x46
-    #define GYRO_ZOUT_H                 0x47
-    #define GYRO_ZOUT_L                 0x48
-    #define MAG_XOUT_H                  0x04
-    #define MAG_XOUT_L                  0x03
-    #define MAG_YOUT_H                  0X06
-    #define MAG_YOUT_L                  0x05
-    #define MAG_ZOUT_H                  0x08
-    #define MAG_ZOUT_L                  0x07
-    #define WHO_AM_I                    0x75
+    #define IMU_REG_GYRO_CONFIG         0x1B
+    #define IMU_REG_ACCEL_CONFIG        0x1C
+    #define IMU_REG_ACCEL_XOUT_H        0x3B
+    #define IMU_REG_ACCEL_XOUT_L        0x3C
+    #define IMU_REG_ACCEL_YOUT_H        0X3D
+    #define IMU_REG_ACCEL_YOUT_L        0x3E
+    #define IMU_REG_ACCEL_ZOUT_H        0x3F
+    #define IMU_REG_ACCEL_ZOUT_L        0x40
+    #define IMU_REG_TEMP_OUT_H          0x41
+    #define IMU_REG_TEMP_OUT_L          0x42
+    #define IMU_REG_GYRO_XOUT_H         0x43
+    #define IMU_REG_GYRO_XOUT_L         0x44
+    #define IMU_REG_GYRO_YOUT_H         0X45
+    #define IMU_REG_GYRO_YOUT_L         0x46
+    #define IMU_REG_GYRO_ZOUT_H         0x47
+    #define IMU_REG_GYRO_ZOUT_L         0x48
+    #define IMU_REG_MAG_XOUT_H          0x04
+    #define IMU_REG_MAG_XOUT_L          0x03
+    #define IMU_REG_MAG_YOUT_H          0X06
+    #define IMU_REG_MAG_YOUT_L          0x05
+    #define IMU_REG_MAG_ZOUT_H          0x08
+    #define IMU_REG_MAG_ZOUT_L          0x07
+    #define IMU_REG_WHO_AM_I            0x75
 #elif defined( A0002_REV2  )
     /* BMI270 Registers */
     #define IMU_REG_CHIP_ID             0x00
     #define IMU_REG_ERR_REG             0x02
     #define IMU_REG_STATUS              0x03
-    #define IMU_REG_DATA_0              0x04
-    #define IMU_REG_DATA_1              0x05
-    #define IMU_REG_DATA_2              0x06
-    #define IMU_REG_DATA_3              0x07
-    #define IMU_REG_DATA_4              0x08
-    #define IMU_REG_DATA_5              0x09
-    #define IMU_REG_DATA_6              0x0A
-    #define IMU_REG_DATA_7              0x0B
-    #define IMU_REG_DATA_8              0x0C
-    #define IMU_REG_DATA_9              0x0D
-    #define IMU_REG_DATA_10             0x0E
-    #define IMU_REG_DATA_11             0x0F
-    #define IMU_REG_DATA_12             0x10
-    #define IMU_REG_DATA_13             0x11
-    #define IMU_REG_DATA_14             0x12
-    #define IMU_REG_DATA_15             0x13
-    #define IMU_REG_DATA_16             0x14
-    #define IMU_REG_DATA_17             0x15
-    #define IMU_REG_DATA_18             0x16
-    #define IMU_REG_DATA_19             0x17
+    #define IMU_REG_DATA_0              0x04    /* AUX_X (LSB) */
+    #define IMU_REG_DATA_1              0x05    /* AUX_X (MSB) */
+    #define IMU_REG_DATA_2              0x06    /* AUX_Y (LSB) */
+    #define IMU_REG_DATA_3              0x07    /* AUX_Y (MSB) */
+    #define IMU_REG_DATA_4              0x08    /* AUX_Z (LSB) */
+    #define IMU_REG_DATA_5              0x09    /* AUX_Z (MSB) */
+    #define IMU_REG_DATA_6              0x0A    /* AUX_R (LSB) */
+    #define IMU_REG_DATA_7              0x0B    /* AUX_R (MSB) */
+    #define IMU_REG_DATA_8              0x0C    /* ACC_X (LSB) */
+    #define IMU_REG_DATA_9              0x0D    /* ACC_X (MSB) */
+    #define IMU_REG_DATA_10             0x0E    /* ACC_Y (LSB) */
+    #define IMU_REG_DATA_11             0x0F    /* ACC_Y (MSB) */
+    #define IMU_REG_DATA_12             0x10    /* ACC_Z (LSB) */
+    #define IMU_REG_DATA_13             0x11    /* ACC_Z (MSB) */
+    #define IMU_REG_DATA_14             0x12    /* GYR_X (LSB) */
+    #define IMU_REG_DATA_15             0x13    /* GYR_X (MSB) */
+    #define IMU_REG_DATA_16             0x14    /* GYR_Y (LSB) */
+    #define IMU_REG_DATA_17             0x15    /* GYR_Y (MSB) */
+    #define IMU_REG_DATA_18             0x16    /* GYR_Z (LSB) */
+    #define IMU_REG_DATA_19             0x17    /* GYR_Z (MSB) */
     #define IMU_REG_SENSORTIME_0        0x18
     #define IMU_REG_SENSORTIME_1        0x19
     #define IMU_REG_SENSORTIME_2        0x1A
@@ -159,6 +173,26 @@ extern "C" {
     #define IMU_REG_PWR_CONF            0x7C
     #define IMU_REG_PWR_CTRL            0x7D
     #define IMU_REG_CMD                 0x7E
+
+    /* BMM150 Registers */
+    #define MAG_REG_CHIP_ID             0x40
+    #define MAG_REG_DATAX_L             0x42
+    #define MAG_REG_DATAX_H             0x43
+    #define MAG_REG_DATAY_L             0x44
+    #define MAG_REG_DATAY_H             0x45
+    #define MAG_REG_DATAZ_L             0x46
+    #define MAG_REG_DATAZ_H             0x47
+    #define MAG_REG_HALLR_L             0x48
+    #define MAG_REG_HALLR_H             0x49
+    #define MAG_REG_INT                 0x4A
+    #define MAG_REG_PWR_CTRL            0x4B
+    #define MAG_REG_CTRL1               0x4C
+    #define MAG_REG_CTRL2               0x4D
+    #define MAG_REG_CTRL3               0x4E
+    #define MAG_REG_LOW_THRESH          0x4F
+    #define MAG_REG_HIGH_THRESH         0x50
+    #define MAG_REG_REP_CTRL_XY         0x51
+    #define MAG_REG_REP_CTRL_Z          0x52
 #endif
 
   
@@ -253,32 +287,60 @@ typedef enum _IMU_GYRO_RANGE
     IMU_GYRO_RANGE_125       /* +- 125  deg/s */
     } IMU_GYRO_RANGE;
 
+/* Magnetometer Output Data Rates */
+typedef enum _MAG_ODR_SETTING
+    {
+    MAG_ODR_10HZ = ( 0b000 << 3 ),
+    MAG_ODR_2HZ  = ( 0b001 << 3 ),
+    MAG_ODR_6HZ  = ( 0b010 << 3 ),
+    MAG_ODR_8HZ  = ( 0b011 << 3 ),
+    MAG_ODR_15HZ = ( 0b100 << 3 ),
+    MAG_ODR_20HZ = ( 0b101 << 3 ),
+    MAG_ODR_25HZ = ( 0b110 << 3 ),
+    MAG_ODR_30HZ = ( 0b111 << 3 )
+    } MAG_ODR_SETTING;
+
+/* Magnetometer Operation Mode */
+typedef enum _MAG_OP_MODE
+    {
+    MAG_NORMAL_MODE = ( 0b00 << 1 ),
+    MAG_FORCED_MODE = ( 0b01 << 1 ),
+    MAG_SLEEP_MODE  = ( 0b11 << 1 )
+    } MAG_OP_MODE;
+
 /* User IMU configuration settings */
 typedef struct _IMU_CONFIG 
 	{
-    IMU_SENSOR_ENABLE sensor_enable;   /* Enabled Sensors                 */
-    IMU_ODR_SETTING   acc_odr;         /* Accelerometer Output Data Rate  */ 
-    IMU_ODR_SETTING   gyro_odr;        /* Gyroscope Output Data Rate      */
-    IMU_FILTER_CONFIG acc_filter;      /* Accelerometer Filter Config     */
-    IMU_FILTER_CONFIG gyro_filter;     /* Gyroscope Filter Config         */
-    IMU_FILTER_MODE   acc_filter_mode; /* Accelerometer Filtering Mode    */
-    IMU_ACC_RANGE     acc_range;       /* Accelerometer Measurement Range */
-    IMU_GYRO_RANGE    gyro_range;      /* Gyroscope Measurement Range     */
+    IMU_SENSOR_ENABLE sensor_enable;      /* Enabled Sensors                    */
+    IMU_ODR_SETTING   acc_odr;            /* Accelerometer Output Data Rate     */ 
+    IMU_ODR_SETTING   gyro_odr;           /* Gyroscope Output Data Rate         */
+    MAG_ODR_SETTING   mag_odr;            /* Magnetometer Output Data Rate      */
+    IMU_FILTER_CONFIG acc_filter;         /* Accelerometer Filter Config        */
+    IMU_FILTER_CONFIG gyro_filter;        /* Gyroscope Filter Config            */
+    IMU_FILTER_MODE   acc_filter_mode;    /* Accelerometer Filtering Mode       */
+    IMU_FILTER_MODE   gyro_filter_mode;   /* Gyroscope Filtering Mode           */
+    IMU_ACC_RANGE     acc_range;          /* Accelerometer Measurement Range    */
+    IMU_GYRO_RANGE    gyro_range;         /* Gyroscope Measurement Range        */
+    MAG_OP_MODE       mag_op_mode;        /* Magnetometer Operation Mode        */
+    uint8_t           mag_xy_repititions; /* Magnetometer XY Measurement Reps   */
+    uint8_t           mag_z_repititions;  /* Magnetometer Z  Measurement Reps   */
 	} IMU_CONFIG;
 
 /* IMU Status */
 typedef enum IMU_STATUS
 	{
-    IMU_OK          = 0,
-    IMU_FAIL           ,
-    IMU_UNSUPPORTED_OP ,
-    IMU_UNRECOGNIZED_OP,
-    IMU_TIMEOUT        , 
-    IMU_I2C_ERROR      ,
-    IMU_MAG_ERROR      ,
-    IMU_ERROR          ,
-    IMU_INIT_FAIL      ,
-    IMU_CONFIG_FAIL
+    IMU_OK              = 0,
+    IMU_FAIL               ,
+    IMU_UNSUPPORTED_OP     ,
+    IMU_UNRECOGNIZED_OP    ,
+    IMU_TIMEOUT            , 
+    IMU_I2C_ERROR          ,
+    IMU_MAG_ERROR          ,
+    IMU_ERROR              ,
+    IMU_INIT_FAIL          ,
+    IMU_CONFIG_FAIL        ,
+    IMU_MAG_UNRECOGNIZED_ID,
+    IMU_MAG_INIT_FAIL
 	} IMU_STATUS;
 
 
