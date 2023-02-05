@@ -537,6 +537,7 @@ if ( imu_status != IMU_OK )
     }
 
 /* Check Device ID */
+HAL_Delay( 5 );
 imu_status = read_mag_regs( MAG_REG_CHIP_ID, &device_id, sizeof( device_id ) );
 if      ( imu_status != IMU_OK )
     {
