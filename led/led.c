@@ -12,12 +12,14 @@
 /*------------------------------------------------------------------------------
  MCU Pins 
 ------------------------------------------------------------------------------*/
-#if defined( FLIGHT_COMPUTER )
+#if   defined( FLIGHT_COMPUTER )
 	#include "sdr_pin_defines_A0002.h"
 #elif defined( ENGINE_CONTROLLER )
 	#include "sdr_pin_defines_L0002.h"
 #elif defined( GROUND_STATION )
 	#include "sdr_pin_defines_A0005.h"
+#elif defined( FLIGHT_COMPUTER_LITE )
+	#include "sdr_pin_defines_A0007.h"
 #endif
 
 
@@ -153,6 +155,34 @@ switch ( color )
                            STATUS_B_PIN | 
                            STATUS_G_PIN, 
                            GPIO_PIN_RESET);
+		break;
+		}
+
+	case LED_PURPLE:
+		{
+		HAL_GPIO_WritePin( STATUS_GPIO_PORT, 
+		                   STATUS_B_PIN | 
+						   STATUS_R_PIN    ,
+						   GPIO_PIN_RESET );
+		break;
+		}
+	
+	case LED_YELLOW:
+		{
+		HAL_GPIO_WritePin( STATUS_GPIO_PORT, 
+		                   STATUS_G_PIN | 
+						   STATUS_R_PIN    ,
+						   GPIO_PIN_RESET );
+		break;
+		}
+
+	case LED_WHITE:
+		{
+		HAL_GPIO_WritePin( STATUS_GPIO_PORT, 
+		                   STATUS_G_PIN | 
+						   STATUS_R_PIN |
+						   STATUS_B_PIN   ,
+						   GPIO_PIN_RESET );
 		break;
 		}
 

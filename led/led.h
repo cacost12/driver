@@ -24,10 +24,13 @@ extern "C" {
 /* LED Color Codes */
 typedef enum LED_COLOR_CODES
 	{
-	LED_GREEN = 0,
+	LED_GREEN = 1,
     LED_RED      ,
     LED_BLUE     ,
-    LED_CYAN
+    LED_CYAN     ,
+    LED_PURPLE   ,
+    LED_YELLOW   ,
+    LED_WHITE
 	} LED_COLOR_CODES;
 
 
