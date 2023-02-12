@@ -126,8 +126,8 @@ typedef enum
 		SENSOR_LC    = 0x09,
 		SENSOR_TC    = 0x08
 	#elif defined( FLIGHT_COMPUTER_LITE )
-		SENSOR_PRES  = 0x0A,
-		SENSOR_TEMP  = 0x0B
+		SENSOR_PRES  = 0x00,
+		SENSOR_TEMP  = 0x01
 	#endif
 	} SENSOR_IDS;
 
