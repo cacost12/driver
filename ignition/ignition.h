@@ -140,7 +140,7 @@ bool ign_ematch_cont
 #endif /* #if defined( ENGINE_CONTROLLER ) */
 
 
-#if defined( FLIGHT_COMPUTER )
+#if ( defined( FLIGHT_COMPUTER ) || defined( FLIGHT_COMPUTER_LITE ) )
 /* Asserts the ignition signal to ignite the main parachute deployment ematch. 
    Returns a response code indicating if the ignition occured succesfully */
 IGN_STATUS ign_deploy_main 

@@ -201,7 +201,7 @@ if ( ign_nozzle_cont() )
 	{
     ign_status |= IGN_NOZ_CONT_MASK;
     }
-#elif defined( FLIGHT_COMPUTER )
+#elif ( defined( FLIGHT_COMPUTER ) || defined( FLIGHT_COMPUTER_LITE ) )
 /* Poll the switch continuity pin */
 if ( ign_switch_cont() )
 	{
@@ -325,7 +325,7 @@ else
 #endif /* #if defined( ENGINE_CONTROLLER ) */
 
 
-#if defined( FLIGHT_COMPUTER )
+#if ( defined( FLIGHT_COMPUTER ) || defined( FLIGHT_COMPUTER_LITE ) )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -492,7 +492,7 @@ else
 #endif /* #if defined( FLIGHT_COMPUTER ) */
 
 
-#if defined( FLIGHT_COMPUTER )
+#if ( defined( FLIGHT_COMPUTER ) || defined( FLIGHT_COMPUTER_LITE ) )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -521,7 +521,7 @@ else
     }
 
 } /* switch_cont */
-#endif
+#endif /* #if defined( FLIGHT_COMPUTER ) */
 
 
 /*******************************************************************************
