@@ -21,6 +21,10 @@ extern "C" {
  Macros 
 ------------------------------------------------------------------------------*/
 
+/* Encoder states */
+#define ENCODER_HIGH    true
+#define ENCODER_LOW     false
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -38,6 +42,7 @@ typedef enum _VALVE_STATUS
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+#ifdef WIP
 /* Open the main oxidizer valve */
 VALVE_STATUS valve_open_ox_valve
 	(
@@ -61,15 +66,17 @@ VALVE_STATUS valve_close_fuel_valve
 	(
 	void
 	);
+#endif
 
 /* Get the position of the main oxidizer valve */
-VALVE_STATUS valve_get_ox_valve_pos
+uint32_t valve_get_ox_valve_pos
 	(
 	void
 	);
 
+#ifdef WIP
 /* Get the position of the main fuel valve */
-VALVE_STATUS valve_get_main_valve_pos
+VALVE_STATUS valve_get_fuel_valve_pos
 	(
 	void
 	);
@@ -91,6 +98,7 @@ VALVE_STATUS valve_calibrate_valves
 	(
 	void
 	);
+#endif
 
 #endif /* VALVE_H */
 

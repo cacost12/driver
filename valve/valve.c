@@ -11,6 +11,7 @@
 /*------------------------------------------------------------------------------
  Standard Includes                                                              
 ------------------------------------------------------------------------------*/
+#include <stdbool.h>
 
 
 /*------------------------------------------------------------------------------
@@ -25,13 +26,35 @@
 /*------------------------------------------------------------------------------
  Global Variables 
 ------------------------------------------------------------------------------*/
+volatile static uint32_t lox_valve_pos      = 0;  /* LOX Valve Encoder count  */
+volatile static bool     lox_channelA_state = ENCODER_LOW; /* Voltage on channel 
+                                                             A pin */
+volatile static bool     lox_channelB_state = ENCODER_LOW; /* Voltage on Channel 
+                                                             B pin */
+
+
+/*------------------------------------------------------------------------------
+ Internal Function Prototypes 
+------------------------------------------------------------------------------*/
+
+/* LOX Main Valve Encoder Channel A Interrupt */
+static void lox_channelA_ISR
+	(
+	void
+	);
+
+/* LOX Main Valve Encoder Channel B Interrupt */
+static void lox_channelB_ISR
+	(
+	void
+	);
 
 
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
 
-
+#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -154,6 +177,7 @@ VALVE_STATUS valve_close_fuel_valve
 ------------------------------------------------------------------------------*/
 return VALVE_OK;
 } /* valve_close_fuel_valve */
+#endif /* #ifdef WIP */
 
 
 /*******************************************************************************
@@ -165,28 +189,15 @@ return VALVE_OK;
 *       Get the position of the main oxidizer valve                            *
 *                                                                              *
 *******************************************************************************/
-VALVE_STATUS valve_get_ox_valve_pos
+inline uint32_t valve_get_ox_valve_pos
 	(
 	void
 	)
 {
-/*------------------------------------------------------------------------------
- Local Variables
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Initializations
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Implementation 
-------------------------------------------------------------------------------*/
-return VALVE_OK;
+return lox_valve_pos*360/1000;
 } /* valve_get_ox_valve_pos */
 
-
+#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -309,6 +320,74 @@ VALVE_STATUS valve_calibrate_valves
 ------------------------------------------------------------------------------*/
 return VALVE_OK;
 } /* valve_calibrate_valves */
+#endif /* #ifdef WIP */
+
+/*------------------------------------------------------------------------------
+ Interrupt Service Routines 
+------------------------------------------------------------------------------*/
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		lox_channelA_ISR                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       LOX Main Valve Encoder Channel A Interrupt                             *
+*                                                                              *
+*******************************************************************************/
+static void lox_channelA_ISR
+	(
+	void
+	)
+{
+/* Low to High Transition */
+if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_A_PIN ) )
+	{
+	lox_channelA_state = ENCODER_HIGH;
+	if ( !lox_channelB_state )
+		{
+		lox_valve_pos -= 1;
+		}
+	}
+/* High to Low Transition */
+else
+	{
+	lox_channelA_state = ENCODER_LOW;
+	}
+} /* lox_channelA_ISR */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		lox_channelB_ISR                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       LOX Main Valve Encoder Channel B Interrupt                             *
+*                                                                              *
+*******************************************************************************/
+static void lox_channelB_ISR
+	(
+	void
+	)
+{
+/* Low to High Transition */
+if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_B_PIN ) )
+	{
+	lox_channelB_state = ENCODER_HIGH;
+	if ( !lox_channelA_state )
+		{
+		lox_valve_pos += 1;
+		}
+	}
+/* High to Low Transition */
+else
+	{
+	lox_channelB_state = ENCODER_LOW;
+	}
+
+} /* lox_channelB_ISR */
 
 
 /*******************************************************************************
