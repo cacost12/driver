@@ -443,16 +443,16 @@ bool ign_main_cont
 {
 
 /* Check MCU GPIO State */
-uint8_t main_cont_pinstate = HAL_GPIO_ReadPin( MAIN_GPIO_PORT, MAIN_PIN );
+uint8_t main_cont_pinstate = HAL_GPIO_ReadPin( MAIN_GPIO_PORT, MAIN_CONT_PIN );
 
-/* Return true if GPIO state is high*/
+/* Return true if GPIO state is low */
 if ( main_cont_pinstate == 0 )
 	{
-    return true;
+    return false;
 	}
 else
 	{
-    return false;
+    return true;
     }
 
 } /* ign_main_cont */
@@ -478,14 +478,14 @@ bool ign_drogue_cont
 uint8_t drogue_cont_pinstate = HAL_GPIO_ReadPin( DROGUE_CONT_GPIO_PORT, 
                                                  DROGUE_CONT_PIN );
 
-/* Return true if GPIO state is high*/
+/* Return true if GPIO state is low */
 if ( drogue_cont_pinstate == 0 )
 	{
-    return true;
+    return false;
 	}
 else
 	{
-    return false;
+    return true;
     }
 
 } /* drogue_cont */
