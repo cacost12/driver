@@ -21,7 +21,13 @@
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
 #include "main.h"
-#include "sdr_pin_defines_A0002.h"
+#if defined( FLIGHT_COMPUTER )
+	#include "sdr_pin_defines_A0002.h"
+#elif defined( FLIGHT_COMPUTER_LITE )
+	#include "sdr_pin_defines_A0007.h"
+#else
+	#error No buzzer compatible device specified
+#endif
 #include "buzzer.h"
 
 
