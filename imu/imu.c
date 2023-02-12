@@ -38,10 +38,12 @@
 ------------------------------------------------------------------------------*/
 
 /* Initialize the magnetometer */
+#if defined( A0002_REV2 )
 static IMU_STATUS mag_init
     (
     IMU_CONFIG* imu_config_ptr
     );
+#endif
 
 /* Read IMU registers */
 static IMU_STATUS read_imu_regs
@@ -52,6 +54,7 @@ static IMU_STATUS read_imu_regs
     ); 
 
 /* Write to a specified IMU register */
+#if defined( A0002_REV2 )
 static IMU_STATUS write_imu_reg 
     (
     uint8_t reg_addr, /* Register address    */
@@ -65,6 +68,7 @@ static IMU_STATUS write_imu_regs
     uint8_t* data_ptr, /* Register data       */
     uint32_t num_regs  /* Number of registers */
     ); 
+#endif /* #if defined( A0002_REV2 )*/
 
 /* Read Magnetometer registers */
 static IMU_STATUS read_mag_regs
@@ -75,18 +79,20 @@ static IMU_STATUS read_mag_regs
     ); 
 
 /* Write to a specified magnetometer register */
+#if defined( A0002_REV2 )
 static IMU_STATUS write_mag_reg 
     (
     uint8_t reg_addr, /* Register address    */
     uint8_t data      /* Register data       */
     ); 
+#endif 
 
 
 /*------------------------------------------------------------------------------
  Procedures 
 ------------------------------------------------------------------------------*/
 
-
+#if defined( A0002_REV2 )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -245,6 +251,7 @@ if ( imu_status != IMU_OK )
 /* IMU Inititialization Successful */
 return IMU_OK;
 } /* imu_init */
+#endif /* #if defined( A0002_REV2 ) */
 
 
 /*******************************************************************************
@@ -410,7 +417,7 @@ IMU_STATUS  imu_status;   /* IMU status return codes          */
 
 /* Read MAG_X, MAG_Y, MAG_Z high byte and low byte registers */
 #if   defined( A0002_REV1 )
-    imu_status = read_mag_regs( IMU_REG_MAG_XOUT_L, 
+    imu_status = read_mag_regs( IMU_REG_MAG_XOUT_H, 
                                 &regMag[0]        , 
                                 sizeof( regMag ) );
 #elif defined( A0002_REV2 )
@@ -493,6 +500,7 @@ return imu_status;
  Internal procedures 
 ------------------------------------------------------------------------------*/
 
+#if defined( A0002_REV2 )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -572,6 +580,7 @@ if ( imu_status != IMU_OK )
 /* Successful magnetometer Initialization */
 return IMU_OK;
 } /* mag_init */
+#endif /* #if defined( A0002_REV2 ) */
 
 
 /*******************************************************************************
@@ -671,6 +680,7 @@ else
 } /* read_imu_regs */
 
 
+#if defined( A0002_REV2 )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -716,7 +726,7 @@ else
     {
     return IMU_OK;
     }
-} /* write_imu_regs */
+} /* write_imu_reg */
 
 
 /*******************************************************************************
@@ -814,6 +824,7 @@ else
     return IMU_OK;
     }
 } /* write_mag_regs */
+#endif /* #if defined( A0002_REV2 ) */
 
 
 /*******************************************************************************
