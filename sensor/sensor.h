@@ -53,6 +53,10 @@ Includes
 	/* General */
 	#define NUM_SENSORS         ( 10   )
 	#define SENSOR_DATA_SIZE    ( 40   )
+#elif defined( FLIGHT_COMPUTER_LITE )
+	/* General */
+	#define NUM_SENSORS         ( 2    )
+	#define SENSOR_DATA_SIZE    ( 8    )
 #else
 	#error Board is not compatible with SENSOR module
 #endif
@@ -121,6 +125,9 @@ typedef enum
 		SENSOR_PT7   = 0x07,
 		SENSOR_LC    = 0x09,
 		SENSOR_TC    = 0x08
+	#elif defined( FLIGHT_COMPUTER_LITE )
+		SENSOR_PRES  = 0x0A,
+		SENSOR_TEMP  = 0x0B
 	#endif
 	} SENSOR_IDS;
 
@@ -135,6 +142,9 @@ typedef struct SENSOR_DATA
 		uint32_t pt_pressures[ NUM_PTS ];
 		uint32_t load_cell_force;
 		uint32_t tc_temp;
+	#elif defined( FLIGHT_COMPUTER_LITE )
+		float baro_pressure;
+		float baro_temp;
 	#endif /* #elif defined( ENGINE_CONTROLLER ) */
 	} SENSOR_DATA;
 

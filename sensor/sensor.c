@@ -20,10 +20,12 @@
 /*------------------------------------------------------------------------------
  MCU Pins 
 ------------------------------------------------------------------------------*/
-#if   defined( FLIGHT_COMPUTER   )
+#if   defined( FLIGHT_COMPUTER      )
 	#include "sdr_pin_defines_A0002.h"
-#elif defined( ENGINE_CONTROLLER )
+#elif defined( ENGINE_CONTROLLER    )
 	#include "sdr_pin_defines_L0002.h"
+#elif defined( FLIGHT_COMPUTER_LITE )
+	#include "sdr_pin_defines_A0007.h"
 #endif 
 
 
@@ -33,6 +35,8 @@
 #include "main.h"
 #if defined( FLIGHT_COMPUTER )
 	#include "imu.h"
+	#include "baro.h"
+#elif defined( FLIGHT_COMPUTER_LITE )
 	#include "baro.h"
 #endif
 #include "usb.h"
@@ -152,6 +156,15 @@ void sensor_init
 	sensor_size_offsets_table[ 7  ].size   = 4;  /* SENSOR_PT7  */
 	sensor_size_offsets_table[ 8  ].size   = 4;  /* SENSOR_TC   */
 	sensor_size_offsets_table[ 9  ].size   = 4;  /* SENSOR_LC   */
+#elif defined( FLIGHT_COMPUTER_LITE )
+
+	/* Sensor offsets */
+	sensor_size_offsets_table[ 0 ].offset = 0; /* SENSOR_PRES  */
+	sensor_size_offsets_table[ 1 ].offset = 4; /* SENSOR_TEMP  */
+
+	/* Sensor Sizes   */
+	sensor_size_offsets_table[ 0 ].size   = 4;  /* SENSOR_PRES  */
+	sensor_size_offsets_table[ 1 ].size   = 4;  /* SENSOR_TEMP  */
 #endif
 
 } /* sensor_init */
@@ -385,29 +398,35 @@ SENSOR_STATUS sensor_dump
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-#if defined( FLIGHT_COMPUTER )
+#if   defined( FLIGHT_COMPUTER      )
 	IMU_STATUS      accel_status;           /* IMU sensor status codes     */       
 	IMU_STATUS      gyro_status;
 	IMU_STATUS      mag_status; 
 	BARO_STATUS     press_status;           /* Baro Sensor status codes    */
 	BARO_STATUS     temp_status;
-#elif defined( ENGINE_CONTROLLER )
+#elif defined( ENGINE_CONTROLLER    )
 	PRESSURE_STATUS pt_status;              /* Pressure status codes       */
 	THERMO_STATUS   tc_status;              /* Thermocouple status codes   */
+#elif defined( FLIGHT_COMPUTER_LITE )
+	BARO_STATUS     press_status;           /* Baro Sensor status codes    */
+	BARO_STATUS     temp_status;
 #endif
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-#if defined( FLIGHT_COMPUTER )
+#if   defined( FLIGHT_COMPUTER      )
 	accel_status = IMU_OK;         
 	gyro_status  = IMU_OK;
 	mag_status   = IMU_OK; 
 	press_status = BARO_OK;           
 	temp_status  = BARO_OK;
-#elif defined( ENGINE_CONTROLLER )
+#elif defined( ENGINE_CONTROLLER    )
 	pt_status    = PRESSURE_OK;          
 	tc_status    = THERMO_OK;        
+#elif defined( FLIGHT_COMPUTER_LITE )
+	press_status = BARO_OK;           
+	temp_status  = BARO_OK;
 #endif
 
 /*------------------------------------------------------------------------------
@@ -438,6 +457,10 @@ SENSOR_STATUS sensor_dump
 	/* Thermocouple */
 	tc_status    = temp_get_temp( &( sensor_data_ptr -> tc_temp ), 
 	                              THERMO_HOT_JUNCTION );
+#elif defined( FLIGHT_COMPUTER_LITE )
+	/* Baro sensors */
+	temp_status  = baro_get_temp    ( &(sensor_data_ptr -> baro_temp     ) );
+	press_status = baro_get_pressure( &(sensor_data_ptr -> baro_pressure ) );
 #endif
 
 
@@ -479,6 +502,16 @@ SENSOR_STATUS sensor_dump
 		{
 		return SENSOR_OK;
 		}
+#elif defined( FLIGHT_COMPUTER_LITE )
+	if ( press_status != BARO_OK ||
+		 temp_status  != BARO_OK  )
+		{
+		return SENSOR_BARO_ERROR;
+		}
+	else
+		{
+		return SENSOR_OK;
+		}
 #endif /* #elif defined( ENGINE_CONTROLLER )*/
 
 } /* sensor_dump */
@@ -512,6 +545,8 @@ SENSOR_ID* sensor_id_ptr;    /* Pointer to sensor id                */
 	BARO_STATUS   baro_status;     /* Baro module return codes  */
 #elif defined( ENGINE_CONTROLLER )
 	THERMO_STATUS thermo_status;   /* Thermocouple return codes */
+#elif defined( FLIGHT_COMPUTER_LITE )
+	BARO_STATUS   baro_status;     /* Baro module return codes  */
 #endif
 
 /* Sensor poll memory to prevent multiple calls to same API function */
@@ -533,6 +568,8 @@ sensor_id         = *(sensor_id_ptr   );
 	baro_status   = BARO_OK;
 #elif defined( ENGINE_CONTROLLER )
 	thermo_status = THERMO_OK;
+#elif defined( FLIGHT_COMPUTER_LITE )
+	baro_status   = BARO_OK;
 #endif
 
 /* Sensor poll memory */
@@ -686,7 +723,9 @@ for ( int i = 0; i < num_sensors; ++i )
 				sensor_data_ptr -> imu_data.temp = 0;
 				break;
 				}
+		#endif /* #if defined( FLIGHT_COMPUTER ) */
 
+		#if ( defined( FLIGHT_COMPUTER )  || defined( FLIGHT_COMPUTER_LITE ) )
 			case SENSOR_PRES:
 				{
 				baro_status = baro_get_temp(     &( sensor_data_ptr -> baro_temp     ) );
@@ -711,8 +750,9 @@ for ( int i = 0; i < num_sensors; ++i )
 					}
 				break;
 				}
+		#endif /* if defined( FLIGHT_COMPUTER ) || defined( FLIGHT_COMPUTER_LITE ) */
 
-		#elif defined( ENGINE_CONTROLLER )
+		#if defined( ENGINE_CONTROLLER )
 			case SENSOR_PT0:
 				{
 				sensor_data_ptr -> pt_pressures[0] = pressure_get_pt_reading( PT_NUM0 );
@@ -778,7 +818,7 @@ for ( int i = 0; i < num_sensors; ++i )
 				break;
 				}
 
-		#endif /* #elif defined( ENGINE_CONTROLLER ) */
+		#endif /* #if defined( ENGINE_CONTROLLER ) */
 
 		default:
 			{
