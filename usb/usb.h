@@ -53,6 +53,14 @@ USB_STATUS usb_receive
 	uint32_t timeout       /* UART timeout */
 	);
 
+/* Checks for an active USB connection */
+#if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE )
+bool usb_detect
+	(
+	void
+	);
+#endif /* #if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE ) */
+
 
 #endif /* USB_H */
 

@@ -10,6 +10,12 @@
 
 
 /*------------------------------------------------------------------------------
+ Standard Includes  
+------------------------------------------------------------------------------*/
+#include <stdbool.h>
+
+
+/*------------------------------------------------------------------------------
  MCU Pins 
 ------------------------------------------------------------------------------*/
 #if   defined( FLIGHT_COMPUTER      )
@@ -26,7 +32,7 @@
 
 
 /*------------------------------------------------------------------------------
- Project Includes                                                                     
+ Project Includes                                                               
 ------------------------------------------------------------------------------*/
 #include "main.h"
 #include "usb.h"
@@ -94,11 +100,11 @@ else
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
 * 		usb_receieve                                                           *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
-* 	    Receives bytes from the USB port                                       *	
+* DESCRIPTION:                                                                 *
+* 	    Receives bytes from the USB port                                       *
 *                                                                              *
 *******************************************************************************/
 USB_STATUS usb_receive 
@@ -145,6 +151,53 @@ switch ( usb_status )
 	}
 
 } /* usb_receive */
+
+
+#if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE )
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		usb_detect                                                             *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+* 	    Detect a USB connection by checking the power on the USB 5V line       *
+*                                                                              *
+*******************************************************************************/
+bool usb_detect
+	(
+	void
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+uint8_t usb_detect_pinstate;    /* USB detect state, return value from HAL    */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+usb_detect_pinstate = 0;
+
+
+/*------------------------------------------------------------------------------
+ API Function Implementation 
+------------------------------------------------------------------------------*/
+
+/* Read voltage on usb detect pin */
+usb_detect_pinstate = HAL_GPIO_ReadPin( USB_DETECT_GPIO_PORT, USB_DETECT_PIN );
+
+/* Set return value */
+if ( usb_detect_pinstate == 0 )
+	{
+	return false;
+	}
+else
+	{
+	return true;
+	}
+} /* usb_detect */
+#endif /* #if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE ) */
 
 
 /*******************************************************************************
