@@ -88,6 +88,18 @@ static float press_compensate
 	uint32_t raw_readout
 	);
 
+/* Reset the baro sensor */
+static BARO_STATUS baro_reset
+	(
+	void
+	);
+
+/* Flush the FIFO buffer */
+static BARO_STATUS baro_flush_fifo
+	(
+	void
+	);
+
 
 /*------------------------------------------------------------------------------
  API Functions 
@@ -142,6 +154,14 @@ else if ( baro_device_id != BMP390_DEVICE_ID &&
 	return BARO_UNRECOGNIZED_CHIP_ID;
 	}
 
+/* Reset the sensor */
+baro_status = baro_reset();
+if ( baro_status != BARO_OK )
+	{
+	return BARO_CANNOT_RESET;
+	}
+HAL_Delay( 10 );
+
 /* Check the Baro error register */
 baro_status = read_regs( BARO_REG_ERR_REG      , 
                          sizeof( baro_err_reg ), 
@@ -160,6 +180,13 @@ baro_status = load_cal_data();
 if ( baro_status != BARO_OK )
 	{
 	return BARO_CAL_ERROR;
+	}
+
+/* Flush the sensor FIFO buffer */
+baro_status = baro_flush_fifo();
+if ( baro_status != BARO_OK )
+	{
+	return BARO_FIFO_ERROR;
 	}
 
 /* Initialize the compensation temperature */
@@ -773,6 +800,42 @@ partial_data4 = ( partial_data3 +
 return partial_out1 + partial_out2 + partial_data4;
 
 } /* press_compensate */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       baro_reset                                                             *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Performs a soft reset of the barometric pressure sensor                *
+*                                                                              *
+*******************************************************************************/
+static BARO_STATUS baro_reset
+	(
+	void
+	)
+{
+return write_reg( BARO_REG_CMD, BARO_CMD_RESET );
+} /* baro_reset */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       baro_flush_fifo                                                        *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Flushes the barometric pressure sensor FIFO buffer                     *
+*                                                                              *
+*******************************************************************************/
+static BARO_STATUS baro_flush_fifo
+	(
+	void
+	)
+{
+return write_reg( BARO_REG_CMD, BARO_CMD_FIFO_FLUSH );
+} /* baro_flush_fifo */
 
 
 /*******************************************************************************
