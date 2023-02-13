@@ -645,24 +645,24 @@ cal_data_int.par_p11 = (int8_t) buffer[20];
 ------------------------------------------------------------------------------*/
 
 /* Temp Compensation */
-baro_cal_data.par_t1   = ( ( (float) cal_data_int.par_t1  )/powf( 2, -8 ) );
-baro_cal_data.par_t2   = ( ( (float) cal_data_int.par_t2  )/powf( 2, 30 ) );
-baro_cal_data.par_t3   = ( ( (float) cal_data_int.par_t3  )/powf( 2, 48 ) );
+baro_cal_data.par_t1   = ( ( (float) cal_data_int.par_t1  )/( 0.00390625f        ) );
+baro_cal_data.par_t2   = ( ( (float) cal_data_int.par_t2  )/( 1073741824.0f      ) );
+baro_cal_data.par_t3   = ( ( (float) cal_data_int.par_t3  )/( 281474976710656.0f ) );
 
 /* Pressure Compensation */
-baro_cal_data.par_p1   = ( ( (float) cal_data_int.par_p1  ) - powf( 2, 14 ) );
-baro_cal_data.par_p1  /= powf( 2, 20 );
-baro_cal_data.par_p2   = ( ( (float) cal_data_int.par_p2  ) - powf( 2, 14 ) );
-baro_cal_data.par_p2  /= powf( 2, 29 );
-baro_cal_data.par_p3   = ( ( (float) cal_data_int.par_p3  )/powf( 2, 32 ) );
-baro_cal_data.par_p4   = ( ( (float) cal_data_int.par_p4  )/powf( 2, 37 ) );
-baro_cal_data.par_p5   = ( ( (float) cal_data_int.par_p5  )/powf( 2, -3 ) );
-baro_cal_data.par_p6   = ( ( (float) cal_data_int.par_p6  )/powf( 2,  6 ) );
-baro_cal_data.par_p7   = ( ( (float) cal_data_int.par_p7  )/powf( 2,  8 ) );
-baro_cal_data.par_p8   = ( ( (float) cal_data_int.par_p8  )/powf( 2, 15 ) );
-baro_cal_data.par_p9   = ( ( (float) cal_data_int.par_p9  )/powf( 2, 48 ) );
-baro_cal_data.par_p10  = ( ( (float) cal_data_int.par_p10 )/powf( 2, 48 ) );
-baro_cal_data.par_p11  = ( ( (float) cal_data_int.par_p11 )/powf( 2, 65 ) );
+baro_cal_data.par_p1   = ( (float) ( cal_data_int.par_p1 - 16384 ) );
+baro_cal_data.par_p1  /= ( 1048576.0f );
+baro_cal_data.par_p2   = ( (float) ( cal_data_int.par_p2 - 16384 ) );
+baro_cal_data.par_p2  /= ( 536870912.0f );
+baro_cal_data.par_p3   = ( ( (float) cal_data_int.par_p3  )/( 4294967296.0f           ) );
+baro_cal_data.par_p4   = ( ( (float) cal_data_int.par_p4  )/( 137438953472.0f         ) );
+baro_cal_data.par_p5   = ( ( (float) cal_data_int.par_p5  )/( 0.125f                  ) );
+baro_cal_data.par_p6   = ( ( (float) cal_data_int.par_p6  )/( 64.0f                   ) );
+baro_cal_data.par_p7   = ( ( (float) cal_data_int.par_p7  )/( 256.0f                  ) );
+baro_cal_data.par_p8   = ( ( (float) cal_data_int.par_p8  )/( 32768.0f                ) );
+baro_cal_data.par_p9   = ( ( (float) cal_data_int.par_p9  )/( 281474976710656.0f      ) );
+baro_cal_data.par_p10  = ( ( (float) cal_data_int.par_p10 )/( 281474976710656.0f      ) );
+baro_cal_data.par_p11  = ( ( (float) cal_data_int.par_p11 )/( 36893488147419103232.0f ) );
 
 /* Load Successful */
 return BARO_OK;
