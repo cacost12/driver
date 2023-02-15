@@ -100,8 +100,11 @@ VALVE_STATUS valve_calibrate_valves
 	);
 #endif
 
-#endif /* VALVE_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* VALVE_H */
 
 /*******************************************************************************
 * END OF FILE                                                                  *

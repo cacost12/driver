@@ -180,8 +180,11 @@ bool ign_switch_cont
 
 #endif /* #if defined( FLIGHT_COMPUTER )*/
 
-#endif /* IGNITION_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* IGNITION_H */
 
 /*******************************************************************************
 * END OF FILE                                                                  * 

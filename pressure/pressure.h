@@ -109,9 +109,11 @@ void pressure_get_all_gains
     uint8_t* pgains 
     );
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PRESSURE_H */
-
 
 /*******************************************************************************
 * END OF FILE                                                                  * 

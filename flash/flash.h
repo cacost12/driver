@@ -241,6 +241,9 @@ FLASH_STATUS flash_erase
     HFLASH_BUFFER* pflash_handle	
     );
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FLASH_H */
 

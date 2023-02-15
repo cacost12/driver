@@ -49,6 +49,10 @@ uint32_t loadcell_get_reading
 	void
     );
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* LOADCELL_H */
 
 /*******************************************************************************

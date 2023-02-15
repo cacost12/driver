@@ -9,9 +9,13 @@
 *
 *******************************************************************************/
 
-// /* Define to prevent recursive inclusion -------------------------------------*/
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef SENSOR_H
 #define SENSOR_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "stm32h7xx_hal.h"
 #if defined( FLIGHT_COMPUTER )
@@ -189,9 +193,11 @@ SENSOR_STATUS sensor_dump
     SENSOR_DATA* sensor_data_ptr 
     );
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SENSOR_H */
-
 
 /*******************************************************************************
 * END OF FILE                                                                  * 

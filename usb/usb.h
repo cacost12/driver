@@ -61,9 +61,11 @@ bool usb_detect
 	);
 #endif /* #if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE ) */
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* USB_H */
-
 
 /*******************************************************************************
 * END OF FILE                                                                  * 
