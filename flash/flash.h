@@ -81,6 +81,28 @@ Includes
 /* Status register bitmasks */
 #define FLASH_BUSY_BITMASK          0b00000001
 
+/* Flash Block Addresses - 4Mbit of memory -> 512kB total
+   4kB min sector size -> Max 128 sectors  
+   32kB sector size -> 16 Pages 
+   64kB sector size -> 8 Pages*/
+/* Use 32kB pages for up to 15 flight's recorded */
+#define FLASH_BLOCK0_ADDR          0x000000
+#define FLASH_BLOCK1_ADDR          0x008000
+#define FLASH_BLOCK2_ADDR          0x010000
+#define FLASH_BLOCK3_ADDR          0x018000
+#define FLASH_BLOCK4_ADDR          0x020000
+#define FLASH_BLOCK5_ADDR          0x028000
+#define FLASH_BLOCK6_ADDR          0x030000
+#define FLASH_BLOCK7_ADDR          0x038000
+#define FLASH_BLOCK8_ADDR          0x040000
+#define FLASH_BLOCK9_ADDR          0x048000
+#define FLASH_BLOCK10_ADDR         0x050000
+#define FLASH_BLOCK11_ADDR         0x058000
+#define FLASH_BLOCK12_ADDR         0x060000
+#define FLASH_BLOCK13_ADDR         0x068000
+#define FLASH_BLOCK14_ADDR         0x070000
+#define FLASH_BLOCK15_ADDR         0x078000
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -167,6 +189,26 @@ typedef enum FLASH_STATUS
 	FLASH_INIT_FAIL
 	} FLASH_STATUS;
 
+/* Flash Block Numbers */
+typedef enum _FLASH_BLOCK
+	{
+	FLASH_BLOCK_0 = 0,
+	FLASH_BLOCK_1    ,
+	FLASH_BLOCK_2    ,
+	FLASH_BLOCK_3    ,
+	FLASH_BLOCK_4    ,
+	FLASH_BLOCK_5    ,
+	FLASH_BLOCK_6    ,
+	FLASH_BLOCK_7    ,
+	FLASH_BLOCK_8    ,
+	FLASH_BLOCK_10   ,
+	FLASH_BLOCK_11   ,
+	FLASH_BLOCK_12   ,
+	FLASH_BLOCK_13   ,
+	FLASH_BLOCK_14   ,
+	FLASH_BLOCK_15    
+	} FLASH_BLOCK;
+
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
@@ -240,6 +282,12 @@ FLASH_STATUS flash_erase
     (
     HFLASH_BUFFER* pflash_handle	
     );
+
+/* Erase a 32kB block of flash */
+FLASH_STATUS flash_block_erase
+	(
+	FLASH_BLOCK flash_block_num
+	);
 
 #ifdef __cplusplus
 }

@@ -965,10 +965,10 @@ return FLASH_OK;
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
 * 		flash_erase                                                            *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 *       erases the entire flash chip                                           *
 *                                                                              *
 *******************************************************************************/
@@ -1032,6 +1032,85 @@ else
 	}
 
 } /* flash_erase */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		flash_block_erase                                                      *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Erase a 32kB block of flash                                            *
+*                                                                              *
+*******************************************************************************/
+FLASH_STATUS flash_block_erase
+	(
+	FLASH_BLOCK flash_block_num
+	)
+{
+/*------------------------------------------------------------------------------
+ Local variables 
+------------------------------------------------------------------------------*/
+int8_t       hal_status[2];       /* Status code return by hal spi functions  */
+uint8_t      flash_opcode;        /* Data to be transmitted over SPI          */
+FLASH_STATUS flash_status;        /* Return codes from flash API              */
+uint32_t     flash_addr;          /* Address of block to erase                */
+uint8_t      flash_addr_bytes[3]; /* Address of block to erase in byte form   */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+flash_opcode = FLASH_OP_HW_32K_ERASE;
+flash_status = FLASH_OK;
+flash_addr   = flash_block_num*(0x8000);
+address_to_bytes( flash_addr, &flash_addr_bytes[0] );
+
+
+/*------------------------------------------------------------------------------
+ Pre-processing 
+------------------------------------------------------------------------------*/
+
+/* Check if write_enabled */
+if( !( write_enabled ) )
+    {
+    return FLASH_WRITE_PROTECTED;
+    }
+
+
+/*------------------------------------------------------------------------------
+ API function implementation
+------------------------------------------------------------------------------*/
+
+/* Enable writing to flash */
+flash_status = write_enable();
+
+/* 32kB sector erase sequence */
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
+hal_status[0] = HAL_SPI_Transmit( &( FLASH_SPI )        ,
+							      &flash_opcode         ,
+							      sizeof( flash_opcode ),
+							      HAL_DEFAULT_TIMEOUT );
+hal_status[1] = HAL_SPI_Transmit( &( FLASH_SPI )            , 
+                                  &flash_addr_bytes[0]      ,
+								  sizeof( flash_addr_bytes ), 
+								  HAL_DEFAULT_TIMEOUT );
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
+
+/* Return status code */
+if      ( hal_status[0] != HAL_OK || hal_status[1] != HAL_OK )
+	{
+	return FLASH_SPI_ERROR;
+	}
+else if ( flash_status != FLASH_OK )
+	{
+	return FLASH_FAIL;
+	}
+else
+	{
+	return FLASH_OK;
+	}
+} /* flash_block_erase */
 
 
 /*------------------------------------------------------------------------------
