@@ -52,17 +52,14 @@
  Global Variables 
 ------------------------------------------------------------------------------*/
 
-#if defined( TERMINAL )
 /* Hash table of sensor readout sizes and offsets */
 static SENSOR_DATA_SIZE_OFFSETS sensor_size_offsets_table[ NUM_SENSORS ];
-#endif
 
 
 /*------------------------------------------------------------------------------
  Internal function prototypes 
 ------------------------------------------------------------------------------*/
 
-#if defined( TERMINAL )
 /* Sensor ID to size and pointer mapping */
 void static sensor_map
 	(
@@ -81,14 +78,12 @@ void static extract_sensor_bytes
 	uint8_t*     sensor_data_bytes_ptr,
 	uint8_t*     num_sensor_bytes
 	);
-#endif
 
 
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
 
-#if defined( TERMINAL )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -377,8 +372,6 @@ switch ( subcommand )
 
 } /* sensor_cmd_execute */
 
-#endif /* #if  defined( TERMINAL ) */
-
 
 /*******************************************************************************
 *                                                                              *
@@ -516,7 +509,7 @@ SENSOR_STATUS sensor_dump
 
 } /* sensor_dump */
 
-#if defined( TERMINAL )
+
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -835,14 +828,12 @@ for ( int i = 0; i < num_sensors; ++i )
 
 return SENSOR_OK;
 } /* sensor_poll */
-#endif /* #if defined( TERMINAL ) */
 
 
 /*------------------------------------------------------------------------------
  Internal procedures 
 ------------------------------------------------------------------------------*/
 
-#if defined( TERMINAL )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -933,7 +924,6 @@ for ( uint8_t i = 0; i < num_sensors; ++i )
 	}
 
 } /* extract_sensor_bytes */
-#endif /* #if defined( TERMINAL )*/
 
 
 /*******************************************************************************

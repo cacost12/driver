@@ -96,13 +96,11 @@ typedef enum IGN_SUBCOMMAND
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#if defined( TERMINAL ) 
 /* Executes an ignition subcommand based on user input from the sdec terminal */
 IGN_STATUS ign_cmd_execute
 	(
     IGN_SUBCOMMAND ign_subcommand
     );
-#endif /* #if defined( TERMINAL ) */
 
 /* Polls each continuity pin and sets the continuity bits in the response 
    code */

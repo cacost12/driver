@@ -61,6 +61,13 @@ bool usb_detect
 	);
 #endif /* #if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE ) */
 
+/* Remove garbage USB data by cycling receiving data until a timeout condition 
+   is encountered */
+void usb_flush
+	(
+	void
+	);
+
 #ifdef __cplusplus
 }
 #endif

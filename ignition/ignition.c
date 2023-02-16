@@ -38,7 +38,7 @@
  Procedures 
 ------------------------------------------------------------------------------*/
 
-#if defined( TERMINAL )  
+
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -108,7 +108,6 @@ switch( ign_subcommand )
 return ign_status;
 
 } /* ign_cmd_execute */
-#endif /* #if ( defined( TERMINAL ) && defined( FLIGHT_COMPUTER ) ) */
 
 
 #if defined( ENGINE_CONTROLLER )
