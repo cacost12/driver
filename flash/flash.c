@@ -1040,12 +1040,13 @@ else
 * 		flash_block_erase                                                      *
 *                                                                              *
 * DESCRIPTION:                                                                 *
-*       Erase a 32kB block of flash                                            *
+*       Erase a block of flash                                                 *
 *                                                                              *
 *******************************************************************************/
 FLASH_STATUS flash_block_erase
 	(
-	FLASH_BLOCK flash_block_num
+	FLASH_BLOCK      flash_block_num, /* Block of flash to erase */
+	FLASH_BLOCK_SIZE size             /* Size of block           */
 	)
 {
 /*------------------------------------------------------------------------------
@@ -1061,15 +1062,46 @@ uint8_t      flash_addr_bytes[3]; /* Address of block to erase in byte form   */
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-flash_opcode = FLASH_OP_HW_32K_ERASE;
 flash_status = FLASH_OK;
-flash_addr   = flash_block_num*(0x8000);
-address_to_bytes( flash_addr, &flash_addr_bytes[0] );
 
 
 /*------------------------------------------------------------------------------
  Pre-processing 
 ------------------------------------------------------------------------------*/
+
+/* Determine block setting */
+switch( size )
+	{
+	case FLASH_BLOCK_4K:
+		{
+		flash_opcode = FLASH_OP_HW_4K_ERASE;
+		flash_addr   = flash_block_num*(0x1000);
+		address_to_bytes( flash_addr, &flash_addr_bytes[0] );
+		break;
+		}
+
+	case FLASH_BLOCK_32K:
+		{
+		flash_opcode = FLASH_OP_HW_32K_ERASE;
+		flash_addr   = flash_block_num*(0x8000);
+		address_to_bytes( flash_addr, &flash_addr_bytes[0] );
+		break;
+		}
+
+	case FLASH_BLOCK_64K:
+		{
+		flash_opcode = FLASH_OP_HW_64K_ERASE;
+		flash_addr   = flash_block_num*(0x10000);
+		address_to_bytes( flash_addr, &flash_addr_bytes[0] );
+
+		/* Error check */
+		if ( flash_block_num >= FLASH_BLOCK_8 )
+			{
+			return FLASH_ADDR_OUT_OF_BOUNDS;
+			}
+		break;
+		}
+	}
 
 /* Check if write_enabled */
 if( !( write_enabled ) )
@@ -1085,7 +1117,7 @@ if( !( write_enabled ) )
 /* Enable writing to flash */
 flash_status = write_enable();
 
-/* 32kB sector erase sequence */
+/* Sector erase sequence */
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status[0] = HAL_SPI_Transmit( &( FLASH_SPI )        ,
 							      &flash_opcode         ,

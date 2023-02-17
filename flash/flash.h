@@ -186,7 +186,8 @@ typedef enum FLASH_STATUS
 	FLASH_ERROR_MISSING_DATA  , 
 	FLASH_CANNOT_EXIT_AAI     ,
 	FLASH_CANNOT_WRITE_DISABLE,
-	FLASH_INIT_FAIL
+	FLASH_INIT_FAIL           ,
+	FLASH_ADDR_OUT_OF_BOUNDS
 	} FLASH_STATUS;
 
 /* Flash Block Numbers */
@@ -208,6 +209,14 @@ typedef enum _FLASH_BLOCK
 	FLASH_BLOCK_14   ,
 	FLASH_BLOCK_15    
 	} FLASH_BLOCK;
+
+/* Flash Block Sizes */
+typedef enum _FLASH_BLOCK_SIZE
+	{
+	FLASH_BLOCK_4K ,
+	FLASH_BLOCK_32K, 
+	FLASH_BLOCK_64K
+	} FLASH_BLOCK_SIZE;
 
 
 /*------------------------------------------------------------------------------
@@ -286,7 +295,8 @@ FLASH_STATUS flash_erase
 /* Erase a 32kB block of flash */
 FLASH_STATUS flash_block_erase
 	(
-	FLASH_BLOCK flash_block_num
+	FLASH_BLOCK      flash_block_num, 
+	FLASH_BLOCK_SIZE size
 	);
 
 #ifdef __cplusplus
