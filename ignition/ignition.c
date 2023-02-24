@@ -442,7 +442,7 @@ bool ign_main_cont
 {
 
 /* Check MCU GPIO State */
-uint8_t main_cont_pinstate = HAL_GPIO_ReadPin( MAIN_GPIO_PORT, MAIN_CONT_PIN );
+uint8_t main_cont_pinstate = HAL_GPIO_ReadPin( MAIN_CONT_GPIO_PORT, MAIN_CONT_PIN );
 
 /* Return true if GPIO state is low */
 if ( main_cont_pinstate == 0 )
