@@ -48,6 +48,11 @@ extern "C" {
 	#define PING_RESPONSE_CODE    ( 0x06 )
 #endif
 
+/* Firmware Identifier Code */
+#define FIRMWARE_TERMINAL       ( 0x01 ) /* Terminal Firmware    */
+#define FIRMWARE_DATA_LOGGER    ( 0x02 ) /* Data Logger Firmware */
+#define FIRMWARE_DUAL_DEPLOY    ( 0x03 ) /* Dual Deploy Firmware */
+
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
