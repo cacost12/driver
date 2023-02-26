@@ -22,13 +22,14 @@ extern "C" {
 ------------------------------------------------------------------------------*/
 
 /* sdec command codes */
-#define PING_OP 	0x01    /* ping command opcode     */
-#define CONNECT_OP	0x02    /* connect command opcode  */
-#define IGNITE_OP	0x20    /* ignition command opcode */
-#define POWER_OP    0x21    /* Power command opcode    */
-#define FLASH_OP    0x22    /* flash command opcode    */
-#define SENSOR_OP   0x03    /* sensor command opcode   */
-#define SOL_OP      0x51    /* solenoid command opcode */
+#define PING_OP 	   0x01    /* ping command opcode        */
+#define CONNECT_OP	   0x02    /* connect command opcode     */
+#define IGNITE_OP	   0x20    /* ignition command opcode    */
+#define POWER_OP       0x21    /* Power command opcode       */
+#define FLASH_OP       0x22    /* flash command opcode       */
+#define SENSOR_OP      0x03    /* sensor command opcode      */
+#define SOL_OP         0x51    /* solenoid command opcode    */
+#define DUAL_DEPLOY_OP 0xA0    /* dual-deploy command opcode */
 
 /* Board identifier code */
 #if   defined( A0002_REV1 )
