@@ -268,9 +268,7 @@ switch ( opcode )
 			flash_status = flash_read( pflash_handle, sizeof( buffer ) );
 			if( flash_status == FLASH_OK )
 				{
-				usb_transmit( &buffer  ,
-						      sizeof( buffer ),
-						      HAL_FLASH_TIMEOUT );
+				usb_transmit( &buffer, sizeof( buffer ), HAL_FLASH_TIMEOUT );
 				}
 			else
 				{
