@@ -63,7 +63,8 @@ typedef enum IGN_STATUS
 	IGN_MAIN_CONT_FAIL   = 0x46,
 	IGN_MAIN_FAIL        = 0x47,
     IGN_DROGUE_CONT_FAIL = 0x48, 
-	IGN_DROGUE_FAIL      = 0x49
+	IGN_DROGUE_FAIL      = 0x49,
+	IGN_UNRECOGNIZED_CMD = 0x4A
 	} IGN_STATUS;
 
 /* SDEC Subcommand Codes */

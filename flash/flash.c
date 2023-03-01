@@ -273,7 +273,7 @@ switch ( opcode )
 			else
 				{
 				/* Extract Failed */
-				Error_Handler();
+				return FLASH_EXTRACT_ERROR;
 				}
 
 			/* Read from next address */

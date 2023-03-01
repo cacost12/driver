@@ -99,7 +99,7 @@ switch( ign_subcommand )
     /* Unrecognized subcommand code: call error handler */
 	default:
 		{
-		Error_Handler();
+		return IGN_UNRECOGNIZED_CMD;
 		break;
 		}
     }

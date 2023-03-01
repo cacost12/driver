@@ -320,8 +320,7 @@ switch ( subcommand )
 				/* Erroneous Command*/
 				default:
 					{
-					Error_Handler();
-					break;
+					return SENSOR_POLL_UNRECOGNIZED_CMD;
 					}
 				} /* switch( sensor_poll_cmd ) */
 

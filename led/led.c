@@ -185,14 +185,7 @@ switch ( color )
 						   GPIO_PIN_RESET );
 		break;
 		}
-
-	default:
-		{
-		/* Unrecognized Color */
-		Error_Handler();
-		break;
-		}
-	}
+	} /* switch ( color ) */
 } /* led_set_color */
 
 
