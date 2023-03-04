@@ -132,7 +132,7 @@ typedef enum FLASH_BPL_WP
 typedef struct _FLASH_BUFFER_TAG {
 	
 	/* Number of bytes in buffer */
-	uint8_t        num_bytes;
+	uint32_t       num_bytes;
 
 	/* Base flash address for read/write operations */
 	uint32_t       address;
