@@ -742,7 +742,7 @@ uint8_t           address_bytes[3]; /* Flash memory address in byte form      */
 ------------------------------------------------------------------------------*/
 flash_opcode  = FLASH_OP_HW_AAI_PROGRAM; 
 flash_status  = FLASH_OK;
-timeout       = 100;
+timeout       = pflash_handle -> num_bytes; /* 1 ms/byte timeout */
 timeout_ctr   = 0;
 pbuffer       = pflash_handle -> pbuffer;
 address_to_bytes( pflash_handle -> address, &address_bytes[0] );
