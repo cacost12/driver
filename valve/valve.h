@@ -80,8 +80,26 @@ void lox_channelB_ISR
 	void
 	);
 
+/* Fuel Main Valve Encoder Channel A Interrupt */
+void fuel_channelA_ISR
+	(
+	void
+	);
+
+/* Fuel Main Valve Encoder Channel B Interrupt */
+void fuel_channelB_ISR
+	(
+	void
+	);
+
 /* Get the position of the main oxidizer valve */
 uint32_t valve_get_ox_valve_pos
+	(
+	void
+	);
+
+/* Get the position of the main fuel valve */
+uint32_t valve_get_fuel_valve_pos
 	(
 	void
 	);

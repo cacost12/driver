@@ -26,10 +26,15 @@
 /*------------------------------------------------------------------------------
  Global Variables 
 ------------------------------------------------------------------------------*/
-volatile static uint32_t lox_valve_pos      = 0;  /* LOX Valve Encoder count  */
-volatile static bool     lox_channelA_state = ENCODER_LOW; /* Voltage on channel 
+volatile static uint32_t lox_valve_pos       = 0;  /* LOX Valve Encoder count  */
+volatile static bool     lox_channelA_state  = ENCODER_LOW; /* Voltage on channel 
                                                              A pin */
-volatile static bool     lox_channelB_state = ENCODER_LOW; /* Voltage on Channel 
+volatile static bool     lox_channelB_state  = ENCODER_LOW; /* Voltage on Channel 
+                                                             B pin */
+volatile static uint32_t fuel_valve_pos      = 0;  /* Fuel Valve Encoder count */
+volatile static bool     fuel_channelA_state = ENCODER_LOW; /* Voltage on channel 
+                                                             A pin */
+volatile static bool     fuel_channelB_state = ENCODER_LOW; /* Voltage on Channel 
                                                              B pin */
 
 
@@ -178,7 +183,7 @@ return VALVE_OK;
 *       Get the position of the main oxidizer valve                            *
 *                                                                              *
 *******************************************************************************/
-inline uint32_t valve_get_ox_valve_pos
+uint32_t valve_get_ox_valve_pos
 	(
 	void
 	)
@@ -186,38 +191,25 @@ inline uint32_t valve_get_ox_valve_pos
 return lox_valve_pos*360/1000;
 } /* valve_get_ox_valve_pos */
 
-#ifdef WIP
+
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
-* 		valve_get_main_valve_pos                                               *
+* 		valve_get_fuel_valve_pos                                               *
 *                                                                              *
 * DESCRIPTION:                                                                 *
 *       Get the position of the main fuel valve                                *
 *                                                                              *
 *******************************************************************************/
-VALVE_STATUS valve_get_main_valve_pos
+uint32_t valve_get_fuel_valve_pos
 	(
 	void
 	)
 {
-/*------------------------------------------------------------------------------
- Local Variables
-------------------------------------------------------------------------------*/
+return fuel_valve_pos*360/1000;
+} /* valve_get_fuel_valve_pos */
 
-
-/*------------------------------------------------------------------------------
- Initializations
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Implementation 
-------------------------------------------------------------------------------*/
-return VALVE_OK;
-} /* valve_get_main_valve_pos */
-
-
+#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -377,6 +369,69 @@ else
 	}
 
 } /* lox_channelB_ISR */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		fuel_channelA_ISR                                                      *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Fuel Main Valve Encoder Channel A Interrupt                            *
+*                                                                              *
+*******************************************************************************/
+void fuel_channelA_ISR
+	(
+	void
+	)
+{
+/* Low to High Transition */
+if ( HAL_GPIO_ReadPin( KER_ENC_A_GPIO_PORT, KER_ENC_A_PIN ) )
+	{
+	fuel_channelA_state = ENCODER_HIGH;
+	if ( !fuel_channelB_state )
+		{
+		fuel_valve_pos -= 1;
+		}
+	}
+/* High to Low Transition */
+else
+	{
+	fuel_channelA_state = ENCODER_LOW;
+	}
+} /* fuel_channelA_ISR */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		fuel_channelB_ISR                                                      *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Fuel Main Valve Encoder Channel B Interrupt                            *
+*                                                                              *
+*******************************************************************************/
+void fuel_channelB_ISR
+	(
+	void
+	)
+{
+/* Low to High Transition */
+if ( HAL_GPIO_ReadPin( KER_ENC_B_GPIO_PORT, KER_ENC_B_PIN ) )
+	{
+	fuel_channelB_state = ENCODER_HIGH;
+	if ( !fuel_channelA_state )
+		{
+		fuel_valve_pos += 1;
+		}
+	}
+/* High to Low Transition */
+else
+	{
+	fuel_channelB_state = ENCODER_LOW;
+	}
+
+} /* fuel_channelB_ISR */
 
 
 /*******************************************************************************
