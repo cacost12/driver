@@ -26,6 +26,8 @@
 	#include "sdr_pin_defines_L0002.h"
 #elif defined( FLIGHT_COMPUTER_LITE )
 	#include "sdr_pin_defines_A0007.h"
+#elif defined( VALVE_CONTROLLER     )
+	#include "sdr_pin_defines_L0005.h"
 #endif 
 
 
@@ -45,6 +47,9 @@
 	#include "pressure.h"
 	#include "loadcell.h"
 	#include "temp.h"
+#endif
+#if defined( VALVE_CONTROLLER  )
+	#include "valve.h"
 #endif
 
 
@@ -152,7 +157,6 @@ void sensor_init
 	sensor_size_offsets_table[ 8  ].size   = 4;  /* SENSOR_TC   */
 	sensor_size_offsets_table[ 9  ].size   = 4;  /* SENSOR_LC   */
 #elif defined( FLIGHT_COMPUTER_LITE )
-
 	/* Sensor offsets */
 	sensor_size_offsets_table[ 0 ].offset = 0; /* SENSOR_PRES  */
 	sensor_size_offsets_table[ 1 ].offset = 4; /* SENSOR_TEMP  */
@@ -160,6 +164,14 @@ void sensor_init
 	/* Sensor Sizes   */
 	sensor_size_offsets_table[ 0 ].size   = 4;  /* SENSOR_PRES  */
 	sensor_size_offsets_table[ 1 ].size   = 4;  /* SENSOR_TEMP  */
+#elif defined( VALVE_CONTROLLER     )
+	/* Sensor offsets */
+	sensor_size_offsets_table[ 0 ].offset = 0;  /* SENSOR_ENCO  */
+	sensor_size_offsets_table[ 1 ].offset = 4;  /* SENSOR_ENCF  */
+
+	/* Sensor sizes */
+	sensor_size_offsets_table[ 0 ].size   = 4;  /* SENSOR_ENCO */
+	sensor_size_offsets_table[ 1 ].size   = 4;  /* SENSOR_ENCF */
 #endif
 
 } /* sensor_init */
@@ -453,6 +465,11 @@ SENSOR_STATUS sensor_dump
 	/* Baro sensors */
 	temp_status  = baro_get_temp    ( &(sensor_data_ptr -> baro_temp     ) );
 	press_status = baro_get_pressure( &(sensor_data_ptr -> baro_pressure ) );
+
+#elif defined( VALVE_CONTROLLER     )
+	/* Main Valve encoders */
+	sensor_data_ptr -> lox_valve_pos  = valve_get_ox_valve_pos();
+	sensor_data_ptr -> fuel_valve_pos = valve_get_fuel_valve_pos();
 #endif
 
 
@@ -504,6 +521,8 @@ SENSOR_STATUS sensor_dump
 		{
 		return SENSOR_OK;
 		}
+#elif defined( VALVE_CONTROLLER     )
+	return SENSOR_OK;
 #endif /* #elif defined( ENGINE_CONTROLLER )*/
 
 } /* sensor_dump */
@@ -807,6 +826,20 @@ for ( int i = 0; i < num_sensors; ++i )
 			case SENSOR_LC:
 				{
 				sensor_data_ptr -> load_cell_force = loadcell_get_reading();
+				break;
+				}
+		
+		#elif defined( VALVE_CONTROLLER )
+
+			case SENSOR_ENCO:
+				{
+				sensor_data_ptr -> lox_valve_pos = valve_get_ox_valve_pos();
+				break;
+				}
+
+			case SENSOR_ENCF:
+				{
+				sensor_data_ptr -> fuel_valve_pos = valve_get_fuel_valve_pos();
 				break;
 				}
 

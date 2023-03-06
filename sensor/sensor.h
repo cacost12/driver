@@ -61,6 +61,18 @@ Includes
 	/* General */
 	#define NUM_SENSORS         ( 2    )
 	#define SENSOR_DATA_SIZE    ( 8    )
+#elif defined( VALVE_CONTROLLER     )
+	/* General */
+	#define NUM_SENSORS         ( 2   )
+	#define SENSOR_DATA_SIZE    ( 8   )
+
+	/* Timeouts */
+	#ifndef SDR_DEBUG
+		#define HAL_SENSOR_TIMEOUT ( 40 )
+	#else
+		/* Disable timeouts when debugging */
+		#define HAL_SENSOR_TIMEOUT ( 0xFFFFFFFF )
+	#endif
 #else
 	#error Board is not compatible with SENSOR module
 #endif
@@ -133,23 +145,29 @@ typedef enum
 	#elif defined( FLIGHT_COMPUTER_LITE )
 		SENSOR_PRES  = 0x00,
 		SENSOR_TEMP  = 0x01
+	#elif defined( VALVE_CONTROLLER     )
+		SENSOR_ENCO  = 0x00,
+		SENSOR_ENCF  = 0x01
 	#endif
 	} SENSOR_IDS;
 
-/* Sensor Data in integer format */
+/* Sensor Data */
 typedef struct SENSOR_DATA 
 	{
-	#if defined( FLIGHT_COMPUTER )
+	#if   defined( FLIGHT_COMPUTER      )
 		IMU_DATA imu_data;
 		float    baro_pressure;
 		float    baro_temp;	
-	#elif defined( ENGINE_CONTROLLER )
+	#elif defined( ENGINE_CONTROLLER    )
 		uint32_t pt_pressures[ NUM_PTS ];
 		uint32_t load_cell_force;
 		uint32_t tc_temp;
 	#elif defined( FLIGHT_COMPUTER_LITE )
 		float baro_pressure;
 		float baro_temp;
+	#elif defined( VALVE_CONTROLLER     )
+		uint32_t lox_valve_pos;
+		uint32_t fuel_valve_pos;
 	#endif /* #elif defined( ENGINE_CONTROLLER ) */
 	} SENSOR_DATA;
 
