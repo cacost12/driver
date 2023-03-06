@@ -68,6 +68,18 @@ VALVE_STATUS valve_close_fuel_valve
 	);
 #endif
 
+/* LOX Main Valve Encoder Channel A Interrupt */
+void lox_channelA_ISR
+	(
+	void
+	);
+
+/* LOX Main Valve Encoder Channel B Interrupt */
+void lox_channelB_ISR
+	(
+	void
+	);
+
 /* Get the position of the main oxidizer valve */
 uint32_t valve_get_ox_valve_pos
 	(

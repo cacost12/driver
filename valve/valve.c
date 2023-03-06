@@ -37,17 +37,6 @@ volatile static bool     lox_channelB_state = ENCODER_LOW; /* Voltage on Channel
  Internal Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-/* LOX Main Valve Encoder Channel A Interrupt */
-static void lox_channelA_ISR
-	(
-	void
-	);
-
-/* LOX Main Valve Encoder Channel B Interrupt */
-static void lox_channelB_ISR
-	(
-	void
-	);
 
 
 /*------------------------------------------------------------------------------
@@ -336,7 +325,7 @@ return VALVE_OK;
 *       LOX Main Valve Encoder Channel A Interrupt                             *
 *                                                                              *
 *******************************************************************************/
-static void lox_channelA_ISR
+void lox_channelA_ISR
 	(
 	void
 	)
@@ -367,7 +356,7 @@ else
 *       LOX Main Valve Encoder Channel B Interrupt                             *
 *                                                                              *
 *******************************************************************************/
-static void lox_channelB_ISR
+void lox_channelB_ISR
 	(
 	void
 	)
