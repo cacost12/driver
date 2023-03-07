@@ -93,13 +93,13 @@ void fuel_channelB_ISR
 	);
 
 /* Get the position of the main oxidizer valve */
-uint32_t valve_get_ox_valve_pos
+int32_t valve_get_ox_valve_pos
 	(
 	void
 	);
 
 /* Get the position of the main fuel valve */
-uint32_t valve_get_fuel_valve_pos
+int32_t valve_get_fuel_valve_pos
 	(
 	void
 	);

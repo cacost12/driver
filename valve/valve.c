@@ -26,12 +26,12 @@
 /*------------------------------------------------------------------------------
  Global Variables 
 ------------------------------------------------------------------------------*/
-volatile static uint32_t lox_valve_pos       = 0;  /* LOX Valve Encoder count  */
+volatile static int32_t  lox_valve_pos       = 0;  /* LOX Valve Encoder count  */
 volatile static bool     lox_channelA_state  = ENCODER_LOW; /* Voltage on channel 
                                                              A pin */
 volatile static bool     lox_channelB_state  = ENCODER_LOW; /* Voltage on Channel 
                                                              B pin */
-volatile static uint32_t fuel_valve_pos      = 0;  /* Fuel Valve Encoder count */
+volatile static int32_t  fuel_valve_pos      = 0;  /* Fuel Valve Encoder count */
 volatile static bool     fuel_channelA_state = ENCODER_LOW; /* Voltage on channel 
                                                              A pin */
 volatile static bool     fuel_channelB_state = ENCODER_LOW; /* Voltage on Channel 
@@ -183,7 +183,7 @@ return VALVE_OK;
 *       Get the position of the main oxidizer valve                            *
 *                                                                              *
 *******************************************************************************/
-uint32_t valve_get_ox_valve_pos
+int32_t valve_get_ox_valve_pos
 	(
 	void
 	)
@@ -201,7 +201,7 @@ return lox_valve_pos*360/1000;
 *       Get the position of the main fuel valve                                *
 *                                                                              *
 *******************************************************************************/
-uint32_t valve_get_fuel_valve_pos
+int32_t valve_get_fuel_valve_pos
 	(
 	void
 	)

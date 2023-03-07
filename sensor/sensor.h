@@ -166,8 +166,8 @@ typedef struct SENSOR_DATA
 		float baro_pressure;
 		float baro_temp;
 	#elif defined( VALVE_CONTROLLER     )
-		uint32_t lox_valve_pos;
-		uint32_t fuel_valve_pos;
+		int32_t lox_valve_pos;
+		int32_t fuel_valve_pos;
 	#endif /* #elif defined( ENGINE_CONTROLLER ) */
 	} SENSOR_DATA;
 
