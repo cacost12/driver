@@ -48,7 +48,6 @@ static STEPPER_DRIVER_STATE fuel_driver_state;
  Internal Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#ifdef WIP
 /* Enable the lox stepper motor driver */
 static void lox_driver_enable
 	(
@@ -84,7 +83,6 @@ static VALVE_STATUS fuel_driver_set_direction
 	(
 	STEPPER_DRIVER_DIR_STATE direction
 	);
-#endif
 
 
 /*------------------------------------------------------------------------------
@@ -503,7 +501,7 @@ else
 
 } /* fuel_channelB_ISR */
 
-#ifdef WIP
+
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -668,7 +666,6 @@ else
 fuel_driver_state.direction = direction;
 return VALVE_OK;
 } /* fuel_driver_set_direction */
-#endif
 
 
 /*******************************************************************************
