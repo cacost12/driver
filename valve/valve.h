@@ -64,13 +64,13 @@ typedef struct _STEPPER_DRIVER_STATE
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+#ifdef WIP
 /* Open the main oxidizer valve */
 VALVE_STATUS valve_open_ox_valve
 	(
 	void
 	);
 
-#ifdef WIP
 /* Open the main fuel valve */
 VALVE_STATUS valve_open_fuel_valve
 	(

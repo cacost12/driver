@@ -48,6 +48,7 @@ static STEPPER_DRIVER_STATE fuel_driver_state;
  Internal Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+#ifdef WIP
 /* Enable the lox stepper motor driver */
 static void lox_driver_enable
 	(
@@ -83,12 +84,13 @@ static VALVE_STATUS fuel_driver_set_direction
 	(
 	STEPPER_DRIVER_DIR_STATE direction
 	);
+#endif
 
 
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
-
+#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -144,6 +146,7 @@ while (1)
 
 return VALVE_OK;
 } /* valve_open_ox_valve */
+#endif
 
 
 #ifdef WIP
@@ -453,7 +456,7 @@ void fuel_channelA_ISR
 	)
 {
 /* Low to High Transition */
-if ( HAL_GPIO_ReadPin( KER_ENC_A_GPIO_PORT, KER_ENC_A_PIN ) )
+if ( HAL_GPIO_ReadPin( KER_ENC_GPIO_PORT, KER_ENC_A_PIN ) )
 	{
 	fuel_channelA_state = ENCODER_HIGH;
 	if ( !fuel_channelB_state )
@@ -484,7 +487,7 @@ void fuel_channelB_ISR
 	)
 {
 /* Low to High Transition */
-if ( HAL_GPIO_ReadPin( KER_ENC_B_GPIO_PORT, KER_ENC_B_PIN ) )
+if ( HAL_GPIO_ReadPin( KER_ENC_GPIO_PORT, KER_ENC_B_PIN ) )
 	{
 	fuel_channelB_state = ENCODER_HIGH;
 	if ( !fuel_channelA_state )
@@ -500,7 +503,7 @@ else
 
 } /* fuel_channelB_ISR */
 
-
+#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -665,6 +668,7 @@ else
 fuel_driver_state.direction = direction;
 return VALVE_OK;
 } /* fuel_driver_set_direction */
+#endif
 
 
 /*******************************************************************************
