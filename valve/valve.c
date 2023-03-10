@@ -517,7 +517,7 @@ static void lox_driver_enable
 	)
 {
 /* Set GPIO State      */
-HAL_GPIO_WritePin( LOX_EN_GPIO_PORT, LOX_EN_PIN, GPIO_PIN_SET );
+HAL_GPIO_WritePin( LOX_EN_GPIO_PORT, LOX_EN_PIN, GPIO_PIN_RESET );
 while(1)
 	{
 	HAL_GPIO_TogglePin( LOX_DIR_GPIO_PORT, LOX_DIR_PIN );
@@ -545,7 +545,7 @@ static void fuel_driver_enable
 	)
 {
 /* Set GPIO level           */
-HAL_GPIO_WritePin( KER_EN_GPIO_PORT, KER_EN_PIN, GPIO_PIN_SET );
+HAL_GPIO_WritePin( KER_EN_GPIO_PORT, KER_EN_PIN, GPIO_PIN_RESET );
 
 /* Update the globale state */
 fuel_driver_state.enable = STEPPER_DRIVER_ENABLED;
@@ -568,7 +568,7 @@ static void lox_driver_disable
 	)
 {
 /* Set GPIO Level          */
-HAL_GPIO_WritePin( LOX_EN_GPIO_PORT, LOX_EN_PIN, GPIO_PIN_RESET );
+HAL_GPIO_WritePin( LOX_EN_GPIO_PORT, LOX_EN_PIN, GPIO_PIN_SET );
 
 /* Update the global state */
 lox_driver_state.enable = STEPPER_DRIVER_DISABLED;
@@ -591,7 +591,7 @@ static void fuel_driver_disable
 	)
 {
 /* Set GPIO level          */
-HAL_GPIO_WritePin( KER_EN_GPIO_PORT, KER_EN_PIN, GPIO_PIN_RESET );
+HAL_GPIO_WritePin( KER_EN_GPIO_PORT, KER_EN_PIN, GPIO_PIN_SET );
 
 /* Update the global state */
 fuel_driver_state.enable = STEPPER_DRIVER_DISABLED;
