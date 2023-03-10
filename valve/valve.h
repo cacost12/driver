@@ -22,8 +22,8 @@ extern "C" {
 ------------------------------------------------------------------------------*/
 
 /* Encoder states */
-#define ENCODER_HIGH    true
-#define ENCODER_LOW     false
+#define ENCODER_HIGH              true
+#define ENCODER_LOW               false
 
 
 /*------------------------------------------------------------------------------
@@ -33,22 +33,44 @@ extern "C" {
 /* Return Codes */
 typedef enum _VALVE_STATUS
 	{
-	VALVE_OK,
+	VALVE_OK         ,
+	VALVE_INVALID_DIR, /* Invalid motor direction */
 	VALVE_ERROR
 	} VALVE_STATUS;
+
+/* Stepper driver enable states */
+typedef enum _STEPPER_DRIVER_EN_STATE
+	{
+	STEPPER_DRIVER_ENABLED,
+	STEPPER_DRIVER_DISABLED
+	} STEPPER_DRIVER_EN_STATE;
+
+/* Stepper driver rotation directions */
+typedef enum _STEPPER_DRIVER_DIR_STATE
+	{
+	STEPPER_DRIVER_CW,  /* Clockwise         */
+	STEPPER_DRIVER_CCW  /* Counter clockwise */
+	} STEPPER_DRIVER_DIR_STATE;
+
+/* Stepper Motor driver state */
+typedef struct _STEPPER_DRIVER_STATE
+	{
+	STEPPER_DRIVER_EN_STATE  enable;    /* Motor enabled      */
+	STEPPER_DRIVER_DIR_STATE direction; /* Rotation Direction */
+	} STEPPER_DRIVER_STATE; 
 
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#ifdef WIP
 /* Open the main oxidizer valve */
 VALVE_STATUS valve_open_ox_valve
 	(
 	void
 	);
 
+#ifdef WIP
 /* Open the main fuel valve */
 VALVE_STATUS valve_open_fuel_valve
 	(
