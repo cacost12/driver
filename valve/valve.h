@@ -64,7 +64,6 @@ typedef struct _STEPPER_DRIVER_STATE
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-#ifdef WIP
 /* Open the main oxidizer valve */
 VALVE_STATUS valve_open_ox_valve
 	(
@@ -88,7 +87,6 @@ VALVE_STATUS valve_close_fuel_valve
 	(
 	void
 	);
-#endif
 
 /* LOX Main Valve Encoder Channel A Interrupt */
 void lox_channelA_ISR

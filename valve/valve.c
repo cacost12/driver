@@ -88,7 +88,8 @@ static VALVE_STATUS fuel_driver_set_direction
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
-#ifdef WIP
+
+
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -120,34 +121,27 @@ valve_status = VALVE_OK;
 ------------------------------------------------------------------------------*/
 
 /* Enable the driver   */
-//lox_driver_enable();
+lox_driver_enable();
 
 /* Set the direction   */
-//valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
-//if ( valve_status != VALVE_OK )
-//	{
-	//return valve_status;
-	//}
-
-/* Actuate the valve   */
-//HAL_TIM_PWM_Start( &( VALVE_TIM ), LOX_TIM_CHANNEL );
-//HAL_Delay( 1000 );
-//HAL_TIM_PWM_Stop ( &( VALVE_TIM ), LOX_TIM_CHANNEL );
-while (1)
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
+if ( valve_status != VALVE_OK )
 	{
-	HAL_GPIO_TogglePin( LOX_DIR_GPIO_PORT, LOX_DIR_PIN );
-	HAL_Delay( 1 );
+	return valve_status;
 	}
 
+/* Actuate the valve   */
+HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+HAL_Delay( 100 );
+HAL_TIM_PWM_Stop ( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+
 /* Turn off the driver */
-//lox_driver_disable();
+lox_driver_disable();
 
 return VALVE_OK;
 } /* valve_open_ox_valve */
-#endif
 
 
-#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -165,16 +159,36 @@ VALVE_STATUS valve_open_fuel_valve
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
+VALVE_STATUS valve_status; /* Status return codes from valve API */
 
 
 /*------------------------------------------------------------------------------
- Initializations
+ Initializations 
 ------------------------------------------------------------------------------*/
+valve_status = VALVE_OK;
 
 
 /*------------------------------------------------------------------------------
  Implementation 
 ------------------------------------------------------------------------------*/
+
+/* Enable the driver   */
+fuel_driver_enable();
+
+/* Set the direction   */
+valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CCW );
+if ( valve_status != VALVE_OK )
+	{
+	return valve_status;
+	}
+
+/* Actuate the valve   */
+HAL_TIM_PWM_Start( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
+HAL_Delay( 100 );
+HAL_TIM_PWM_Stop ( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
+
+/* Turn off the driver */
+fuel_driver_disable();
 return VALVE_OK;
 } /* valve_open_fuel_valve */
 
@@ -196,16 +210,36 @@ VALVE_STATUS valve_close_ox_valve
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
+VALVE_STATUS valve_status; /* Status return codes from valve API */
 
 
 /*------------------------------------------------------------------------------
- Initializations
+ Initializations 
 ------------------------------------------------------------------------------*/
+valve_status = VALVE_OK;
 
 
 /*------------------------------------------------------------------------------
  Implementation 
 ------------------------------------------------------------------------------*/
+
+/* Enable the driver   */
+lox_driver_enable();
+
+/* Set the direction   */
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
+if ( valve_status != VALVE_OK )
+	{
+	return valve_status;
+	}
+
+/* Actuate the valve   */
+HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+HAL_Delay( 100 );
+HAL_TIM_PWM_Stop ( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+
+/* Turn off the driver */
+lox_driver_disable();
 return VALVE_OK;
 } /* valve_close_ox_valve */
 
@@ -227,19 +261,38 @@ VALVE_STATUS valve_close_fuel_valve
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
+VALVE_STATUS valve_status; /* Status return codes from valve API */
 
 
 /*------------------------------------------------------------------------------
- Initializations
+ Initializations 
 ------------------------------------------------------------------------------*/
+valve_status = VALVE_OK;
 
 
 /*------------------------------------------------------------------------------
  Implementation 
 ------------------------------------------------------------------------------*/
+
+/* Enable the driver   */
+fuel_driver_enable();
+
+/* Set the direction   */
+valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CW );
+if ( valve_status != VALVE_OK )
+	{
+	return valve_status;
+	}
+
+/* Actuate the valve   */
+HAL_TIM_PWM_Start( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
+HAL_Delay( 100 );
+HAL_TIM_PWM_Stop ( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
+
+/* Turn off the driver */
+fuel_driver_disable();
 return VALVE_OK;
 } /* valve_close_fuel_valve */
-#endif /* #ifdef WIP */
 
 
 /*******************************************************************************
