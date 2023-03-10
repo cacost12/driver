@@ -153,7 +153,9 @@ switch ( usb_status )
 } /* usb_receive */
 
 
-#if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE )
+#if defined( A0002_REV2           ) || \
+    defined( FLIGHT_COMPUTER_LITE ) || \
+	defined( L0005_REV3           )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
