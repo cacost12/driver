@@ -66,7 +66,11 @@ extern "C" {
 /* Sends a single response byte back to sender */
 void ping
 	(
-	void
+	#ifndef VALVE_CONTROLLER
+		void
+	#else
+		CMD_SOURCE cmd_source
+	#endif
 	);
 
 #ifdef __cplusplus
