@@ -49,8 +49,10 @@ extern "C" {
 typedef enum _VALVE_STATUS
 	{
 	VALVE_OK                     ,
-	VALVE_INVALID_DIR            , /* Invalid motor direction */
-	VALVE_UNRECOGNIZED_SUBCOMMAND, /* Unrecognized subcommand */
+	VALVE_INVALID_DIR            ,    /* Invalid motor direction    */
+	VALVE_UNRECOGNIZED_SUBCOMMAND,    /* Unrecognized subcommand    */
+	VALVE_UART_ERROR             ,    /* Unknown UART error         */
+	VALVE_UART_TIMEOUT           ,    /* Valve control UART timeout */
 	VALVE_ERROR
 	} VALVE_STATUS;
 
@@ -91,6 +93,22 @@ typedef enum _VALVE_STATE
 VALVE_STATUS valve_cmd_execute
 	(
 	uint8_t subcommand
+	);
+
+/* Transmits a specified number of bytes over the valve control serial port */
+VALVE_STATUS valve_transmit
+	(
+	void*    tx_data_ptr , /* Data to send          */
+	size_t   tx_data_size, /* Size of transmit data */
+	uint32_t timeout
+	);
+
+/* Receive bytes from the valve control serial port */
+VALVE_STATUS valve_receive
+	(
+	void*    rx_data_ptr , /* Buffer to export data to        */
+	size_t   rx_data_size, /* Size of the data to be received */
+	uint32_t timeout       /* UART timeout                    */
 	);
 
 /* Enable valve drivers to actuate valves */

@@ -200,6 +200,123 @@ switch( subcommand )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
+* 		valve_transmit                                                         *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Transmits a specified number of bytes over the valve control           *
+*       serial port                                                            *
+*                                                                              *
+*******************************************************************************/
+VALVE_STATUS valve_transmit
+	(
+	void*    tx_data_ptr , /* Data to send          */
+	size_t   tx_data_size, /* Size of transmit data */
+	uint32_t timeout
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status; /* Return code from HAL CMSIS API */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Transmit buffer */
+hal_status = HAL_UART_Transmit( &( VALVE_HUART ), 
+                                tx_data_ptr     , 
+								tx_data_size    , 
+								timeout );
+
+/* Return status */
+switch ( hal_status )
+	{
+	case HAL_TIMEOUT:
+		{
+		return VALVE_UART_TIMEOUT;
+		}
+	case HAL_OK:
+		{
+		return VALVE_OK;
+		}
+	default:
+		{
+		return VALVE_UART_ERROR;
+		}
+	} /* switch ( hal_status ) */
+
+} /* valve_transmit */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		valve_receive                                                          *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Receive bytes from the valve control serial port                       *
+*                                                                              *
+*******************************************************************************/
+VALVE_STATUS valve_receive
+	(
+	void*    rx_data_ptr , /* Buffer to export data to        */
+	size_t   rx_data_size, /* Size of the data to be received */
+	uint32_t timeout       /* UART timeout                    */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status; /* Return code from HAL CMSIS API */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Transmit buffer */
+hal_status = HAL_UART_Receive( &( VALVE_HUART ), 
+                               rx_data_ptr     , 
+							   rx_data_size    , 
+							   timeout );
+
+/* Return status */
+switch ( hal_status )
+	{
+	case HAL_TIMEOUT:
+		{
+		return VALVE_UART_TIMEOUT;
+		}
+	case HAL_OK:
+		{
+		return VALVE_OK;
+		}
+	default:
+		{
+		return VALVE_UART_ERROR;
+		}
+	} /* switch ( hal_status ) */
+
+} /* valve_receive */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
 * 		valve_enable_valves                                                    *
 *                                                                              *
 * DESCRIPTION:                                                                 *
