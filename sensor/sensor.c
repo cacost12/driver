@@ -188,7 +188,12 @@ void sensor_init
 *******************************************************************************/
 SENSOR_STATUS sensor_cmd_execute 
 	(
-    uint8_t subcommand 
+	#ifndef VALVE_CONTROLLER
+		uint8_t subcommand 
+	#else
+		uint8_t    subcommand,   /* SDEC subcommand         */
+		CMD_SOURCE cmd_source    /* Serial interface source */
+	#endif
     )
 {
 
@@ -210,12 +215,18 @@ uint8_t       poll_sensors[ SENSOR_MAX_NUM_POLL ];   /* Codes for sensors to
                                                         be polled             */
 uint8_t       sensor_poll_cmd;                       /* Command codes used by 
                                                         sensor poll           */
+#ifdef VALVE_CONTROLLER
+	VALVE_STATUS valve_status; /* status codes from valve API */
+#endif
 
 /*------------------------------------------------------------------------------
  Initializations  
 ------------------------------------------------------------------------------*/
 usb_status      = USB_OK;
 sensor_status   = SENSOR_OK;
+#ifdef VALVE_CONTROLLER
+	valve_status = VALVE_OK;
+#endif
 num_sensors     = 0;
 sensor_poll_cmd = 0;
 memset( &sensor_data_bytes[0], 0, sizeof( sensor_data_bytes ) );
@@ -234,48 +245,149 @@ switch ( subcommand )
     case SENSOR_POLL_CODE:
 		{
 		/* Determine the number of sensors to poll */
-		usb_status = usb_receive( &num_sensors, 
-		                          sizeof( num_sensors ), 
-								  HAL_DEFAULT_TIMEOUT );
-		if ( usb_status != USB_OK )
-			{
-			return SENSOR_USB_FAIL;
-			}
+		#ifdef VALVE_CONTROLLER 
+			usb_status = usb_receive( &num_sensors, 
+									sizeof( num_sensors ), 
+									HAL_DEFAULT_TIMEOUT );
+			if ( usb_status != USB_OK )
+				{
+				return SENSOR_USB_FAIL;
+				}
+		#else
+			if ( cmd_source == CMD_USB )
+				{
+				usb_status = usb_receive( &num_sensors, 
+										sizeof( num_sensors ), 
+										HAL_DEFAULT_TIMEOUT );
+				if ( usb_status != USB_OK )
+					{
+					return SENSOR_USB_FAIL;
+					}
+				}
+			else
+				{
+				valve_status = valve_receive( &num_sensors, 
+				                              sizeof( num_sensors ), 
+											  HAL_DEFAULT_TIMEOUT );
+				if ( valve_status != VALVE_OK )
+					{
+					return SENSOR_VALVE_UART_FAIL;
+					}
+				}
+		#endif /* #ifdef VALVE_CONTROLLER */
 
 		/* Determine which sensors to poll */
-		usb_status = usb_receive( &poll_sensors[0],
-		                          num_sensors     , 
-                                  HAL_SENSOR_TIMEOUT );
-		if ( usb_status != USB_OK )
-			{
-			return SENSOR_USB_FAIL;
-			}
+		#ifndef VALVE_CONTROLLER 
+			usb_status = usb_receive( &poll_sensors[0],
+									num_sensors     , 
+									HAL_SENSOR_TIMEOUT );
+			if ( usb_status != USB_OK )
+				{
+				return SENSOR_USB_FAIL;
+				}
+		#else
+			if ( cmd_source == CMD_SOURCE_USB )
+				{
+				usb_status = usb_receive( &poll_sensors[0],
+										num_sensors     , 
+										HAL_SENSOR_TIMEOUT );
+				if ( usb_status != USB_OK )
+					{
+					return SENSOR_USB_FAIL;
+					}
+				}
+			else
+				{
+				valve_status = valve_receive( &poll_sensors[0],
+											num_sensors     ,
+											HAL_SENSOR_TIMEOUT );
+				if ( valve_status != VALVE_OK )
+					{
+					return SENSOR_VALVE_UART_ERROR;
+					}
+				}
+		#endif /* #ifndef VALVE_CONTROLLER */
 
 		/* Receive initiating command code  */
-		usb_status = usb_receive( &sensor_poll_cmd,
-		                           sizeof( sensor_poll_cmd ),
-								   HAL_DEFAULT_TIMEOUT );
-		if      ( usb_status      != USB_OK            )
-			{
-			return SENSOR_USB_FAIL; /* USB error */
-			}
-		else if ( sensor_poll_cmd != SENSOR_POLL_START )
-			{
-			/* SDEC fails to initiate sensor poll */
-			return SENSOR_POLL_FAIL_TO_START;
-			}
+		#ifndef VALVE_CONTROLLER
+			usb_status = usb_receive( &sensor_poll_cmd,
+									sizeof( sensor_poll_cmd ),
+									HAL_DEFAULT_TIMEOUT );
+			if      ( usb_status      != USB_OK            )
+				{
+				return SENSOR_USB_FAIL; /* USB error */
+				}
+			else if ( sensor_poll_cmd != SENSOR_POLL_START )
+				{
+				/* SDEC fails to initiate sensor poll */
+				return SENSOR_POLL_FAIL_TO_START;
+				}
+		#else
+			if ( cmd_source == CMD_SOURCE_USB )
+				{
+				usb_status = usb_receive( &sensor_poll_cmd,
+										sizeof( sensor_poll_cmd ),
+										HAL_DEFAULT_TIMEOUT );
+				if      ( usb_status      != USB_OK            )
+					{
+					return SENSOR_USB_FAIL; /* USB error */
+					}
+				else if ( sensor_poll_cmd != SENSOR_POLL_START )
+					{
+					/* SDEC fails to initiate sensor poll */
+					return SENSOR_POLL_FAIL_TO_START;
+					}
+				}
+			else
+				{
+				valve_status = valve_receive( &sensor_poll_cmd, 
+											sizeof( sensor_poll_cmd ), 
+											HAL_DEFAULT_TIMEOUT );
+				if ( valve_status != VALVE_OK )
+					{
+					return SENSOR_VALVE_UART_ERROR;
+					}
+				else if ( sensor_poll_cmd != SENSOR_POLL_START )
+					{
+					return SENSOR_POLL_FAIL_TO_START;
+					}
+				}
+		#endif
 
 		/* Start polling sensors */
 		while ( sensor_poll_cmd != SENSOR_POLL_STOP )
 			{
 			/* Get command code */
-			usb_status = usb_receive( &sensor_poll_cmd         ,
-			                          sizeof( sensor_poll_cmd ),
-									  HAL_DEFAULT_TIMEOUT );
-			if ( usb_status != USB_OK ) 
-				{
-				return SENSOR_USB_FAIL;
-				}
+			#ifndef VALVE_CONTROLLER 
+				usb_status = usb_receive( &sensor_poll_cmd         ,
+										sizeof( sensor_poll_cmd ),
+										HAL_DEFAULT_TIMEOUT );
+				if ( usb_status != USB_OK ) 
+					{
+					return SENSOR_USB_FAIL;
+					}
+			#else
+				if ( cmd_source == CMD_SOURCE_USB )
+					{
+					usb_status = usb_receive( &sensor_poll_cmd         ,
+											sizeof( sensor_poll_cmd ),
+											HAL_DEFAULT_TIMEOUT );
+					if ( usb_status != USB_OK ) 
+						{
+						return SENSOR_USB_FAIL;
+						}
+					}
+				else
+					{
+					valve_status = valve_receive( &sensor_poll_cmd         , 
+					                              sizeof( sensor_poll_cmd ), 
+												  HAL_DEFAULT_TIMEOUT );
+					if ( valve_status != VALVE_OK )
+						{
+						return SENSOR_VALVE_UART_ERROR;
+						}
+					}
+			#endif /* #ifndef VALVE_CONTROLLER */
 			
 			/* Execute command */
 			switch ( sensor_poll_cmd )
@@ -322,9 +434,24 @@ switch ( subcommand )
 					/* Poll USB port until resume signal arrives */
 					while( sensor_poll_cmd != SENSOR_POLL_RESUME )
 						{
-						usb_receive( &sensor_poll_cmd, 
-						             sizeof( sensor_poll_cmd ),
-									 HAL_DEFAULT_TIMEOUT );
+						#ifndef VALVE_CONTROLLER
+							usb_receive( &sensor_poll_cmd, 
+										sizeof( sensor_poll_cmd ),
+										HAL_DEFAULT_TIMEOUT );
+						#else
+							if ( cmd_source == CMD_SOURCE_USB )
+								{
+								usb_receive( &sensor_poll_cmd, 
+											sizeof( sensor_poll_cmd ),
+											HAL_DEFAULT_TIMEOUT );
+								}
+							else
+								{
+								valve_receive( &sensor_poll_cmd         , 
+								               sizeof( sensor_poll_cmd ), 
+											   HAL_DEFAULT_TIMEOUT );
+								}
+						#endif
 						}
 					break;
 					} /* case SENSOR_POLL_WAIT */
@@ -347,9 +474,24 @@ switch ( subcommand )
 	case SENSOR_DUMP_CODE: 
 		{
 		/* Tell the PC how many bytes to expect */
-		usb_transmit( &num_sensor_bytes,
-                      sizeof( num_sensor_bytes ), 
-                      HAL_DEFAULT_TIMEOUT );
+		#ifndef VALVE_CONTROLLER 
+			usb_transmit( &num_sensor_bytes,
+						sizeof( num_sensor_bytes ), 
+						HAL_DEFAULT_TIMEOUT );
+		#else
+			if ( cmd_source == CMD_SOURCE_USB )
+				{
+				usb_transmit( &num_sensor_bytes,
+							sizeof( num_sensor_bytes ), 
+							HAL_DEFAULT_TIMEOUT );
+				}
+			else
+				{
+				valve_transmit( &num_sensor_bytes, 
+				                sizeof( num_sensor_bytes ), 
+								HAL_DEFAULT_TIMEOUT );
+				}
+		#endif /* #ifndef VALVE_CONTROLLER */
 
 		/* Get the sensor readings */
 	    sensor_status = sensor_dump( &sensor_data );	
@@ -360,9 +502,24 @@ switch ( subcommand )
 		/* Transmit sensor readings to PC */
 		if ( sensor_status == SENSOR_OK )
 			{
-			usb_transmit( &sensor_data_bytes[0]      , 
-                          sizeof( sensor_data_bytes ), 
-                          HAL_SENSOR_TIMEOUT );
+			#ifndef VALVE_CONTROLLER
+				usb_transmit( &sensor_data_bytes[0]      , 
+							sizeof( sensor_data_bytes ), 
+							HAL_SENSOR_TIMEOUT );
+			#else
+				if ( cmd_source == CMD_SOURCE_USB )
+					{
+					usb_transmit( &sensor_data_bytes[0]      , 
+								sizeof( sensor_data_bytes ), 
+								HAL_SENSOR_TIMEOUT );
+					}
+				else
+					{
+					valve_transmit( &sensor_data_bytes[0],
+					                sizeof( sensor_data_bytes ), 
+									HAL_SENSOR_TIMEOUT );
+					}
+			#endif /* #ifndef VALVE_CONTROLLER */
 			return ( sensor_status );
             }
 		else

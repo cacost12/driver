@@ -92,7 +92,7 @@ typedef enum _VALVE_STATE
 /* Execute a valve subcommand */
 VALVE_STATUS valve_cmd_execute
 	(
-	uint8_t subcommand
+	uint8_t    subcommand    /* sdec subcommand  */
 	);
 
 /* Transmits a specified number of bytes over the valve control serial port */

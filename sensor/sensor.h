@@ -99,6 +99,7 @@ typedef enum
 	SENSOR_POLL_FAIL_TO_START    ,
 	SENSOR_POLL_FAIL             ,
 	SENSOR_POLL_UNRECOGNIZED_CMD ,
+	SENSOR_VALVE_UART_ERROR      ,
     SENSOR_FAIL   
     } SENSOR_STATUS;
 
@@ -192,7 +193,12 @@ void sensor_init
 /* Execute a sensor subcommand */
 SENSOR_STATUS sensor_cmd_execute
 	(
-	uint8_t subcommand
+	#ifndef VALVE_CONTROLLER
+		uint8_t subcommand
+	#else
+		uint8_t    subcommand,   /* SDEC subcommand         */
+		CMD_SOURCE cmd_source    /* serial interface source */
+	#endif
     );
 
 /* Poll specific sensors on the board */
