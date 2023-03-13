@@ -153,13 +153,11 @@ VALVE_STATE valve_get_fuel_valve_state
 	void
 	);
 
-#ifdef WIP
 /* Calibrate initial valve positions */
 VALVE_STATUS valve_calibrate_valves
 	(
 	void
 	);
-#endif
 
 #ifdef __cplusplus
 }

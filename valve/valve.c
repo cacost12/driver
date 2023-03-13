@@ -381,7 +381,6 @@ else
 } /* valve_get_main_valve_state */
 
 
-#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -396,22 +395,31 @@ VALVE_STATUS valve_calibrate_valves
 	void
 	)
 {
-/*------------------------------------------------------------------------------
- Local Variables
-------------------------------------------------------------------------------*/
+/* Calibrate the oxidizer valve  */
+lox_driver_enable();
+lox_driver_set_direction( STEPPER_DRIVER_CCW );
+while ( valve_get_ox_valve_state() == VALVE_OPEN )
+	{
+	HAL_GPIO_WritePin( LOX_PUL_GPIO_PORT, LOX_PUL_PIN, GPIO_PIN_SET );
+	HAL_Delay( 1 );
+	HAL_GPIO_WritePin( LOX_PUL_GPIO_PORT, LOX_PUL_PIN, GPIO_PIN_RESET );
+	HAL_Delay( 1 );
+	}
+lox_valve_pos = 0;
 
-
-/*------------------------------------------------------------------------------
- Initializations
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Implementation 
-------------------------------------------------------------------------------*/
+/* Calibrate the fuel valve      */
+fuel_driver_enable();
+fuel_driver_set_direction( STEPPER_DRIVER_CCW );
+while ( valve_get_fuel_valve_state() == VALVE_OPEN )
+	{
+	HAL_GPIO_WritePin( KER_PUL_GPIO_PORT, KER_PUL_PIN, GPIO_PIN_SET );
+	HAL_Delay( 1 );
+	HAL_GPIO_WritePin( KER_PUL_GPIO_PORT, KER_PUL_PIN, GPIO_PIN_RESET );
+	HAL_delay( 1 );
+	}
+fuel_valve_pos = 0;
 return VALVE_OK;
 } /* valve_calibrate_valves */
-#endif /* #ifdef WIP */
 
 /*------------------------------------------------------------------------------
  Interrupt Service Routines 
