@@ -25,6 +25,10 @@ extern "C" {
 #define ENCODER_HIGH              true
 #define ENCODER_LOW               false
 
+/* Photogate states */
+#define PHOTOGATE_STATE_LOW       GPIO_PIN_RESET
+#define PHOTOGATE_STATE_HIGH      GPIO_PIN_SET
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -58,6 +62,13 @@ typedef struct _STEPPER_DRIVER_STATE
 	STEPPER_DRIVER_EN_STATE  enable;    /* Motor enabled      */
 	STEPPER_DRIVER_DIR_STATE direction; /* Rotation Direction */
 	} STEPPER_DRIVER_STATE; 
+
+/* Valve States */
+typedef enum _VALVE_STATE
+	{
+	VALVE_OPEN,
+	VALVE_CLOSED
+	} VALVE_STATE;
 
 
 /*------------------------------------------------------------------------------
@@ -124,25 +135,25 @@ int32_t valve_get_fuel_valve_pos
 	void
 	);
 
-#ifdef WIP
 /* Get the position of the main fuel valve */
-VALVE_STATUS valve_get_fuel_valve_pos
+int32_t valve_get_fuel_valve_pos
 	(
 	void
 	);
 
 /* Get the state of the main oxidizer valve */
-VALVE_STATUS valve_get_ox_valve_state
+VALVE_STATE valve_get_ox_valve_state
 	(
 	void
 	);
 
 /* Get the status of the main fuel valve */
-VALVE_STATUS valve_get_main_valve_state
+VALVE_STATE valve_get_fuel_valve_state
 	(
 	void
 	);
 
+#ifdef WIP
 /* Calibrate initial valve positions */
 VALVE_STATUS valve_calibrate_valves
 	(

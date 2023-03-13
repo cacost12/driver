@@ -330,7 +330,7 @@ int32_t valve_get_fuel_valve_pos
 return fuel_valve_pos*360/1000;
 } /* valve_get_fuel_valve_pos */
 
-#ifdef WIP
+
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -340,59 +340,48 @@ return fuel_valve_pos*360/1000;
 *       Get the state of the main oxidizer valve                               *
 *                                                                              *
 *******************************************************************************/
-VALVE_STATUS valve_get_ox_valve_state
+VALVE_STATE valve_get_ox_valve_state
 	(
 	void
 	)
 {
-/*------------------------------------------------------------------------------
- Local Variables
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Initializations
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Implementation 
-------------------------------------------------------------------------------*/
-return VALVE_OK;
+if ( HAL_GPIO_ReadPin( PHOTOGATE_GPIO_PORT, LOX_PHOTOGATE_PIN ) == PHOTOGATE_STATE_LOW )
+	{
+	return VALVE_OPEN;
+	}
+else
+	{
+	return VALVE_CLOSED;
+	}
 } /* valve_get_ox_valve_state */
 
 
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
-* 		valve_get_main_valve_state                                             *
+* 		valve_get_fuel_valve_state                                             *
 *                                                                              *
 * DESCRIPTION:                                                                 *
 *       Get the status of the main fuel valve                                  *
 *                                                                              *
 *******************************************************************************/
-VALVE_STATUS valve_get_main_valve_state
+VALVE_STATE valve_get_fuel_valve_state
 	(
 	void
 	)
 {
-/*------------------------------------------------------------------------------
- Local Variables
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Initializations
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Implementation 
-------------------------------------------------------------------------------*/
-return VALVE_OK;
+if ( HAL_GPIO_ReadPin( PHOTOGATE_GPIO_PORT, FUEL_PHOTOGATE_PIN ) == PHOTOGATE_STATE_LOW )
+	{
+	return VALVE_OPEN;
+	}
+else
+	{
+	return VALVE_CLOSED;
+	}
 } /* valve_get_main_valve_state */
 
 
+#ifdef WIP
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
