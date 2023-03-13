@@ -99,6 +99,52 @@ static VALVE_STATUS fuel_driver_set_direction
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
+* 		valve_enable_valves                                                    *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Enable valve drivers to actuate valves                                 *
+*                                                                              *
+*******************************************************************************/
+void valve_enable_valves
+	(
+	void
+	)
+{
+/* Enable the oxidizer valve */
+lox_driver_enable();
+
+/* Enable the fuel valve     */
+fuel_driver_enable();
+
+} /* valve_enable_valves */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		valve_disable_valves                                                   *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Disable valve drivers to actuate valves                                *
+*                                                                              *
+*******************************************************************************/
+void valve_disable_valves
+	(
+	void
+	)
+{
+/* Disable the oxidizer valve */
+lox_driver_disable();
+
+/* Disable the fuel valve     */
+fuel_driver_disable();
+
+} /* valve_disable_valves */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
 * 		valve_open_ox_valve                                                    *
 *                                                                              *
 * DESCRIPTION:                                                                 *

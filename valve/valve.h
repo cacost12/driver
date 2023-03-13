@@ -79,6 +79,18 @@ typedef enum _VALVE_STATE
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+/* Enable valve drivers to actuate valves */
+void valve_enable_valves
+	(
+	void
+	);
+
+/* Disable valve drivers to actuate valves */
+void valve_disable_valves
+	(
+	void
+	);
+
 /* Open the main oxidizer valve */
 VALVE_STATUS valve_open_ox_valve
 	(
