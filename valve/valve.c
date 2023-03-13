@@ -415,7 +415,7 @@ while ( valve_get_fuel_valve_state() == VALVE_OPEN )
 	HAL_GPIO_WritePin( KER_PUL_GPIO_PORT, KER_PUL_PIN, GPIO_PIN_SET );
 	HAL_Delay( 1 );
 	HAL_GPIO_WritePin( KER_PUL_GPIO_PORT, KER_PUL_PIN, GPIO_PIN_RESET );
-	HAL_delay( 1 );
+	HAL_Delay( 1 );
 	}
 fuel_valve_pos = 0;
 return VALVE_OK;
