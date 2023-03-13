@@ -89,11 +89,13 @@ typedef enum _VALVE_STATE
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+#ifdef VALVE_CONTROLLER
 /* Execute a valve subcommand */
 VALVE_STATUS valve_cmd_execute
 	(
 	uint8_t    subcommand    /* sdec subcommand  */
 	);
+#endif
 
 /* Transmits a specified number of bytes over the valve control serial port */
 VALVE_STATUS valve_transmit
@@ -111,6 +113,7 @@ VALVE_STATUS valve_receive
 	uint32_t timeout       /* UART timeout                    */
 	);
 
+#ifdef VALVE_CONTROLLER
 /* Enable valve drivers to actuate valves */
 void valve_enable_valves
 	(
@@ -206,6 +209,7 @@ VALVE_STATUS valve_calibrate_valves
 	(
 	void
 	);
+#endif /* #ifdef VALVE_CONTROLLER */
 
 #ifdef __cplusplus
 }

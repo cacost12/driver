@@ -17,7 +17,11 @@
 /*------------------------------------------------------------------------------
  Project Includes                                                               
 ------------------------------------------------------------------------------*/
-#include "sdr_pin_defines_L0005.h"
+#if   defined( VALVE_CONTROLLER  )
+	#include "sdr_pin_defines_L0005.h"
+#elif defined( ENGINE_CONTROLLER )
+	#include "sdr_pin_defines_L0002.h"
+#endif
 #include "stm32h7xx_hal.h"
 #include "main.h"
 #include "valve.h"
@@ -28,6 +32,7 @@
  Global Variables 
 ------------------------------------------------------------------------------*/
 
+#ifdef VALVE_CONTROLLER
 /* Encoder variables */
 volatile static int32_t  lox_valve_pos       = 0;  /* LOX Valve Encoder count  */
 volatile static bool     lox_channelA_state  = ENCODER_LOW; /* Voltage on channel 
@@ -49,12 +54,14 @@ volatile static bool ox_valve_closing   = false; /* LOX valve is closing  */
 volatile static bool ox_valve_opening   = false; /* LOX valve is opening  */
 volatile static bool fuel_valve_closing = false; /* Fuel valve is closing */
 volatile static bool fuel_valve_opening = false; /* Fuel valve is opening */
+#endif /* #ifdef VALVE_CONTROLLER */
 
 
 /*------------------------------------------------------------------------------
  Internal Function Prototypes 
 ------------------------------------------------------------------------------*/
 
+#ifdef VALVE_CONTROLLER
 /* Enable the lox stepper motor driver */
 static void lox_driver_enable
 	(
@@ -90,12 +97,14 @@ static VALVE_STATUS fuel_driver_set_direction
 	(
 	STEPPER_DRIVER_DIR_STATE direction
 	);
+#endif
 
 
 /*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
 
+#ifdef VALVE_CONTROLLER
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -195,6 +204,7 @@ switch( subcommand )
 	} /* switch( subcommand ) */
 
 } /* valve_cmd_execute */
+#endif
 
 
 /*******************************************************************************
@@ -313,7 +323,7 @@ switch ( hal_status )
 
 } /* valve_receive */
 
-
+#ifdef VALVE_CONTROLLER
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -685,12 +695,13 @@ while ( valve_get_fuel_valve_state() == VALVE_OPEN )
 fuel_valve_pos = 0;
 return VALVE_OK;
 } /* valve_calibrate_valves */
+#endif /* #ifdef VALVE_CONTROLLER */
 
 /*------------------------------------------------------------------------------
  Interrupt Service Routines 
 ------------------------------------------------------------------------------*/
 
-
+#ifdef VALVE_CONTROLLER
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -1009,6 +1020,7 @@ else
 fuel_driver_state.direction = direction;
 return VALVE_OK;
 } /* fuel_driver_set_direction */
+#endif /* #ifdef VALVE_CONTROLLER */
 
 
 /*******************************************************************************
