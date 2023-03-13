@@ -29,6 +29,7 @@ extern "C" {
 #define FLASH_OP       0x22    /* flash command opcode       */
 #define SENSOR_OP      0x03    /* sensor command opcode      */
 #define SOL_OP         0x51    /* solenoid command opcode    */
+#define VALVE_OP       0x52    /* Valve command opcode       */
 #define DUAL_DEPLOY_OP 0xA0    /* dual-deploy command opcode */
 
 /* Board identifier code */

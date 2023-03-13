@@ -33,6 +33,13 @@ extern "C" {
 #define VALVE_CLOSED_POS          0
 #define VALVE_OPEN_POS            400
 
+/* Subcommand codes */
+#define VALVE_ENABLE_CODE         0x00
+#define VALVE_DISABLE_CODE        0x02
+#define VALVE_OPEN_CODE           0x04
+#define VALVE_CLOSE_CODE          0x06
+#define VALVE_CALIBRATE_CODE      0x08
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -41,8 +48,9 @@ extern "C" {
 /* Return Codes */
 typedef enum _VALVE_STATUS
 	{
-	VALVE_OK         ,
-	VALVE_INVALID_DIR, /* Invalid motor direction */
+	VALVE_OK                     ,
+	VALVE_INVALID_DIR            , /* Invalid motor direction */
+	VALVE_UNRECOGNIZED_SUBCOMMAND, /* Unrecognized subcommand */
 	VALVE_ERROR
 	} VALVE_STATUS;
 
@@ -78,6 +86,12 @@ typedef enum _VALVE_STATE
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/
+
+/* Execute a valve subcommand */
+VALVE_STATUS valve_cmd_execute
+	(
+	uint8_t subcommand
+	);
 
 /* Enable valve drivers to actuate valves */
 void valve_enable_valves
