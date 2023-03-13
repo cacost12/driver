@@ -15,6 +15,8 @@
 ------------------------------------------------------------------------------*/
 #if defined( GROUND_STATION )
 	#include "sdr_pin_defines_A0005.h"
+#elif defined( ENGINE_CONTROLLER )
+	#include "sdr_pin_defines_L0002.h"
 #endif
 
 /*------------------------------------------------------------------------------
@@ -27,7 +29,6 @@
 /*------------------------------------------------------------------------------
 Global Variables                                                                  
 ------------------------------------------------------------------------------*/
-extern UART_HandleTypeDef huart4; /* Xbee UART */
 
 
 /*------------------------------------------------------------------------------
@@ -60,8 +61,8 @@ HAL_StatusTypeDef xbee_status;
 ------------------------------------------------------------------------------*/
 
 /* Transmit byte */
-xbee_status = HAL_UART_Transmit( &huart4 ,
-                                 &tx_byte, 
+xbee_status = HAL_UART_Transmit( &( XBEE_HUART )  ,
+                                 &tx_byte         , 
                                  sizeof( tx_byte ), 
                                  RF_TIMEOUT );
 
@@ -103,7 +104,7 @@ HAL_StatusTypeDef xbee_status;
 ------------------------------------------------------------------------------*/
 
 /* Transmit byte */
-xbee_status = HAL_UART_Receive( &huart4          ,
+xbee_status = HAL_UART_Receive( &( XBEE_HUART )  ,
                                 p_rx_byte        , 
                                 sizeof( uint8_t ), 
                                 RF_TIMEOUT );
@@ -127,10 +128,9 @@ switch ( xbee_status )
 		break;
         }
 	}
-
 } /* rf_xbee_transmit_byte */
 
 
 /*******************************************************************************
-* END OF FILE                                                                  * 
+* END OF FILE                                                                  *
 *******************************************************************************/
