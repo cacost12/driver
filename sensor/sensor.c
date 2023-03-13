@@ -271,7 +271,7 @@ switch ( subcommand )
 											  HAL_DEFAULT_TIMEOUT );
 				if ( valve_status != VALVE_OK )
 					{
-					return SENSOR_VALVE_UART_FAIL;
+					return SENSOR_VALVE_UART_ERROR;
 					}
 				}
 		#endif /* #ifdef VALVE_CONTROLLER */
