@@ -245,7 +245,7 @@ switch ( subcommand )
     case SENSOR_POLL_CODE:
 		{
 		/* Determine the number of sensors to poll */
-		#ifdef VALVE_CONTROLLER 
+		#ifndef VALVE_CONTROLLER 
 			usb_status = usb_receive( &num_sensors, 
 									sizeof( num_sensors ), 
 									HAL_DEFAULT_TIMEOUT );
@@ -254,7 +254,7 @@ switch ( subcommand )
 				return SENSOR_USB_FAIL;
 				}
 		#else
-			if ( cmd_source == CMD_USB )
+			if ( cmd_source == CMD_SOURCE_USB )
 				{
 				usb_status = usb_receive( &num_sensors, 
 										sizeof( num_sensors ), 
