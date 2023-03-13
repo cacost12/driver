@@ -172,6 +172,12 @@ valve_status = VALVE_OK;
  Implementation 
 ------------------------------------------------------------------------------*/
 
+/* Check if valve is already open */
+if ( lox_valve_pos == VALVE_OPEN_POS )
+	{
+	return VALVE_OK;
+	}
+
 /* Set the direction   */
 valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
 if ( valve_status != VALVE_OK )
@@ -215,6 +221,12 @@ valve_status = VALVE_OK;
 /*------------------------------------------------------------------------------
  Implementation 
 ------------------------------------------------------------------------------*/
+
+/* Check if valve is already open */
+if ( fuel_valve_pos == VALVE_OPEN_POS )
+	{
+	return VALVE_OK;
+	}
 
 /* Set the direction   */
 valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CCW );
@@ -260,6 +272,12 @@ valve_status = VALVE_OK;
  Implementation 
 ------------------------------------------------------------------------------*/
 
+/* Check if valve is already closed */
+if ( lox_valve_pos == VALVE_CLOSED_POS )
+	{
+	return VALVE_OK;
+	}
+
 /* Set the direction   */
 valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
@@ -303,6 +321,12 @@ valve_status = VALVE_OK;
 /*------------------------------------------------------------------------------
  Implementation 
 ------------------------------------------------------------------------------*/
+
+/* check if valve is already closed */
+if ( fuel_valve_pos == VALVE_CLOSED_POS )
+	{
+	return VALVE_OK;
+	}
 
 /* Set the direction   */
 valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CW );
