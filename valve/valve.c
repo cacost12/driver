@@ -43,6 +43,12 @@ volatile static bool     fuel_channelB_state = ENCODER_LOW; /* Voltage on Channe
 static STEPPER_DRIVER_STATE lox_driver_state;
 static STEPPER_DRIVER_STATE fuel_driver_state;
 
+/* Valve openining/closing states */
+volatile static bool ox_valve_closing   = false; /* LOX valve is closing  */
+volatile static bool ox_valve_opening   = false; /* LOX valve is opening  */
+volatile static bool fuel_valve_closing = false; /* Fuel valve is closing */
+volatile static bool fuel_valve_opening = false; /* Fuel valve is opening */
+
 
 /*------------------------------------------------------------------------------
  Internal Function Prototypes 
@@ -120,9 +126,6 @@ valve_status = VALVE_OK;
  Implementation 
 ------------------------------------------------------------------------------*/
 
-/* Enable the driver   */
-lox_driver_enable();
-
 /* Set the direction   */
 valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
 if ( valve_status != VALVE_OK )
@@ -131,13 +134,8 @@ if ( valve_status != VALVE_OK )
 	}
 
 /* Actuate the valve   */
+ox_valve_opening = true;
 HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
-HAL_Delay( 100 );
-HAL_TIM_PWM_Stop ( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
-
-/* Turn off the driver */
-lox_driver_disable();
-
 return VALVE_OK;
 } /* valve_open_ox_valve */
 
@@ -172,9 +170,6 @@ valve_status = VALVE_OK;
  Implementation 
 ------------------------------------------------------------------------------*/
 
-/* Enable the driver   */
-fuel_driver_enable();
-
 /* Set the direction   */
 valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CCW );
 if ( valve_status != VALVE_OK )
@@ -183,12 +178,8 @@ if ( valve_status != VALVE_OK )
 	}
 
 /* Actuate the valve   */
+fuel_valve_opening = true;
 HAL_TIM_PWM_Start( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
-HAL_Delay( 100 );
-HAL_TIM_PWM_Stop ( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
-
-/* Turn off the driver */
-fuel_driver_disable();
 return VALVE_OK;
 } /* valve_open_fuel_valve */
 
@@ -223,9 +214,6 @@ valve_status = VALVE_OK;
  Implementation 
 ------------------------------------------------------------------------------*/
 
-/* Enable the driver   */
-lox_driver_enable();
-
 /* Set the direction   */
 valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
@@ -234,12 +222,8 @@ if ( valve_status != VALVE_OK )
 	}
 
 /* Actuate the valve   */
+ox_valve_closing = true;
 HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
-HAL_Delay( 100 );
-HAL_TIM_PWM_Stop ( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
-
-/* Turn off the driver */
-lox_driver_disable();
 return VALVE_OK;
 } /* valve_close_ox_valve */
 
@@ -274,9 +258,6 @@ valve_status = VALVE_OK;
  Implementation 
 ------------------------------------------------------------------------------*/
 
-/* Enable the driver   */
-fuel_driver_enable();
-
 /* Set the direction   */
 valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
@@ -284,13 +265,9 @@ if ( valve_status != VALVE_OK )
 	return valve_status;
 	}
 
-/* Actuate the valve   */
+/* Actuate the valve */
+fuel_valve_closing = true;
 HAL_TIM_PWM_Start( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
-HAL_Delay( 100 );
-HAL_TIM_PWM_Stop ( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
-
-/* Turn off the driver */
-fuel_driver_disable();
 return VALVE_OK;
 } /* valve_close_fuel_valve */
 
@@ -447,6 +424,13 @@ if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_A_PIN ) )
 	if ( !lox_channelB_state )
 		{
 		lox_valve_pos -= 1;
+
+		/* Detect valve closed position */
+		if ( ox_valve_closing && ( lox_valve_pos == VALVE_CLOSED_POS ) )
+			{
+			HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+			ox_valve_closing = false;
+			}
 		}
 	}
 /* High to Low Transition */
@@ -478,6 +462,13 @@ if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_B_PIN ) )
 	if ( !lox_channelA_state )
 		{
 		lox_valve_pos += 1;
+
+		/* Detect valve open */
+		if ( ox_valve_opening && ( lox_valve_pos == VALVE_OPEN_POS ) )
+			{
+			HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+			ox_valve_opening = false;
+			}
 		}
 	}
 /* High to Low Transition */
@@ -510,6 +501,13 @@ if ( HAL_GPIO_ReadPin( KER_ENC_GPIO_PORT, KER_ENC_A_PIN ) )
 	if ( !fuel_channelB_state )
 		{
 		fuel_valve_pos -= 1;
+
+		/* Detect valve closed */
+		if ( fuel_valve_closing && ( fuel_valve_pos == VALVE_CLOSED_POS ) )
+			{
+			HAL_TIM_PWM_Stop( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
+			fuel_valve_closing = false;
+			}
 		}
 	}
 /* High to Low Transition */
@@ -541,6 +539,13 @@ if ( HAL_GPIO_ReadPin( KER_ENC_GPIO_PORT, KER_ENC_B_PIN ) )
 	if ( !fuel_channelA_state )
 		{
 		fuel_valve_pos += 1;
+
+		/* Detect valve open */
+		if ( fuel_valve_opening && ( fuel_valve_pos == VALVE_OPEN_POS ) )
+			{
+			HAL_TIM_PWM_Stop( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
+			fuel_valve_opening = false;
+			}
 		}
 	}
 /* High to Low Transition */

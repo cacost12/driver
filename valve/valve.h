@@ -29,6 +29,10 @@ extern "C" {
 #define PHOTOGATE_STATE_LOW       GPIO_PIN_RESET
 #define PHOTOGATE_STATE_HIGH      GPIO_PIN_SET
 
+/* Valve open/close positions */
+#define VALVE_CLOSED_POS          0
+#define VALVE_OPEN_POS            400
+
 
 /*------------------------------------------------------------------------------
  Typdefs 
