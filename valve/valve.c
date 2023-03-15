@@ -50,10 +50,12 @@ static STEPPER_DRIVER_STATE lox_driver_state;
 static STEPPER_DRIVER_STATE fuel_driver_state;
 
 /* Valve openining/closing states */
-volatile static bool ox_valve_closing   = false; /* LOX valve is closing  */
-volatile static bool ox_valve_opening   = false; /* LOX valve is opening  */
-volatile static bool fuel_valve_closing = false; /* Fuel valve is closing */
-volatile static bool fuel_valve_opening = false; /* Fuel valve is opening */
+volatile static bool ox_valve_closing    = false; /* LOX valve is closing   */
+volatile static bool ox_valve_opening    = false; /* LOX valve is opening   */
+volatile static bool fuel_valve_closing  = false; /* Fuel valve is closing  */
+volatile static bool fuel_valve_opening  = false; /* Fuel valve is opening  */
+volatile static bool ox_valve_cracking   = false; /* LOX valve is cracking  */
+volatile static bool fuel_valve_cracking = false; /* Fuel valve is cracking */
 #endif /* #ifdef VALVE_CONTROLLER */
 
 
@@ -573,6 +575,106 @@ return VALVE_OK;
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
+* 		valve_crack_ox_valve                                                   *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+* 		Slightly open the main oxidizer valve                                  *
+*                                                                              *
+*******************************************************************************/
+VALVE_STATUS valve_crack_ox_valve
+	(
+	void
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+VALVE_STATUS valve_status; /* Status return codes from valve API */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+valve_status = VALVE_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Check if valve is already open */
+if ( lox_valve_pos == VALVE_OPEN_POS )
+	{
+	return VALVE_OK;
+	}
+
+/* Set the direction   */
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
+if ( valve_status != VALVE_OK )
+	{
+	return valve_status;
+	}
+
+/* Actuate the valve   */
+ox_valve_cracking = true;
+HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+return VALVE_OK;
+} /* valve_crack_ox_valve */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		valve_crack_fuel_valve                                                 *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+* 		Slightly open the main fuel valve                                      *
+*                                                                              *
+*******************************************************************************/
+VALVE_STATUS valve_crack_fuel_valve
+	(
+	void
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+VALVE_STATUS valve_status; /* Status return codes from valve API */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+valve_status = VALVE_OK;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Check if valve is already open */
+if ( lox_valve_pos == VALVE_OPEN_POS )
+	{
+	return VALVE_OK;
+	}
+
+/* Set the direction   */
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
+if ( valve_status != VALVE_OK )
+	{
+	return valve_status;
+	}
+
+/* Actuate the valve   */
+fuel_valve_cracking = true;
+HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+return VALVE_OK;
+} /* valve_crack_ox_valve */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
 * 		valve_get_ox_valve_pos                                                 *
 *                                                                              *
 * DESCRIPTION:                                                                 *
@@ -768,6 +870,12 @@ if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_B_PIN ) )
 			HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
 			ox_valve_opening = false;
 			}
+		/* Detect valve cracked */
+		else if ( ox_valve_cracking && ( lox_valve_pos = VALVE_CRACKED_POS ) )
+			{
+			HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL  );
+			ox_valve_cracking = false;
+			}
 		}
 	}
 /* High to Low Transition */
@@ -840,10 +948,16 @@ if ( HAL_GPIO_ReadPin( KER_ENC_GPIO_PORT, KER_ENC_B_PIN ) )
 		fuel_valve_pos += 1;
 
 		/* Detect valve open */
-		if ( fuel_valve_opening && ( fuel_valve_pos == VALVE_OPEN_POS ) )
+		if      ( fuel_valve_opening && ( fuel_valve_pos == VALVE_OPEN_POS ) )
 			{
 			HAL_TIM_PWM_Stop( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
 			fuel_valve_opening = false;
+			}
+		/* Detect valve crakced */
+		else if ( fuel_valve_cracking && ( fuel_valve_pos == VALVE_CRACKED_POS ) )
+			{
+			HAL_TIM_PWM_Stop( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
+			fuel_valve_cracking = false;
 			}
 		}
 	}

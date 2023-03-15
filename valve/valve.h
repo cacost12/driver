@@ -32,6 +32,7 @@ extern "C" {
 /* Valve open/close positions */
 #define VALVE_CLOSED_POS          0
 #define VALVE_OPEN_POS            400
+#define VALVE_CRACKED_POS         80
 
 /* Subcommand codes */
 #define VALVE_ENABLE_CODE         0x00
@@ -146,6 +147,18 @@ VALVE_STATUS valve_close_ox_valve
 
 /* Close the main fuel valve */
 VALVE_STATUS valve_close_fuel_valve
+	(
+	void
+	);
+
+/* Crack the oxidizer valve */
+VALVE_STATUS valve_crack_ox_valve
+	(
+	void
+	);
+
+/* Crack the fuel valve */ 
+VALVE_STATUS valve_crack_fuel_valve
 	(
 	void
 	);
