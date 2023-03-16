@@ -27,7 +27,7 @@ extern "C" {
 typedef enum RF_STATUS
 	{
 	RF_OK = 0,
-    RF_FAIL  ,
+    RF_ERROR ,
 	RF_TIMEOUT
 	} RF_STATUS;
 

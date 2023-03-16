@@ -69,7 +69,7 @@ xbee_status = HAL_UART_Transmit( &( XBEE_HUART )  ,
 /* Return HAL status */
 if ( xbee_status != HAL_OK )
 	{
-	return xbee_status;
+	return RF_ERROR;
 	}
 else
 	{
@@ -115,17 +115,14 @@ switch ( xbee_status )
 	case HAL_TIMEOUT:
 		{
 		return RF_TIMEOUT;
-		break;
 		}
 	case HAL_OK:
 		{
 		return RF_OK;
-		break;
 		}
 	default:
 		{
-		return RF_FAIL;
-		break;
+		return RF_ERROR;
         }
 	}
 } /* rf_xbee_transmit_byte */
