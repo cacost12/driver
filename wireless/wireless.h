@@ -52,7 +52,7 @@ typedef enum WIRELESS_MOD_CODES
 ------------------------------------------------------------------------------*/
 
 
-/* transmits a byte wirelessly using the xbee module */
+/* Transmits a byte wirelessly using the xbee module */
 RF_STATUS rf_xbee_transmit_byte 
 	(
     uint8_t tx_byte	
@@ -64,6 +64,21 @@ RF_STATUS rf_xbee_receive_byte
 	(
 	uint8_t* p_rx_byte	
 	);
+
+/* Transmits a buffer of bytes wirelessly using the xbee module */
+RF_STATUS rf_xbee_transmit
+	(
+    void*  tx_buffer_ptr,   /* Pointer to buffer data    */
+	size_t buffer_size	    /* Number of bytes in buffer */
+	);
+
+/* Receives data from the xbee module and outputs to a buffer */
+RF_STATUS rf_xbee_receive
+	(
+	void*  rx_buffer_ptr,   /* Pointer to output data buffer */	
+	size_t rx_buffer_size   /* Number of bytes to recevie    */
+	);
+
 
 #ifdef __cplusplus
 }

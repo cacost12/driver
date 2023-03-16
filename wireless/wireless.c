@@ -38,10 +38,10 @@ Global Variables
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
 * 		rf_xbee_transmit_byte                                                  *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 * 		transmits a byte wirelessly using the xbee module                      *
 *                                                                              *
 *******************************************************************************/
@@ -53,7 +53,13 @@ RF_STATUS rf_xbee_transmit_byte
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef xbee_status;
+HAL_StatusTypeDef hal_status;    /* Return codes from HAL */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
 
 
 /*------------------------------------------------------------------------------
@@ -61,13 +67,13 @@ HAL_StatusTypeDef xbee_status;
 ------------------------------------------------------------------------------*/
 
 /* Transmit byte */
-xbee_status = HAL_UART_Transmit( &( XBEE_HUART )  ,
-                                 &tx_byte         , 
-                                 sizeof( tx_byte ), 
-                                 RF_TIMEOUT );
+hal_status = HAL_UART_Transmit( &( XBEE_HUART )  ,
+                                &tx_byte         , 
+                                sizeof( tx_byte ), 
+                                RF_TIMEOUT );
 
 /* Return HAL status */
-if ( xbee_status != HAL_OK )
+if ( hal_status != HAL_OK )
 	{
 	return RF_ERROR;
 	}
@@ -81,10 +87,62 @@ else
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
+* 		rf_xbee_transmit                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+* 		transmits a buffer of bytes wirelessly using the xbee module           *
+*                                                                              *
+*******************************************************************************/
+RF_STATUS rf_xbee_transmit
+	(
+    void*  tx_buffer_ptr,   /* Pointer to buffer data    */
+	size_t buffer_size	    /* Number of bytes in buffer */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Return codes from HAL */
+uint32_t          timeout;       /* UART transmit timeout */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+timeout    = RF_TIMEOUT*buffer_size;
+
+
+/*------------------------------------------------------------------------------
+ API Function Implementation 
+------------------------------------------------------------------------------*/
+
+/* Transmit byte */
+hal_status = HAL_UART_Transmit( &( XBEE_HUART ),
+                                tx_buffer_ptr  , 
+                                buffer_size    , 
+                                timeout );
+
+/* Return HAL status */
+if ( hal_status != HAL_OK )
+	{
+	return RF_ERROR;
+	}
+else
+	{
+	return RF_OK;
+	}
+
+} /* rf_xbee_transmit */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
 * 		rf_xbee_receieve_byte                                                  *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 * 		Receives a byte from the xbee module                                   *
 *                                                                              *
 *******************************************************************************/
@@ -96,21 +154,27 @@ RF_STATUS rf_xbee_receive_byte
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef xbee_status;
+HAL_StatusTypeDef hal_status;
+
+
+/*------------------------------------------------------------------------------
+ Initializations
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
 
 
 /*------------------------------------------------------------------------------
  API Function Implementation 
 ------------------------------------------------------------------------------*/
 
-/* Transmit byte */
-xbee_status = HAL_UART_Receive( &( XBEE_HUART )  ,
-                                p_rx_byte        , 
-                                sizeof( uint8_t ), 
-                                RF_TIMEOUT );
+/* Receive byte */
+hal_status = HAL_UART_Receive( &( XBEE_HUART )  ,
+                               p_rx_byte        , 
+                               sizeof( uint8_t ), 
+                               RF_TIMEOUT );
 
 /* Return HAL status */
-switch ( xbee_status )
+switch ( hal_status )
 	{
 	case HAL_TIMEOUT:
 		{
@@ -125,7 +189,65 @@ switch ( xbee_status )
 		return RF_ERROR;
         }
 	}
-} /* rf_xbee_transmit_byte */
+} /* rf_xbee_receive_byte */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		rf_xbee_receive                                                        *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+* 		Receives data from the xbee module and outputs to a buffer             *
+*                                                                              *
+*******************************************************************************/
+RF_STATUS rf_xbee_receive
+	(
+	void*  rx_buffer_ptr,   /* Pointer to output data buffer */	
+	size_t rx_buffer_size   /* Number of bytes to recevie    */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Return codes from HAL */
+uint32_t          timeout;       /* UART receive timeout  */
+
+
+/*------------------------------------------------------------------------------
+ Initialization 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+timeout    = rx_buffer_size*RF_TIMEOUT;
+
+
+/*------------------------------------------------------------------------------
+ API Function Implementation 
+------------------------------------------------------------------------------*/
+
+/* Receive data */
+hal_status = HAL_UART_Receive( &( XBEE_HUART ),
+                               rx_buffer_ptr  , 
+                               timeout        , 
+                               RF_TIMEOUT );
+
+/* Return HAL status */
+switch ( hal_status )
+	{
+	case HAL_TIMEOUT:
+		{
+		return RF_TIMEOUT;
+		}
+	case HAL_OK:
+		{
+		return RF_OK;
+		}
+	default:
+		{
+		return RF_ERROR;
+        }
+	}
+} /* rf_xbee_receive */
 
 
 /*******************************************************************************
