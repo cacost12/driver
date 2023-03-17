@@ -73,9 +73,10 @@ typedef enum PRESSURE_PT_NUMS
 ------------------------------------------------------------------------------*/
 
 /* Get a single pressure transducer reading */
-uint32_t pressure_get_pt_reading 
+PRESSURE_STATUS pressure_get_pt_reading 
 	(
-    PRESSURE_PT_NUM pt_num
+    PRESSURE_PT_NUM pt_num,
+    uint32_t*       pt_readout_ptr
     );
 
 /* Get readings from all pressure transducers */

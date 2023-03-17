@@ -568,6 +568,7 @@ SENSOR_STATUS sensor_dump
 #elif defined( ENGINE_CONTROLLER    )
 	PRESSURE_STATUS pt_status;              /* Pressure status codes       */
 	THERMO_STATUS   tc_status;              /* Thermocouple status codes   */
+	LOADCELL_STATUS lc_status;              /* Loadcell status codes       */
 #elif defined( FLIGHT_COMPUTER_LITE )
 	BARO_STATUS     press_status;           /* Baro Sensor status codes    */
 	BARO_STATUS     temp_status;
@@ -613,7 +614,7 @@ SENSOR_STATUS sensor_dump
 	pt_status    = pressure_poll_pts( &( sensor_data_ptr -> pt_pressures[0] ) );
 
 	/* Load cell */
-	sensor_data_ptr -> load_cell_force = loadcell_get_reading();
+	lc_status    = loadcell_get_reading( &( sensor_data_ptr -> load_cell_force ) );
 
 	/* Thermocouple */
 	tc_status    = temp_get_temp( &( sensor_data_ptr -> tc_temp ), 
@@ -664,6 +665,10 @@ SENSOR_STATUS sensor_dump
 		{
 		return SENSOR_TC_ERROR;
 		}
+	else if ( lc_status != LOADCELL_OK )
+		{
+		return SENSOR_LC_ERROR;
+		}
 	else
 		{
 		return SENSOR_OK;
@@ -709,12 +714,14 @@ SENSOR_ID* sensor_id_ptr;    /* Pointer to sensor id                */
 
 /* Module return codes */
 #if   defined( FLIGHT_COMPUTER   )
-	IMU_STATUS    imu_status;      /* IMU Module return codes   */ 
-	BARO_STATUS   baro_status;     /* Baro module return codes  */
+	IMU_STATUS      imu_status;      /* IMU Module return codes   */ 
+	BARO_STATUS     baro_status;     /* Baro module return codes  */
 #elif defined( ENGINE_CONTROLLER )
-	THERMO_STATUS thermo_status;   /* Thermocouple return codes */
+	THERMO_STATUS   thermo_status;   /* Thermocouple return codes */
+	LOADCELL_STATUS lc_status;       /* Loadcell return codes     */
+	PRESSURE_STATUS pt_status;       /* PT return codes           */
 #elif defined( FLIGHT_COMPUTER_LITE )
-	BARO_STATUS   baro_status;     /* Baro module return codes  */
+	BARO_STATUS     baro_status;     /* Baro module return codes  */
 #endif
 
 /* Sensor poll memory to prevent multiple calls to same API function */
@@ -736,6 +743,8 @@ sensor_id         = *(sensor_id_ptr   );
 	baro_status   = BARO_OK;
 #elif defined( ENGINE_CONTROLLER )
 	thermo_status = THERMO_OK;
+	lc_status     = LOADCELL_OK;
+	pt_status     = PRESSURE_OK;
 #elif defined( FLIGHT_COMPUTER_LITE )
 	baro_status   = BARO_OK;
 #endif
@@ -923,49 +932,89 @@ for ( int i = 0; i < num_sensors; ++i )
 		#if defined( ENGINE_CONTROLLER )
 			case SENSOR_PT0:
 				{
-				sensor_data_ptr -> pt_pressures[0] = pressure_get_pt_reading( PT_NUM0 );
+				pt_status = pressure_get_pt_reading( PT_NUM0, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_PT1:
 				{
-				sensor_data_ptr -> pt_pressures[1] = pressure_get_pt_reading( PT_NUM1 );
+				pt_status = pressure_get_pt_reading( PT_NUM1, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_PT2:
 				{
-				sensor_data_ptr -> pt_pressures[2] = pressure_get_pt_reading( PT_NUM2 );
+				pt_status = pressure_get_pt_reading( PT_NUM2, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_PT3:
 				{
-				sensor_data_ptr -> pt_pressures[3] = pressure_get_pt_reading( PT_NUM3 );
+				pt_status = pressure_get_pt_reading( PT_NUM3, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_PT4:
 				{
-				sensor_data_ptr -> pt_pressures[4] = pressure_get_pt_reading( PT_NUM4 );
+				pt_status = pressure_get_pt_reading( PT_NUM4, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_PT5:
 				{
-				sensor_data_ptr -> pt_pressures[5] = pressure_get_pt_reading( PT_NUM5 );
+				pt_status = pressure_get_pt_reading( PT_NUM5, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_PT6:
 				{
-				sensor_data_ptr -> pt_pressures[6] = pressure_get_pt_reading( PT_NUM6 );
+				pt_status = pressure_get_pt_reading( PT_NUM6, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
 			case SENSOR_PT7:
 				{
-				sensor_data_ptr -> pt_pressures[7] = pressure_get_pt_reading( PT_NUM7 );
+				pt_status = pressure_get_pt_reading( PT_NUM7, 
+				                                    &( sensor_data_ptr -> pt_pressures[0]) );
+				if ( pt_status != PRESSURE_OK )
+					{
+					return SENSOR_PT_ERROR;
+					}
 				break;
 				}
 
@@ -982,7 +1031,11 @@ for ( int i = 0; i < num_sensors; ++i )
 
 			case SENSOR_LC:
 				{
-				sensor_data_ptr -> load_cell_force = loadcell_get_reading();
+				lc_status = loadcell_get_reading( &( sensor_data_ptr -> load_cell_force ) );
+				if ( lc_status != LOADCELL_OK )
+					{
+					return SENSOR_LC_ERROR;
+					}
 				break;
 				}
 		

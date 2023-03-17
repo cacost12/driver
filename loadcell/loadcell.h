@@ -44,9 +44,9 @@ typedef enum LOADCELL_STATUS
 ------------------------------------------------------------------------------*/
 
 /* Read the load cell force */
-uint32_t loadcell_get_reading 
+LOADCELL_STATUS loadcell_get_reading 
 	(
-	void
+    uint32_t* loadcell_reading_ptr
     );
 
 #ifdef __cplusplus
