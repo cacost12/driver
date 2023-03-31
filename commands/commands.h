@@ -1,7 +1,7 @@
 /*******************************************************************************
 *
 * FILE: 
-* 		commands.c
+* 		commands.h
 *
 * DESCRIPTION: 
 * 		Contains general command functions common to all embedded controllers
