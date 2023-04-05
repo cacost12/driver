@@ -31,7 +31,7 @@ extern "C" {
 
 /* Valve open/close positions */
 #define VALVE_CLOSED_POS          0
-#define VALVE_OPEN_POS            400
+#define VALVE_OPEN_POS            250
 #define VALVE_CRACKED_POS         80
 
 /* Subcommand codes */
@@ -67,8 +67,8 @@ typedef enum _STEPPER_DRIVER_EN_STATE
 /* Stepper driver rotation directions */
 typedef enum _STEPPER_DRIVER_DIR_STATE
 	{
-	STEPPER_DRIVER_CW,  /* Clockwise         */
-	STEPPER_DRIVER_CCW  /* Counter clockwise */
+	STEPPER_DRIVER_CCW, /* Counter clockwise */
+	STEPPER_DRIVER_CW   /* Clockwise         */
 	} STEPPER_DRIVER_DIR_STATE;
 
 /* Stepper Motor driver state */

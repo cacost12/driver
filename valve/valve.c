@@ -409,7 +409,7 @@ if ( lox_valve_pos == VALVE_OPEN_POS )
 	}
 
 /* Set the direction   */
-valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
 	{
 	return valve_status;
@@ -459,7 +459,7 @@ if ( fuel_valve_pos == VALVE_OPEN_POS )
 	}
 
 /* Set the direction   */
-valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CCW );
+valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
 	{
 	return valve_status;
@@ -509,7 +509,7 @@ if ( lox_valve_pos == VALVE_CLOSED_POS )
 	}
 
 /* Set the direction   */
-valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
 if ( valve_status != VALVE_OK )
 	{
 	return valve_status;
@@ -559,7 +559,7 @@ if ( fuel_valve_pos == VALVE_CLOSED_POS )
 	}
 
 /* Set the direction   */
-valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CW );
+valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CCW );
 if ( valve_status != VALVE_OK )
 	{
 	return valve_status;
@@ -777,11 +777,10 @@ lox_driver_enable();
 lox_driver_set_direction( STEPPER_DRIVER_CCW );
 while ( valve_get_ox_valve_state() == VALVE_OPEN )
 	{
-	HAL_GPIO_WritePin( LOX_PUL_GPIO_PORT, LOX_PUL_PIN, GPIO_PIN_SET );
-	HAL_Delay( 1 );
-	HAL_GPIO_WritePin( LOX_PUL_GPIO_PORT, LOX_PUL_PIN, GPIO_PIN_RESET );
-	HAL_Delay( 1 );
+	HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
 	}
+
+HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
 lox_valve_pos = 0;
 
 /* Calibrate the fuel valve      */
@@ -789,11 +788,9 @@ fuel_driver_enable();
 fuel_driver_set_direction( STEPPER_DRIVER_CCW );
 while ( valve_get_fuel_valve_state() == VALVE_OPEN )
 	{
-	HAL_GPIO_WritePin( KER_PUL_GPIO_PORT, KER_PUL_PIN, GPIO_PIN_SET );
-	HAL_Delay( 1 );
-	HAL_GPIO_WritePin( KER_PUL_GPIO_PORT, KER_PUL_PIN, GPIO_PIN_RESET );
-	HAL_Delay( 1 );
+	HAL_TIM_PWM_Start( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
 	}
+HAL_TIM_PWM_Stop( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
 fuel_valve_pos = 0;
 return VALVE_OK;
 } /* valve_calibrate_valves */
@@ -985,12 +982,7 @@ static void lox_driver_enable
 	)
 {
 /* Set GPIO State      */
-HAL_GPIO_WritePin( LOX_EN_GPIO_PORT, LOX_EN_PIN, GPIO_PIN_RESET );
-while(1)
-	{
-	HAL_GPIO_TogglePin( LOX_DIR_GPIO_PORT, LOX_DIR_PIN );
-	HAL_Delay(1);
-	}
+HAL_GPIO_WritePin( LOX_EN_GPIO_PORT, LOX_EN_PIN, GPIO_PIN_SET );
 
 /* Update global state */
 lox_driver_state.enable = STEPPER_DRIVER_ENABLED;
@@ -1084,11 +1076,11 @@ static VALVE_STATUS lox_driver_set_direction
 /* Set the GPIO level      */
 if      ( direction == STEPPER_DRIVER_CW  )
 	{
-	HAL_GPIO_WritePin( LOX_DIR_GPIO_PORT, LOX_DIR_PIN, GPIO_PIN_SET );
+	HAL_GPIO_WritePin( LOX_DIR_GPIO_PORT, LOX_DIR_PIN, GPIO_PIN_RESET );
 	}
 else if ( direction == STEPPER_DRIVER_CCW )
 	{
-	HAL_GPIO_WritePin( LOX_DIR_GPIO_PORT, LOX_DIR_PIN, GPIO_PIN_RESET );
+	HAL_GPIO_WritePin( LOX_DIR_GPIO_PORT, LOX_DIR_PIN, GPIO_PIN_SET );
 	}
 else
 	{
@@ -1119,11 +1111,11 @@ static VALVE_STATUS fuel_driver_set_direction
 /* Set the GPIO level      */
 if      ( direction == STEPPER_DRIVER_CW  )
 	{
-	HAL_GPIO_WritePin( KER_DIR_GPIO_PORT, KER_DIR_PIN, GPIO_PIN_SET );
+	HAL_GPIO_WritePin( KER_DIR_GPIO_PORT, KER_DIR_PIN, GPIO_PIN_RESET );
 	}
 else if ( direction == STEPPER_DRIVER_CCW )
 	{
-	HAL_GPIO_WritePin( KER_DIR_GPIO_PORT, KER_DIR_PIN, GPIO_PIN_RESET );
+	HAL_GPIO_WritePin( KER_DIR_GPIO_PORT, KER_DIR_PIN, GPIO_PIN_SET );
 	}
 else
 	{
