@@ -304,9 +304,9 @@ pinstate  = GPIO_PIN_RESET;
 /*------------------------------------------------------------------------------
  Implementation 
 ------------------------------------------------------------------------------*/
-for ( uint8_t i = 0; i < NUM_SOLENOIDS; ++i )
+for ( uint8_t i = 0; i < NUM_SOLENOIDS; i++ )
 	{
-	solenoid_map( &solenoid_GPIO_handle, i-1 );
+	solenoid_map( &solenoid_GPIO_handle, i+1 );
 	pinstate = HAL_GPIO_ReadPin( solenoid_GPIO_handle.GPIOx, 
 	                             solenoid_GPIO_handle.GPIO_pin );
 	if ( pinstate == GPIO_PIN_SET )

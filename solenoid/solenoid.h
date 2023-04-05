@@ -31,7 +31,7 @@ extern "C" {
 #define SOL_OFF_BASE_CODE	    0x08
 #define SOL_TOGGLE_BASE_CODE	0x10
 #define SOL_RESET_CODE	        0x18
-#define SOL_GETSTATE_CODE       0x19
+#define SOL_GETSTATE_CODE       0x20
 
 /* Number of solenoids */
 #define NUM_SOLENOIDS           6
