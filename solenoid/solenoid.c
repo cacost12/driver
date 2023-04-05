@@ -16,6 +16,8 @@
 #include "sdr_pin_defines_L0005.h"
 #include "solenoid.h"
 #include "stm32h7xx_hal.h"
+#include "usb.h"
+#include "valve.h"
 
 
 /*******************************************************************************
@@ -76,18 +78,29 @@ void solenoid_cmd_execute
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
-uint8_t solenoid_bitmask = 0x07; /* Solenoid bits: 0000 0111 */
-uint8_t solenoid_base_code; /* Subcommand base code */
-uint8_t solenoid_number; /* Solenoid number to actuate */
+uint8_t   solenoid_bitmask;    /* Solenoid bits: 0000 0111   */
+uint8_t   solenoid_base_code;  /* Subcommand base code       */
+uint8_t   solenoid_number;     /* Solenoid number to actuate */
+SOL_STATE sol_state;           /* State of solenoid valves   */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+solenoid_bitmask = 0x07;
+sol_state        = 0;
+
 
 /*------------------------------------------------------------------------------
  Command Input Processing
 ------------------------------------------------------------------------------*/
-// Extract Solenoid base code
+
+/* Extract Solenoid base code */
 solenoid_base_code = (~solenoid_bitmask) & solenoid_cmd_opcode;
 
-// Extract Solenoid number
+/* Extract Solenoid number */
 solenoid_number = solenoid_bitmask & solenoid_cmd_opcode;
+
 
 /*------------------------------------------------------------------------------
  Call Solenoid API Function
@@ -96,27 +109,49 @@ switch(solenoid_base_code)
 	{
 	/* Solenoid On */
 	case SOL_ON_BASE_CODE:
+		{
 		solenoid_on(solenoid_number);
 		break;
+		}
 
 	/* Solenoid Off */
 	case SOL_OFF_BASE_CODE:
+		{
 		solenoid_off(solenoid_number);
 		break;
+		}
 
 	/* Solenoid Toggle */
 	case SOL_TOGGLE_BASE_CODE:
+		{
 		solenoid_toggle(solenoid_number);
 		break;
+		}
 
 	/* Solenoid Reset */
 	case SOL_RESET_CODE:
+		{
 		solenoid_reset();
 		break;
+		}
+	
+	/* Solenoid GetState */
+	case SOL_GETSTATE_CODE:
+		{
+		sol_state = solenoid_get_state();
+		#if   defined( TERMINAL )
+			usb_transmit( &sol_state, sizeof( sol_state ), HAL_DEFAULT_TIMEOUT );
+		#elif defined( HOTFIRE  ) 
+			valve_transmit( &sol_state, sizeof( sol_state ), HAL_DEFAULT_TIMEOUT );
+		#endif
+		break;
+		}
 
+	/* Unrecognized command, do nothing */
 	default:
-		/* Do nothing */
-      break;
+		{
+		break;
+		}
 	}
 } /* solenoid_cmd_execute */
 
