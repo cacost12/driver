@@ -140,6 +140,7 @@ void solenoid_on
 ------------------------------------------------------------------------------*/
 struct sol_GPIO_handle solenoid_on_GPIO_handle;
 
+
 /*------------------------------------------------------------------------------
  Actuation
 ------------------------------------------------------------------------------*/
@@ -234,6 +235,52 @@ void solenoid_reset
 HAL_GPIO_WritePin(SOL1_GPIO_PORT, SOL1_PIN|SOL2_PIN|SOL3_PIN, GPIO_PIN_RESET);
 HAL_GPIO_WritePin(SOL4_GPIO_PORT, SOL4_PIN|SOL5_PIN|SOL6_PIN, GPIO_PIN_RESET);
 } /* solenoid_reset */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		solenoid_get_state                                                     *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*        Get the state of the solenoids                                        *
+*                                                                              *
+*******************************************************************************/
+SOL_STATE solenoid_get_state
+	(
+	void
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+struct sol_GPIO_handle solenoid_GPIO_handle; /* GPIO handles             */
+SOL_STATE              sol_state;            /* Return value             */
+GPIO_PinState          pinstate;             /* On/off state of GPIO pin */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+sol_state = 0;
+pinstate  = GPIO_PIN_RESET;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+for ( uint8_t i = 0; i < NUM_SOLENOIDS; ++i )
+	{
+	solenoid_map( &solenoid_GPIO_handle, i-1 );
+	pinstate = HAL_GPIO_ReadPin( solenoid_GPIO_handle.GPIOx, 
+	                             solenoid_GPIO_handle.GPIO_pin );
+	if ( pinstate == GPIO_PIN_SET )
+		{
+		sol_state |= ( 1 << i );
+		}
+	}
+return sol_state;
+} /* solenoid_get_state */
 
 
 /*******************************************************************************
