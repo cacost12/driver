@@ -70,7 +70,7 @@ hal_status = HAL_OK;
 hal_status = HAL_UART_Transmit( &( XBEE_HUART )  ,
                                 &tx_byte         , 
                                 sizeof( tx_byte ), 
-                                RF_TIMEOUT );
+                                RF_POLL_TIMEOUT );
 
 /* Return HAL status */
 if ( hal_status != HAL_OK )
@@ -111,7 +111,7 @@ uint32_t          timeout;       /* UART transmit timeout */
  Initializations 
 ------------------------------------------------------------------------------*/
 hal_status = HAL_OK;
-timeout    = RF_TIMEOUT*buffer_size;
+timeout    = RF_POLL_TIMEOUT*buffer_size;
 
 
 /*------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ hal_status = HAL_OK;
 hal_status = HAL_UART_Receive( &( XBEE_HUART )  ,
                                p_rx_byte        , 
                                sizeof( uint8_t ), 
-                               RF_TIMEOUT );
+                               RF_POLL_TIMEOUT );
 
 /* Return HAL status */
 switch ( hal_status )
@@ -218,7 +218,7 @@ uint32_t          timeout;       /* UART receive timeout  */
  Initialization 
 ------------------------------------------------------------------------------*/
 hal_status = HAL_OK;
-timeout    = rx_buffer_size*RF_TIMEOUT;
+timeout    = rx_buffer_size*RF_POLL_TIMEOUT;
 
 
 /*------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ timeout    = rx_buffer_size*RF_TIMEOUT;
 hal_status = HAL_UART_Receive( &( XBEE_HUART ),
                                rx_buffer_ptr  , 
                                timeout        , 
-                               RF_TIMEOUT );
+                               RF_POLL_TIMEOUT );
 
 /* Return HAL status */
 switch ( hal_status )
