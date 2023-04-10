@@ -51,6 +51,9 @@ extern "C" {
 #elif defined ( L0005_REV3 )
 	/* Rev 3 */
 	#define PING_RESPONSE_CODE    ( 0x07 )
+#elif defined ( L0002_REV5 )
+	/* Rev 5 */
+	#define PING_RESPONSE_CODE    ( 0x08 )
 #endif
 
 /* Firmware Identifier Code */

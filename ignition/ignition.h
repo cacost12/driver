@@ -26,6 +26,7 @@ extern "C" {
 #if !( defined( A0002_REV1 ) || \
        defined( L0002_REV4 ) || \
 	   defined( A0002_REV2 ) || \
+	   defined( L0002_REV5 ) || \
 	   defined( A0007_REV1 ) ) 
 	#error No IGNITION compatible device specified
 #endif
