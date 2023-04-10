@@ -28,8 +28,10 @@
  Global Variables 
 ------------------------------------------------------------------------------*/
 
+#ifdef L0002_REV4
 /* Amplifier gain settings */
 static uint8_t           pt_gains[] = { 0, 0, 0, 0, 0, 0, 0, 0 } ; 
+#endif
 
 
 /*------------------------------------------------------------------------------
@@ -49,11 +51,13 @@ static PRESSURE_STATUS sample_adc_poll
     uint32_t*    psample_buffer
     );
 
+#ifdef L0002_REV4
 /* Mapping from PT number to amplifer gain GPIO pin bitmask */
 static uint16_t amplifier_gain_map
 	(
     uint8_t gain_setting 
     );
+#endif
 
 
 /*------------------------------------------------------------------------------
@@ -79,7 +83,9 @@ PRESSURE_STATUS pressure_get_pt_reading
 /*------------------------------------------------------------------------------
  Local Variables  
 ------------------------------------------------------------------------------*/
+#ifdef L0002_REV4
 uint16_t        gain_GPIO_pins_bitmask; /* GPIO pins for amplifier gain       */
+#endif
 uint16_t        mux_GPIO_pins_bitmask;  /* GPIO pins for multiplexor          */
 PRESSURE_STATUS pt_status;              /* Status code from adc conversion    */
 
@@ -87,7 +93,9 @@ PRESSURE_STATUS pt_status;              /* Status code from adc conversion    */
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
+#ifdef L0002_REV4
 gain_GPIO_pins_bitmask = amplifier_gain_map( pt_gains[ pt_num ] );
+#endif
 mux_GPIO_pins_bitmask  = mux_map( pt_num );
 pt_status              = PRESSURE_OK;
 
@@ -97,10 +105,17 @@ pt_status              = PRESSURE_OK;
 ------------------------------------------------------------------------------*/
 
 /* Reset all GPIO */
+#ifdef L0002_REV4
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT    , 
                    PRESSURE_MUX_ALL_PINS |
                    PRESSURE_GAIN_ALL_PINS,
                    GPIO_PIN_RESET );
+#else
+HAL_GPIO_WritePin( PRESSURE_GPIO_PORT   , 
+                   PRESSURE_MUX_ALL_PINS,
+                   GPIO_PIN_RESET );
+#endif
+
 
 /* Set MUX */
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT   , 
@@ -108,9 +123,11 @@ HAL_GPIO_WritePin( PRESSURE_GPIO_PORT   ,
                    GPIO_PIN_SET );
 
 /* Set gain */
+#ifdef L0002_REV4
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT    ,
                    gain_GPIO_pins_bitmask,
                    GPIO_PIN_SET );
+#endif
 
 /*------------------------------------------------------------------------------
  Poll ADC once 
@@ -127,10 +144,17 @@ if ( pt_status != PRESSURE_OK )
 ------------------------------------------------------------------------------*/
 
 /* Reset all GPIO */
+#ifdef L0002_REV4
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT    , 
                    PRESSURE_MUX_ALL_PINS |
                    PRESSURE_GAIN_ALL_PINS,
                    GPIO_PIN_RESET );
+#else
+HAL_GPIO_WritePin( PRESSURE_GPIO_PORT   , 
+                   PRESSURE_MUX_ALL_PINS,
+                   GPIO_PIN_RESET );
+#endif
+
 
 /* Return pt reading */
 return PRESSURE_OK;
@@ -155,7 +179,9 @@ PRESSURE_STATUS pressure_poll_pts
 /*------------------------------------------------------------------------------
  Local Variables  
 ------------------------------------------------------------------------------*/
+#ifdef L0002_REV4
 uint16_t        gain_GPIO_pins_bitmask; /* GPIO pins for amplifier gain       */
+#endif
 uint16_t        mux_GPIO_pins_bitmask;  /* GPIO pins for multiplexor          */
 PRESSURE_STATUS pt_status;              /* Status code from adc conversion    */
 
@@ -164,10 +190,17 @@ PRESSURE_STATUS pt_status;              /* Status code from adc conversion    */
 ------------------------------------------------------------------------------*/
 
 /* Reset all GPIO */
+#ifdef L0002_REV4
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT    , 
 				   PRESSURE_MUX_ALL_PINS |
 				   PRESSURE_GAIN_ALL_PINS,
 				   GPIO_PIN_RESET );
+#else
+HAL_GPIO_WritePin( PRESSURE_GPIO_PORT   , 
+				   PRESSURE_MUX_ALL_PINS,
+				   GPIO_PIN_RESET );
+#endif
+
 
 /*------------------------------------------------------------------------------
  Get a reading from each PT 
@@ -180,7 +213,9 @@ for ( uint8_t i = 0; i < NUM_PTS; ++i )
 	--------------------------------------------------------------------------*/
 
 	/* GPIO pin mapping */
+	#ifdef L0002_REV4
 	gain_GPIO_pins_bitmask = amplifier_gain_map( pt_gains[ i ] );
+	#endif
 	mux_GPIO_pins_bitmask  = mux_map( i );
 
 	/* Set MUX */
@@ -189,9 +224,11 @@ for ( uint8_t i = 0; i < NUM_PTS; ++i )
 					   GPIO_PIN_SET );
 
 	/* Set gain */
+	#ifdef L0002_REV4
 	HAL_GPIO_WritePin( PRESSURE_GPIO_PORT    ,
 					   gain_GPIO_pins_bitmask,
 					   GPIO_PIN_SET );
+	#endif
     HAL_Delay( 1 );
 
 	/*--------------------------------------------------------------------------
@@ -208,11 +245,16 @@ for ( uint8_t i = 0; i < NUM_PTS; ++i )
 	--------------------------------------------------------------------------*/
 
 	/* Reset all GPIO */
+	#ifdef L0002_REV4
 	HAL_GPIO_WritePin( PRESSURE_GPIO_PORT    , 
 					   PRESSURE_MUX_ALL_PINS |
 					   PRESSURE_GAIN_ALL_PINS,
 					   GPIO_PIN_RESET );
-
+	#else
+	HAL_GPIO_WritePin( PRESSURE_GPIO_PORT   , 
+					   PRESSURE_MUX_ALL_PINS, 
+					   GPIO_PIN_RESET );
+	#endif
     }
 
 /* Conversions successful */
@@ -221,6 +263,7 @@ return PRESSURE_OK;
 } /* pressure_poll_pts */
 
 
+#ifdef L0002_REV4
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -315,6 +358,7 @@ for ( int i = 0; i < NUM_PTS; ++i )
     }
 
 } /* pressure_get_all_gains */
+#endif /* #ifdef L0002_REV4 */
 
 
 /*------------------------------------------------------------------------------
@@ -322,6 +366,7 @@ for ( int i = 0; i < NUM_PTS; ++i )
 ------------------------------------------------------------------------------*/
 
 
+#ifdef L0002_REV4
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
@@ -348,6 +393,7 @@ gain_setting_high_bits = gain_setting_high_bits << 1;
 return ( gain_setting_high_bits | gain_setting_low_bits );
 
 } /* amplifier_gain_map */
+#endif /* #ifdef L0002_REV4 */
 
 
 /*******************************************************************************
