@@ -66,6 +66,11 @@ hal_status = HAL_OK;
  API Function Implementation 
 ------------------------------------------------------------------------------*/
 
+/* Wait for Clear to send signal */
+while ( HAL_GPIO_ReadPin( XBEE_CTS_GPIO_PORT, XBEE_CTS_PIN ) != GPIO_PIN_RESET )
+	{
+	}
+
 /* Transmit byte */
 hal_status = HAL_UART_Transmit( &( XBEE_HUART )  ,
                                 &tx_byte         , 
@@ -167,11 +172,17 @@ hal_status = HAL_OK;
  API Function Implementation 
 ------------------------------------------------------------------------------*/
 
+/* Set the Ready to Send Signal */
+HAL_GPIO_WritePin( XBEE_RTS_GPIO_PORT, XBEE_RTS_PIN, GPIO_PIN_RESET );
+
 /* Receive byte */
 hal_status = HAL_UART_Receive( &( XBEE_HUART )  ,
                                p_rx_byte        , 
                                sizeof( uint8_t ), 
                                RF_POLL_TIMEOUT );
+
+/* Reset the Read to Send signal */
+HAL_GPIO_WritePin( XBEE_RTS_GPIO_PORT, XBEE_RTS_PIN, GPIO_PIN_SET );
 
 /* Return HAL status */
 switch ( hal_status )
