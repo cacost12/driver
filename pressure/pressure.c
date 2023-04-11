@@ -425,12 +425,12 @@ return ( gain_setting_high_bits | gain_setting_low_bits );
 
 /*******************************************************************************
 *                                                                              *
-* PROCEDURE:                                                                   * 
+* PROCEDURE:                                                                   *
 * 		mux_map                                                                *
 *                                                                              *
-* DESCRIPTION:                                                                 * 
+* DESCRIPTION:                                                                 *
 *       Mapping from pressure transducer number to mutliplexor GPIO pin        *
-*       bitmask. ex. PTNUM5 -> 101 -> GPIO_PIN_C | GPIO_PIN_A                  * 
+*       bitmask. ex. PTNUM5 -> 101 -> GPIO_PIN_C | GPIO_PIN_A                  *
 *                                                                              *
 *******************************************************************************/
 static inline uint16_t mux_map
