@@ -196,6 +196,21 @@ switch( subcommand )
 		} /* VALVE_CALIBRATE_CODE */
 
 	/*--------------------------------------------------------------------------
+	 VALVE CRACK 
+	--------------------------------------------------------------------------*/
+	case VALVE_CRACK_CODE:
+		{
+		if ( valve_num )
+			{
+			return valve_crack_fuel_valve();
+			}
+		else
+			{
+			return valve_crack_ox_valve();
+			}
+		} /* VALVE_CRACK_CODE */
+
+	/*--------------------------------------------------------------------------
 	 UNRECOGNIZED SUBCOMMAND 
 	--------------------------------------------------------------------------*/
 	default:
