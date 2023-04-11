@@ -124,7 +124,8 @@ VALVE_STATUS valve_cmd_execute
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
-uint8_t      valve_num;    /* Valve number, 0 -> ox, 1 -> fuel   */
+uint8_t      valve_num;       /* Valve number, 0 -> ox, 1 -> fuel   */
+VALVE_STATUS valve_status[2]; /* Valve return codes                 */
 
 
 /*------------------------------------------------------------------------------
@@ -209,6 +210,23 @@ switch( subcommand )
 			return valve_crack_ox_valve();
 			}
 		} /* VALVE_CRACK_CODE */
+
+	/*--------------------------------------------------------------------------
+	 VALVE RESET 
+	--------------------------------------------------------------------------*/
+	case VALVE_RESET_CODE:
+		{
+		valve_status[0] = valve_close_ox_valve  ();
+		valve_status[1] = valve_close_fuel_valve();
+		if ( ( valve_status[0] != VALVE_OK ) || ( valve_status[1] != VALVE_OK ) )
+			{
+			return VALVE_ERROR;
+			}
+		else
+			{
+			return VALVE_OK;
+			}
+		} /* VALVE_RESET_CODE */
 
 	/*--------------------------------------------------------------------------
 	 UNRECOGNIZED SUBCOMMAND 
