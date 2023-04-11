@@ -67,9 +67,11 @@ hal_status = HAL_OK;
 ------------------------------------------------------------------------------*/
 
 /* Wait for Clear to send signal */
+#ifdef GROUND_STATION
 while ( HAL_GPIO_ReadPin( XBEE_CTS_GPIO_PORT, XBEE_CTS_PIN ) != GPIO_PIN_RESET )
 	{
 	}
+#endif
 
 /* Transmit byte */
 hal_status = HAL_UART_Transmit( &( XBEE_HUART )  ,
@@ -173,7 +175,9 @@ hal_status = HAL_OK;
 ------------------------------------------------------------------------------*/
 
 /* Set the Ready to Send Signal */
+#ifdef GROUND_STATION
 HAL_GPIO_WritePin( XBEE_RTS_GPIO_PORT, XBEE_RTS_PIN, GPIO_PIN_RESET );
+#endif
 
 /* Receive byte */
 hal_status = HAL_UART_Receive( &( XBEE_HUART )  ,
@@ -182,7 +186,9 @@ hal_status = HAL_UART_Receive( &( XBEE_HUART )  ,
                                RF_POLL_TIMEOUT );
 
 /* Reset the Read to Send signal */
+#ifdef GROUND_STATION
 HAL_GPIO_WritePin( XBEE_RTS_GPIO_PORT, XBEE_RTS_PIN, GPIO_PIN_SET );
+#endif
 
 /* Return HAL status */
 switch ( hal_status )
