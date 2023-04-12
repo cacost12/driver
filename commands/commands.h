@@ -60,6 +60,7 @@ extern "C" {
 #define FIRMWARE_TERMINAL       ( 0x01 ) /* Terminal Firmware    */
 #define FIRMWARE_DATA_LOGGER    ( 0x02 ) /* Data Logger Firmware */
 #define FIRMWARE_DUAL_DEPLOY    ( 0x03 ) /* Dual Deploy Firmware */
+#define FIRMWARE_HOTFIRE        ( 0x04 ) /* Hotfire Firmware     */
 
 
 /*------------------------------------------------------------------------------
