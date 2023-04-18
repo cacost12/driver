@@ -818,7 +818,6 @@ HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
 lox_valve_pos = 0;
 
 /* Calibrate the fuel valve      */
-/*
 fuel_driver_enable();
 fuel_driver_set_direction( STEPPER_DRIVER_CCW );
 while ( valve_get_fuel_valve_state() == VALVE_OPEN )
@@ -828,7 +827,7 @@ while ( valve_get_fuel_valve_state() == VALVE_OPEN )
 HAL_Delay( 5 );
 HAL_TIM_PWM_Stop( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
 fuel_valve_pos = 0;
-*/
+
 return VALVE_OK;
 } /* valve_calibrate_valves */
 #endif /* #ifdef VALVE_CONTROLLER */
