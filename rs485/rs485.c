@@ -69,7 +69,7 @@ hal_status = HAL_OK;
 hal_status = HAL_UART_Transmit( &( RS485_HUART  ),
                                 &tx_byte         , 
                                 sizeof( tx_byte ), 
-                                RS485_POLL_TIMEOUT );
+                                HAL_DEFAULT_TIMEOUT );
 
 /* Return HAL status */
 if ( hal_status != HAL_OK )
