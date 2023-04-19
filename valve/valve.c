@@ -642,7 +642,7 @@ if ( lox_valve_pos == VALVE_OPEN_POS )
 	}
 
 /* Set the direction   */
-valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
 	{
 	return valve_status;
@@ -692,7 +692,7 @@ if ( lox_valve_pos == VALVE_OPEN_POS )
 	}
 
 /* Set the direction   */
-valve_status = lox_driver_set_direction( STEPPER_DRIVER_CCW );
+valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
 	{
 	return valve_status;
