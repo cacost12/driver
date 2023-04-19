@@ -32,7 +32,7 @@ extern "C" {
 /* Valve open/close positions */
 #define VALVE_CLOSED_POS          0
 #define VALVE_OPEN_POS            250
-#define VALVE_CRACKED_POS         80
+#define VALVE_CRACKED_POS         50 /* 20% */
 
 /* Subcommand codes */
 #define VALVE_ENABLE_CODE         0x00
