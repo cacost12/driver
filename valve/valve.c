@@ -703,13 +703,13 @@ valve_status = VALVE_OK;
 ------------------------------------------------------------------------------*/
 
 /* Check if valve is already open */
-if ( lox_valve_pos == VALVE_OPEN_POS )
+if ( fuel_valve_pos == VALVE_OPEN_POS )
 	{
 	return VALVE_OK;
 	}
 
 /* Set the direction   */
-valve_status = lox_driver_set_direction( STEPPER_DRIVER_CW );
+valve_status = fuel_driver_set_direction( STEPPER_DRIVER_CW );
 if ( valve_status != VALVE_OK )
 	{
 	return valve_status;
@@ -717,7 +717,7 @@ if ( valve_status != VALVE_OK )
 
 /* Actuate the valve   */
 fuel_valve_cracking = true;
-HAL_TIM_PWM_Start( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+HAL_TIM_PWM_Start( &( VALVE_FUEL_TIM ), VALVE_FUEL_TIM_CHANNEL );
 return VALVE_OK;
 } /* valve_crack_ox_valve */
 
