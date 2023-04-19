@@ -229,6 +229,23 @@ switch( subcommand )
 		} /* VALVE_RESET_CODE */
 
 	/*--------------------------------------------------------------------------
+	 VALVE OPENALL 
+	--------------------------------------------------------------------------*/
+	case VALVE_OPENALL_CODE:
+		{
+		valve_status[0] = valve_open_ox_valve  ();
+		valve_status[1] = valve_open_fuel_valve();
+		if ( ( valve_status[0] != VALVE_OK ) || ( valve_status[1] != VALVE_OK ) )
+			{
+			return VALVE_ERROR;
+			}
+		else
+			{
+			return VALVE_OK;
+			}
+		} /* VALVE_OPENALL_CODE */
+
+	/*--------------------------------------------------------------------------
 	 UNRECOGNIZED SUBCOMMAND 
 	--------------------------------------------------------------------------*/
 	default:

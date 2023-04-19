@@ -42,6 +42,7 @@ extern "C" {
 #define VALVE_CALIBRATE_CODE      0x08
 #define VALVE_CRACK_CODE          0x0A
 #define VALVE_RESET_CODE          0x10
+#define VALVE_OPENALL_CODE        0x12
 
 
 /*------------------------------------------------------------------------------
