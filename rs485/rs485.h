@@ -52,8 +52,9 @@ RS485_STATUS rs485_transmit_byte
 /* transmits a buffer of bytes over RS485 */
 RS485_STATUS rs485_transmit
 	(
-    void*  tx_buffer_ptr,   /* Pointer to buffer data    */
-	size_t buffer_size	    /* Number of bytes in buffer */
+    void*    tx_buffer_ptr,   /* Pointer to buffer data    */
+	size_t   buffer_size  ,   /* Number of bytes in buffer */
+	uint32_t timeout          /* Timeout in ms             */
 	);
 
 /* Receives a byte from the RS485 interface */
@@ -66,8 +67,9 @@ RS485_STATUS rs485_receive_byte
 /* Receives data from the RS485 interface and outputs to a buffer */
 RS485_STATUS rs485_receive
 	(
-	void*  rx_buffer_ptr,   /* Pointer to output data buffer */	
-	size_t rx_buffer_size   /* Number of bytes to recevie    */
+	void*    rx_buffer_ptr,   /* Pointer to output data buffer */	
+	size_t   rx_buffer_size,  /* Number of bytes to recevie    */
+	uint32_t timeout          /* Timeout in ms                 */
 	);
 
 
