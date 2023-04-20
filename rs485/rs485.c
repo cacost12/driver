@@ -224,8 +224,8 @@ hal_status = HAL_OK;
 /* Receive data */
 hal_status = HAL_UART_Receive( &( RS485_HUART ),
                                rx_buffer_ptr  , 
-                               timeout        , 
-                               RS485_POLL_TIMEOUT );
+                               rx_buffer_size , 
+                               timeout );
 
 /* Return HAL status */
 switch ( hal_status )
