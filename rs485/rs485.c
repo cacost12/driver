@@ -94,22 +94,21 @@ else
 *******************************************************************************/
 RS485_STATUS rs485_transmit
 	(
-    void*  tx_buffer_ptr,   /* Pointer to buffer data    */
-	size_t buffer_size	    /* Number of bytes in buffer */
+    void*    tx_buffer_ptr,   /* Pointer to buffer data    */
+	size_t   buffer_size  ,   /* Number of bytes in buffer */
+	uint32_t timeout          /* Timeout in ms             */
 	)
 {
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;    /* Return codes from HAL */
-uint32_t          timeout;       /* UART transmit timeout */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
 hal_status = HAL_OK;
-timeout    = RS485_POLL_TIMEOUT*buffer_size;
 
 
 /*------------------------------------------------------------------------------
@@ -201,22 +200,21 @@ switch ( hal_status )
 *******************************************************************************/
 RS485_STATUS rs485_receive
 	(
-	void*  rx_buffer_ptr,   /* Pointer to output data buffer */	
-	size_t rx_buffer_size   /* Number of bytes to recevie    */
+	void*    rx_buffer_ptr,   /* Pointer to output data buffer */	
+	size_t   rx_buffer_size,  /* Number of bytes to recevie    */
+	uint32_t timeout          /* Timeout in ms                 */
 	)
 {
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;    /* Return codes from HAL */
-uint32_t          timeout;       /* UART receive timeout  */
 
 
 /*------------------------------------------------------------------------------
  Initialization 
 ------------------------------------------------------------------------------*/
 hal_status = HAL_OK;
-timeout    = rx_buffer_size*RS485_POLL_TIMEOUT;
 
 
 /*------------------------------------------------------------------------------
