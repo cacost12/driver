@@ -35,8 +35,14 @@ typedef enum RS485_STATUS
  Macros 
 ------------------------------------------------------------------------------*/
 
-/* HAL Settings*/
+/* Timeouts */
 #define RS485_POLL_TIMEOUT		( 1000 )
+#ifndef SDR_DEBUG
+	#define RS485_DEFAULT_TIMEOUT  ( 20  ) /* Default RS485 Timeout           */
+#else
+	/* Disable timeouts when debugging */
+	#define RS485_DEFAULT_TIMEOUT  ( 0xFFFFFFFF )
+#endif /* SDR_DEBUG */
 
 
 /*------------------------------------------------------------------------------
