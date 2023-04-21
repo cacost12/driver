@@ -684,8 +684,8 @@ SENSOR_STATUS sensor_dump
 	#endif /* #ifndef L0002_REV5 */
 
 	/* Thermocouple */
-	//tc_status    = temp_get_temp( &( sensor_data_ptr -> tc_temp ), 
-	 //                             THERMO_HOT_JUNCTION );
+	tc_status    = temp_get_temp( &( sensor_data_ptr -> tc_temp ), 
+	                              THERMO_HOT_JUNCTION );
 #elif defined( FLIGHT_COMPUTER_LITE )
 	/* Baro sensors */
 	temp_status  = baro_get_temp    ( &(sensor_data_ptr -> baro_temp     ) );
