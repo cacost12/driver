@@ -646,8 +646,8 @@ SENSOR_STATUS sensor_dump
 	#endif /* #ifndef L0002_REV5 */
 
 	/* Thermocouple */
-	tc_status    = temp_get_temp( &( sensor_data_ptr -> tc_temp ), 
-	                              THERMO_HOT_JUNCTION );
+	//tc_status    = temp_get_temp( &( sensor_data_ptr -> tc_temp ), 
+	 //                             THERMO_HOT_JUNCTION );
 #elif defined( FLIGHT_COMPUTER_LITE )
 	/* Baro sensors */
 	temp_status  = baro_get_temp    ( &(sensor_data_ptr -> baro_temp     ) );
@@ -1271,12 +1271,15 @@ HAL_GPIO_WritePin( PRESSURE_GPIO_PORT, PRESSURE_MUX_ALL_PINS, GPIO_PIN_RESET );
 HAL_ADC_Start( &hadc1 );
 adc_status[0] = HAL_ADC_PollForConversion( &hadc1, ADC_TIMEOUT );
 sensor_data_ptr -> pt_pressures[0] = HAL_ADC_GetValue( &hadc1 );
+HAL_ADC_Stop( &hadc1 );
+HAL_ADC_Start( &hadc1 );
 adc_status[1] = HAL_ADC_PollForConversion( &hadc1, ADC_TIMEOUT );
 sensor_data_ptr -> pt_pressures[6] = HAL_ADC_GetValue( &hadc1 );
 HAL_ADC_Stop( &hadc1 );
 mux_pins_bitmask = mux_map( 1 );
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT, PRESSURE_MUX_ALL_PINS, GPIO_PIN_RESET );
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT, mux_pins_bitmask     , GPIO_PIN_SET   );
+HAL_Delay( 1 );
 if ( adc_status[0] != HAL_OK || adc_status[1] != HAL_OK )
 	{
 	return SENSOR_ADC_POLL_ERROR;
@@ -1286,6 +1289,8 @@ if ( adc_status[0] != HAL_OK || adc_status[1] != HAL_OK )
 HAL_ADC_Start( &hadc2 );
 adc_status[0] = HAL_ADC_PollForConversion( &hadc2, ADC_TIMEOUT );
 sensor_data_ptr -> load_cell_force = HAL_ADC_GetValue( &hadc2 );
+HAL_ADC_Stop( &hadc2 );
+HAL_ADC_Start( &hadc2 );
 adc_status[1] = HAL_ADC_PollForConversion( &hadc2, ADC_TIMEOUT );
 sensor_data_ptr -> pt_pressures[7] = HAL_ADC_GetValue( &hadc2 );
 HAL_ADC_Stop( &hadc2 );
@@ -1302,6 +1307,7 @@ HAL_ADC_Stop( &hadc1 );
 mux_pins_bitmask = mux_map( 2 );
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT, PRESSURE_MUX_ALL_PINS, GPIO_PIN_RESET );
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT, mux_pins_bitmask     , GPIO_PIN_SET   );
+HAL_Delay( 1 );
 if ( adc_status[0] != HAL_OK )
 	{
 	return SENSOR_ADC_POLL_ERROR;
@@ -1311,6 +1317,8 @@ if ( adc_status[0] != HAL_OK )
 HAL_ADC_Start( &hadc3 );
 adc_status[0] = HAL_ADC_PollForConversion( &hadc3, ADC_TIMEOUT );
 sensor_data_ptr -> pt_pressures[4] = HAL_ADC_GetValue( &hadc3 );
+HAL_ADC_Stop( &hadc3 );
+HAL_ADC_Start( &hadc3 );
 adc_status[1] = HAL_ADC_PollForConversion( &hadc3, ADC_TIMEOUT );
 sensor_data_ptr -> pt_pressures[5] = HAL_ADC_GetValue( &hadc3 );
 HAL_ADC_Stop( &hadc3 );
@@ -1326,6 +1334,7 @@ sensor_data_ptr -> pt_pressures[2] = HAL_ADC_GetValue( &hadc1 );
 sensor_data_ptr -> pt_pressures[3] = 0;
 HAL_ADC_Stop( &hadc1 );
 HAL_GPIO_WritePin( PRESSURE_GPIO_PORT, PRESSURE_MUX_ALL_PINS, GPIO_PIN_RESET );
+HAL_Delay( 1 );
 if ( adc_status[0] != HAL_OK )
 	{
 	return SENSOR_ADC_POLL_ERROR;
