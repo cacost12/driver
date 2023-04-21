@@ -98,6 +98,18 @@ static inline uint16_t mux_map
     );
 #endif
 
+/* Select the adc channel for PT1 */
+static void pt1_adc_channel_select
+	(
+	void
+	);
+
+/* Select the adc channel for PT7 */
+static void pt7_adc_channel_select
+	(
+	void
+	);
+
 
 /*------------------------------------------------------------------------------
  API Functions 
@@ -1251,8 +1263,8 @@ SENSOR_STATUS sensor_adc_burst_read
 /*------------------------------------------------------------------------------
  Local Variables  
 ------------------------------------------------------------------------------*/
-HAL_StatusTypeDef adc_status[2];    /* Return codes from ADC API */
-uint16_t          mux_pins_bitmask; /* GPIO Pins for PT1-3 MUX   */
+HAL_StatusTypeDef      adc_status[2];    /* Return codes from ADC API         */
+uint16_t               mux_pins_bitmask; /* GPIO Pins for PT1-3 MUX           */
 
 
 /*------------------------------------------------------------------------------
@@ -1268,10 +1280,12 @@ HAL_GPIO_WritePin( PRESSURE_GPIO_PORT, PRESSURE_MUX_ALL_PINS, GPIO_PIN_RESET );
 ------------------------------------------------------------------------------*/
 
 /* PT1/PT7 readout */
+pt1_adc_channel_select();
 HAL_ADC_Start( &hadc1 );
 adc_status[0] = HAL_ADC_PollForConversion( &hadc1, ADC_TIMEOUT );
 sensor_data_ptr -> pt_pressures[0] = HAL_ADC_GetValue( &hadc1 );
 HAL_ADC_Stop( &hadc1 );
+pt7_adc_channel_select();
 HAL_ADC_Start( &hadc1 );
 adc_status[1] = HAL_ADC_PollForConversion( &hadc1, ADC_TIMEOUT );
 sensor_data_ptr -> pt_pressures[6] = HAL_ADC_GetValue( &hadc1 );
@@ -1377,6 +1391,87 @@ static inline uint16_t mux_map
 		}
 #endif
 } /* mux_map */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		pt1_adc_channel_select                                                 *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Select the adc channel for PT1                                         *
+*                                                                              *
+*******************************************************************************/
+static void pt1_adc_channel_select
+	(
+	void
+	)
+{
+ADC_ChannelConfTypeDef sConfig   = {0};
+sConfig.Channel                  = ADC_CHANNEL_10;
+sConfig.Rank                     = ADC_REGULAR_RANK_1;
+sConfig.SamplingTime             = ADC_SAMPLETIME_1CYCLE_5;
+sConfig.SingleDiff               = ADC_SINGLE_ENDED;
+sConfig.OffsetNumber             = ADC_OFFSET_NONE;
+sConfig.Offset                   = 0;
+sConfig.OffsetSignedSaturation   = DISABLE;
+HAL_ADC_ConfigChannel( &hadc1, &sConfig );
+
+} /* pt1_adc_channel_select */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		pt7_adc_channel_select                                                 *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Select the adc channel for PT7                                         *
+*                                                                              *
+*******************************************************************************/
+static void pt7_adc_channel_select
+	(
+	void
+	)
+{
+ADC_ChannelConfTypeDef sConfig   = {0};
+sConfig.Channel                  = ADC_CHANNEL_4;
+sConfig.Rank                     = ADC_REGULAR_RANK_1;
+sConfig.SamplingTime             = ADC_SAMPLETIME_1CYCLE_5;
+sConfig.SingleDiff               = ADC_SINGLE_ENDED;
+sConfig.OffsetNumber             = ADC_OFFSET_NONE;
+sConfig.Offset                   = 0;
+sConfig.OffsetSignedSaturation   = DISABLE;
+HAL_ADC_ConfigChannel( &hadc1, &sConfig );
+
+} /* pt7_adc_channel_select */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		loadcell_adc_channel_select                                            *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Select the adc channel for the loadcell                                *
+*                                                                              *
+*******************************************************************************/
+static void loadcell_adc_channel_select
+	(
+	void
+	)
+{
+ADC_ChannelConfTypeDef sConfig      = {0};
+sConfig.Channel                     = ADC_CHANNEL_11;
+sConfig.Rank                        = ADC_REGULAR_RANK_1;
+sConfig.SamplingTime                = ADC_SAMPLETIME_1CYCLE_5;
+sConfig.SingleDiff                  = ADC_SINGLE_ENDED;
+sConfig.OffsetNumber                = ADC_OFFSET_NONE;
+sConfig.Offset                      = 0;
+sConfig.OffsetSignedSaturation      = DISABLE;
+HAL_ADC_ConfigChannel( &hadc2, &sConfig );
+}
+
 
 #endif /* #ifdef L0002_REV5 */
 
