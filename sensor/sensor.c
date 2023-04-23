@@ -15,6 +15,7 @@
 ------------------------------------------------------------------------------*/
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 
 /*------------------------------------------------------------------------------
@@ -1174,6 +1175,57 @@ for ( int i = 0; i < num_sensors; ++i )
 
 return SENSOR_OK;
 } /* sensor_poll */
+
+#ifdef ENGINE_CONTROLLER 
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		sensor_conv_pressure                                                   *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Converts a pressure transducer ADC readout to a floating point         *
+*       pressure in psi                                                        *
+*                                                                              *
+*******************************************************************************/
+float sensor_conv_pressure
+	( 
+	uint32_t adc_readout, /* Pressure readout from ADC */
+	PT_INDEX pt_num       /* PT used for readout       */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables  
+------------------------------------------------------------------------------*/
+float voltage; /* ADC voltage    */
+float gain;    /* Amplifier gain */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+voltage = 0;
+gain    = 0;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Convert readout to voltage */
+voltage = ( 3.3/( pow( 2, 16 ) ) )*( (float) adc_readout );
+
+/* Convert voltage to pressure in psi */
+if ( pt_num > PT_NONE_INDEX )
+	{
+	return ( voltage*( 2000.0/5.0 ) );
+	}
+else
+	{
+	gain = 1 + ( 100.0/3.3 );
+	return ( voltage*( 1000.0/(gain*0.1) ) );
+	}
+} /* sensor_conv_pressure */
+#endif
 
 
 /*------------------------------------------------------------------------------

@@ -185,6 +185,20 @@ typedef struct SENSOR_DATA_SIZE_OFFSETS
 	size_t  size;    /* Size of readout in bytes                        */
 	} SENSOR_DATA_SIZE_OFFSETS;
 
+/* Pressure Transducer Indices */
+#ifdef ENGINE_CONTROLLER 
+	typedef enum 
+		{
+		PT_LOX_PRESS_INDEX = 0 ,
+		PT_LOX_FLOW_UP_INDEX   ,
+		PT_LOX_FLOW_DOWN_INDEX ,
+		PT_NONE_INDEX          ,
+		PT_ENGINE_PRESS_INDEX  ,
+		PT_FUEL_FLOW_DOWN_INDEX,
+		PT_FUEL_PRESS_INDEX
+		} PT_INDEX;
+#endif
+
 
 /*------------------------------------------------------------------------------
  Public Function Prototypes 
@@ -220,6 +234,16 @@ SENSOR_STATUS sensor_dump
 	(
     SENSOR_DATA* sensor_data_ptr 
     );
+
+#ifdef ENGINE_CONTROLLER
+/* Converts a pressure transducer ADC readout to a floating point pressure in 
+   psi */
+float sensor_conv_pressure
+	( 
+	uint32_t adc_readout, /* Pressure readout from ADC */
+	PT_INDEX pt_num       /* PT used for readout       */
+	);
+#endif
 
 #ifdef __cplusplus
 }
