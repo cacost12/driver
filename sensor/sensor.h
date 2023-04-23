@@ -73,6 +73,10 @@ Includes
 		/* Disable timeouts when debugging */
 		#define HAL_SENSOR_TIMEOUT ( 0xFFFFFFFF )
 	#endif
+#elif defined( GROUND_STATION )
+	/* General */
+	#define NUM_SENSORS         ( 10   )
+	#define SENSOR_DATA_SIZE    ( 40   )
 #else
 	#error Board is not compatible with SENSOR module
 #endif
@@ -134,7 +138,7 @@ typedef enum
 		SENSOR_IMUT  = 0x09,
 		SENSOR_PRES  = 0x0A,
 		SENSOR_TEMP  = 0x0B
-	#elif defined( ENGINE_CONTROLLER )
+	#elif ( defined( ENGINE_CONTROLLER ) || defined( GROUND_STATION ) )
 		SENSOR_PT0   = 0x00,
 		SENSOR_PT1   = 0x01,
 		SENSOR_PT2   = 0x02,
@@ -161,7 +165,7 @@ typedef struct SENSOR_DATA
 		IMU_DATA imu_data;
 		float    baro_pressure;
 		float    baro_temp;	
-	#elif defined( ENGINE_CONTROLLER    )
+	#elif ( defined( ENGINE_CONTROLLER ) || defined( GROUND_STATION ) )
 		uint32_t pt_pressures[ NUM_PTS ];
 		uint32_t load_cell_force;
 		uint32_t tc_temp;
