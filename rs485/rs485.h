@@ -78,6 +78,14 @@ RS485_STATUS rs485_receive
 	uint32_t timeout          /* Timeout in ms                 */
 	);
 
+/* Receives data from the RS485 interface in interrupt mode and outputs to 
+   a buffer */
+RS485_STATUS rs485_receive_IT
+	(
+	void*    rx_buffer_ptr,   /* Pointer to output data buffer */	
+	size_t   rx_buffer_size   /* Number of bytes to recevie    */
+	);
+
 
 #ifdef __cplusplus
 }

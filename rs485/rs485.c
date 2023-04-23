@@ -247,5 +247,54 @@ switch ( hal_status )
 
 
 /*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		rs485_receive_IT                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+* 		Receives data from the RS485 interface in interrupt mode and outputs   * 
+*       to a buffer                                                            *
+*                                                                              *
+*******************************************************************************/
+RS485_STATUS rs485_receive_IT
+	(
+	void*    rx_buffer_ptr,   /* Pointer to output data buffer */	
+	size_t   rx_buffer_size   /* Number of bytes to recevie    */
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;    /* Return codes from HAL */
+
+
+/*------------------------------------------------------------------------------
+ Initialization 
+------------------------------------------------------------------------------*/
+hal_status = HAL_OK;
+
+
+/*------------------------------------------------------------------------------
+ API Function Implementation 
+------------------------------------------------------------------------------*/
+
+/* Receive data */
+hal_status = HAL_UART_Receive_IT( &( RS485_HUART ),
+                                  rx_buffer_ptr   , 
+                                  rx_buffer_size );
+
+/* Return HAL status */
+if ( hal_status != HAL_OK )
+	{
+	return RS485_ERROR;
+	}
+else
+	{
+	return RS485_OK;
+	}
+} /* rs485_receive_IT */
+
+
+/*******************************************************************************
 * END OF FILE                                                                  *
 *******************************************************************************/
