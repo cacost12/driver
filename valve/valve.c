@@ -921,7 +921,7 @@ if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_B_PIN ) )
 			ox_valve_opening = false;
 			}
 		/* Detect valve cracked */
-		else if ( ox_valve_cracking && ( lox_valve_pos = VALVE_CRACKED_POS ) )
+		else if ( ox_valve_cracking && ( lox_valve_pos == VALVE_CRACKED_POS ) )
 			{
 			HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL  );
 			ox_valve_cracking = false;
