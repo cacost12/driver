@@ -882,6 +882,14 @@ if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_A_PIN ) )
 			HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
 			ox_valve_closing = false;
 			}
+		/*
+		if ( ox_valve_closing && ( valve_get_ox_valve_state() == VALVE_CLOSED ) )
+			{
+			HAL_TIM_PWM_Stop( &( VALVE_LOX_TIM ), VALVE_LOX_TIM_CHANNEL );
+			ox_valve_closing = false;
+			lox_valve_pos = 0;
+			}
+		*/
 		}
 	}
 /* High to Low Transition */
