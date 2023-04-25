@@ -99,6 +99,34 @@ static VALVE_STATUS fuel_driver_set_direction
 	(
 	STEPPER_DRIVER_DIR_STATE direction
 	);
+
+/* Increase the lox encoder count by one */
+static void inc_lox_encoder
+	(
+	void
+	);
+
+
+/* Increase the fuel encoder count by one */
+static void inc_fuel_encoder
+	(
+	void
+	);
+
+
+/* Decrease the lox encoder count by one */
+static void dec_lox_encoder
+	(
+	void
+	);
+
+
+/* Decrease the fuel encoder count by one */
+static void dec_fuel_encoder
+	(
+	void
+	);
+
 #endif
 
 
@@ -874,7 +902,8 @@ if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_A_PIN ) )
 	lox_channelA_state = ENCODER_HIGH;
 	if ( !lox_channelB_state )
 		{
-		lox_valve_pos -= 1;
+		//lox_valve_pos -= 1;
+		dec_lox_encoder();
 
 		/* Detect valve closed position */
 		if ( ox_valve_closing && ( lox_valve_pos == VALVE_CLOSED_POS ) )
@@ -920,7 +949,8 @@ if ( HAL_GPIO_ReadPin( LOX_ENC_GPIO_PORT, LOX_ENC_B_PIN ) )
 	lox_channelB_state = ENCODER_HIGH;
 	if ( !lox_channelA_state )
 		{
-		lox_valve_pos += 1;
+		//lox_valve_pos += 1;
+		inc_lox_encoder();
 
 		/* Detect valve open */
 		if ( ox_valve_opening && ( lox_valve_pos == VALVE_OPEN_POS ) )
@@ -965,7 +995,8 @@ if ( HAL_GPIO_ReadPin( KER_ENC_GPIO_PORT, KER_ENC_A_PIN ) )
 	fuel_channelA_state = ENCODER_HIGH;
 	if ( !fuel_channelB_state )
 		{
-		fuel_valve_pos -= 1;
+		//fuel_valve_pos -= 1;
+		dec_fuel_encoder();
 
 		/* Detect valve closed */
 		if ( fuel_valve_closing && ( fuel_valve_pos == VALVE_CLOSED_POS ) )
@@ -1003,7 +1034,8 @@ if ( HAL_GPIO_ReadPin( KER_ENC_GPIO_PORT, KER_ENC_B_PIN ) )
 	fuel_channelB_state = ENCODER_HIGH;
 	if ( !fuel_channelA_state )
 		{
-		fuel_valve_pos += 1;
+		//fuel_valve_pos += 1;
+		inc_fuel_encoder();
 
 		/* Detect valve open */
 		if      ( fuel_valve_opening && ( fuel_valve_pos == VALVE_OPEN_POS ) )
@@ -1187,6 +1219,108 @@ else
 fuel_driver_state.direction = direction;
 return VALVE_OK;
 } /* fuel_driver_set_direction */
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		inc_lox_encoder                                                        *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Increase the lox encoder count by one                                  *
+*                                                                              *
+*******************************************************************************/
+static void inc_lox_encoder
+	(
+	void
+	)
+{
+if ( lox_valve_pos == 999 )
+	{
+	lox_valve_pos = 0;
+	}
+else
+	{
+	lox_valve_pos += 1;
+	}
+} /* inc_lox_encoder */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		inc_fuel_encoder                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Increase the fuel encoder count by one                                 *
+*                                                                              *
+*******************************************************************************/
+static void inc_fuel_encoder
+	(
+	void
+	)
+{
+if ( fuel_valve_pos == 999 )
+	{
+	fuel_valve_pos = 0;
+	}
+else
+	{
+	fuel_valve_pos += 1;
+	}
+
+} /* inc_fuel_encoder */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		dec_lox_encoder                                                        *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Decrease the lox encoder count by one                                  *
+*                                                                              *
+*******************************************************************************/
+static void dec_lox_encoder
+	(
+	void
+	)
+{
+if ( lox_valve_pos == 0 )
+	{
+	lox_valve_pos = 999;
+	}
+else
+	{
+	lox_valve_pos -= 1;
+	}
+
+} /* dec_lox_encoder */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		dec_fuel_encoder                                                       *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Decrease the fuel encoder count by one                                 *
+*                                                                              *
+*******************************************************************************/
+static void dec_fuel_encoder
+	(
+	void
+	)
+{
+if ( fuel_valve_pos == 0 )
+	{
+	fuel_valve_pos = 999;
+	}
+else
+	{
+	fuel_valve_pos -= 1;
+	}
+
+} /* dec_fuel_encoder */
 #endif /* #ifdef VALVE_CONTROLLER */
 
 
