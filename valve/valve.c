@@ -481,7 +481,7 @@ valve_status = VALVE_OK;
 ------------------------------------------------------------------------------*/
 
 /* Check if valve is already open */
-if ( lox_valve_pos == VALVE_OPEN_POS )
+if ( abs( lox_valve_pos - VALVE_OPEN_POS ) < 5 )
 	{
 	return VALVE_OK;
 	}
@@ -531,7 +531,7 @@ valve_status = VALVE_OK;
 ------------------------------------------------------------------------------*/
 
 /* Check if valve is already open */
-if ( fuel_valve_pos == VALVE_OPEN_POS )
+if ( abs( fuel_valve_pos - VALVE_OPEN_POS ) <= 5 )
 	{
 	return VALVE_OK;
 	}
@@ -581,7 +581,7 @@ valve_status = VALVE_OK;
 ------------------------------------------------------------------------------*/
 
 /* Check if valve is already closed */
-if ( lox_valve_pos == VALVE_CLOSED_POS )
+if ( abs( lox_valve_pos - VALVE_CLOSED_POS ) <= 5 )
 	{
 	return VALVE_OK;
 	}
@@ -631,7 +631,7 @@ valve_status = VALVE_OK;
 ------------------------------------------------------------------------------*/
 
 /* check if valve is already closed */
-if ( fuel_valve_pos == VALVE_CLOSED_POS )
+if ( abs( fuel_valve_pos - VALVE_CLOSED_POS ) <= 5 )
 	{
 	return VALVE_OK;
 	}
