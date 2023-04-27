@@ -91,7 +91,7 @@ typedef enum IGN_SUBCOMMAND
 #define IGN_NOZ_CONT_MASK       0b00100000
 
 /* Ignition burn time */
-#define IGN_BURN_DELAY          10 
+#define IGN_BURN_DELAY          1000 
 
 
 /*------------------------------------------------------------------------------
