@@ -43,6 +43,7 @@ extern "C" {
 #define VALVE_CRACK_CODE          0x0A
 #define VALVE_RESET_CODE          0x10
 #define VALVE_OPENALL_CODE        0x12
+#define VALVE_GETSTATE_CODE       0x14
 
 
 /*------------------------------------------------------------------------------
@@ -87,6 +88,12 @@ typedef enum _VALVE_STATE
 	VALVE_OPEN,
 	VALVE_CLOSED
 	} VALVE_STATE;
+
+/* Encoding for communicating the state of both valves */
+/* bit    7: Main fuel valve (1 open/0 closed)
+   bit    6: Main lox valve  (1 open/0 closed) 
+   bits 5-0: Unused */
+typedef uint8_t MAIN_VALVE_STATES;
 
 
 /*------------------------------------------------------------------------------
@@ -225,6 +232,13 @@ VALVE_STATUS valve_calibrate_valves
 	(
 	void
 	);
+
+/* Get the state of both main valves */
+MAIN_VALVE_STATES valve_get_valve_states
+	(
+	void
+	);
+
 #endif /* #ifdef VALVE_CONTROLLER */
 
 #ifdef __cplusplus

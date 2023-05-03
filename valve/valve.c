@@ -152,15 +152,17 @@ VALVE_STATUS valve_cmd_execute
 /*------------------------------------------------------------------------------
  Local Variables
 ------------------------------------------------------------------------------*/
-uint8_t      valve_num;       /* Valve number, 0 -> ox, 1 -> fuel   */
-VALVE_STATUS valve_status[2]; /* Valve return codes                 */
+uint8_t           valve_num;         /* Valve number, 0 -> ox, 1 -> fuel   */
+VALVE_STATUS      valve_status[2];   /* Valve return codes                 */
+MAIN_VALVE_STATES main_valve_states; /* Main valve open/close states       */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-valve_num    = subcommand & 0x01;
-subcommand  -= valve_num;
+valve_num         = subcommand & 0x01;
+subcommand       -= valve_num;
+main_valve_states = 0;
 
 
 /*------------------------------------------------------------------------------
@@ -272,6 +274,23 @@ switch( subcommand )
 			return VALVE_OK;
 			}
 		} /* VALVE_OPENALL_CODE */
+	
+	/*--------------------------------------------------------------------------
+	 VALVE GETSTATE 
+	--------------------------------------------------------------------------*/
+	case VALVE_GETSTATE_CODE:
+		{
+		main_valve_states = valve_get_valve_states();
+		#if defined( HOTFIRE )
+			valve_transmit( &main_valve_states         , 
+			                sizeof( main_valve_states ), 
+							HAL_DEFAULT_TIMEOUT );
+		#elif defined( TERMINAL )
+			usb_transmit( &main_valve_states, 
+			              sizeof( main_valve_states ),
+						  HAL_DEFAULT_TIMEOUT );
+		#endif
+		}
 
 	/*--------------------------------------------------------------------------
 	 UNRECOGNIZED SUBCOMMAND 
@@ -1219,6 +1238,53 @@ else
 fuel_driver_state.direction = direction;
 return VALVE_OK;
 } /* fuel_driver_set_direction */
+
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+* 		valve_get_valve_states                                                 *
+*                                                                              *
+* DESCRIPTION:                                                                 *
+*       Get the state of both main valves                                      *
+*                                                                              *
+*******************************************************************************/
+MAIN_VALVE_STATES valve_get_valve_states
+	(
+	void
+	)
+{
+/*------------------------------------------------------------------------------
+ Local Variables
+------------------------------------------------------------------------------*/
+MAIN_VALVE_STATES main_valve_states; /* Return valve        */
+
+
+/*------------------------------------------------------------------------------
+ Initializations 
+------------------------------------------------------------------------------*/
+main_valve_states = 0;
+
+
+/*------------------------------------------------------------------------------
+ Implementation 
+------------------------------------------------------------------------------*/
+
+/* Check the LOX valve  */
+if ( valve_get_ox_valve_state() == VALVE_OPEN )
+	{
+	main_valve_states |= ( 1 << 7 );
+	}
+
+/* Check the fuel valve */
+if ( valve_get_fuel_valve_state() == VALVE_OPEN )
+	{
+	main_valve_states |= ( 1 << 6 );
+	}
+
+return main_valve_states;
+} /* valve_get_valve_states */
+
 
 /*******************************************************************************
 *                                                                              *
