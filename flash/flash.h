@@ -27,7 +27,7 @@ Includes
 #include <stdbool.h>
 
 /* Project includes */
-#include "sensor.h"
+//#include "sensor.h"
 
 
 /*------------------------------------------------------------------------------
