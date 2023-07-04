@@ -18,16 +18,12 @@
 /*------------------------------------------------------------------------------
  MCU Pins 
 ------------------------------------------------------------------------------*/
-#if   defined( FLIGHT_COMPUTER      )
-	#include "sdr_pin_defines_A0002.h"
-#elif defined( ENGINE_CONTROLLER    )
-	#include "sdr_pin_defines_L0002.h"
-#elif defined( VALVE_CONTROLLER     )
-	#include "sdr_pin_defines_L0005.h"
-#elif defined( GROUND_STATION       )
-	#include "sdr_pin_defines_A0005.h"
-#elif defined( FLIGHT_COMPUTER_LITE )
-	#include "sdr_pin_defines_A0007.h"
+#if   defined( BASE_FLIGHT_COMPUTER )
+	#include "zav_pin_defines_A0001.h"
+#elif defined( FULL_FLIGHT_COMPUTER )
+	#include "zav_pin_defines_A0002.h"
+#else
+	#error "No USB compatible device specified in Makefile"
 #endif
 
 
@@ -39,16 +35,6 @@
 
 
 /*------------------------------------------------------------------------------
- Preprocesor Directives 
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
-Global Variables                                                                  
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
  Procedures 
 ------------------------------------------------------------------------------*/
 
@@ -56,7 +42,7 @@ Global Variables
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		usb_transmit_bytes                                                     *
+* 		usb_transmit                                                           *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
 * 		transmits a specified number of bytes over USB                         *
@@ -80,7 +66,7 @@ HAL_StatusTypeDef usb_status;
 ------------------------------------------------------------------------------*/
 
 /* Transmit byte */
-usb_status = HAL_UART_Transmit( &( USB_HUART ),
+usb_status = HAL_UART_Transmit( &( usb_huart ),
                                 tx_data_ptr   , 
                                 tx_data_size  , 
                                 timeout );
@@ -88,7 +74,7 @@ usb_status = HAL_UART_Transmit( &( USB_HUART ),
 /* Return HAL status */
 if ( usb_status != HAL_OK )
 	{
-	return usb_status;
+	return USB_ERROR;
 	}
 else
 	{
@@ -125,7 +111,7 @@ HAL_StatusTypeDef usb_status;
 ------------------------------------------------------------------------------*/
 
 /* Transmit byte */
-usb_status = HAL_UART_Receive( &( USB_HUART ),
+usb_status = HAL_UART_Receive( &( usb_huart ),
                                rx_data_ptr   , 
                                rx_data_size  , 
                                timeout );
@@ -136,27 +122,20 @@ switch ( usb_status )
 	case HAL_TIMEOUT:
 		{
 		return USB_TIMEOUT;
-		break;
 		}
 	case HAL_OK:
 		{
 		return USB_OK;
-		break;
 		}
 	default:
 		{
-		return USB_FAIL;
-		break;
+		return USB_ERROR;
         }
 	}
 
 } /* usb_receive */
 
 
-#if defined( A0002_REV2           ) || \
-    defined( FLIGHT_COMPUTER_LITE ) || \
-    defined( L0002_REV5           ) || \
-	defined( L0005_REV3           )
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
@@ -166,7 +145,7 @@ switch ( usb_status )
 * 	    Detect a USB connection by checking the power on the USB 5V line       *
 *                                                                              *
 *******************************************************************************/
-bool usb_detect
+USB_STATE usb_detect
 	(
 	void
 	)
@@ -193,14 +172,13 @@ usb_detect_pinstate = HAL_GPIO_ReadPin( USB_DETECT_GPIO_PORT, USB_DETECT_PIN );
 /* Set return value */
 if ( usb_detect_pinstate == 0 )
 	{
-	return false;
+	return USB_INACTIVE;
 	}
 else
 	{
-	return true;
+	return USB_ACTIVE;
 	}
 } /* usb_detect */
-#endif /* #if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE ) */
 
 
 /*******************************************************************************

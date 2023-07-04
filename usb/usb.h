@@ -25,16 +25,21 @@ extern "C" {
 
 
 /*------------------------------------------------------------------------------
- Typdefs 
+ Defines and Typdefs 
 ------------------------------------------------------------------------------*/
 
 /* Function return codes */
 typedef enum USB_STATUS
 	{
 	USB_OK = 0,
-    USB_FAIL  ,
+    USB_ERROR ,
 	USB_TIMEOUT
 	} USB_STATUS;
+
+/* USB Detect States */
+#define USB_ACTIVE    true
+#define USB_INACTIVE  false
+typedef bool USB_STATE;
 
 
 /*------------------------------------------------------------------------------
@@ -58,22 +63,11 @@ USB_STATUS usb_receive
 	);
 
 /* Checks for an active USB connection */
-#if defined( A0002_REV2           ) || \
-    defined( FLIGHT_COMPUTER_LITE ) || \
-    defined( L0002_REV5           ) || \
-	defined( L0005_REV3 )
-bool usb_detect
+USB_STATE usb_detect
 	(
 	void
 	);
-#endif /* #if defined( A0002_REV2 ) || defined( FLIGHT_COMPUTER_LITE ) */
 
-/* Remove garbage USB data by cycling receiving data until a timeout condition 
-   is encountered */
-void usb_flush
-	(
-	void
-	);
 
 #ifdef __cplusplus
 }
