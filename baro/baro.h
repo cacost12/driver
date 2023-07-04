@@ -60,11 +60,11 @@ extern "C" {
 #define BARO_CAL_BUFFER_SIZE    ( 21   )
 
 /* Default I2C HAL timeout */
-#ifndef SDR_DEBUG
+#ifndef ZAV_DEBUG
 	#define BARO_DEFAULT_TIMEOUT    ( 1    )
 #else
 	#define BARO_DEFAULT_TIMEOUT    ( 0xFFFFFFFF )
-#endif /* ifndef SDR_DEBUG */
+#endif /* ifndef ZAV_DEBUG */
 
 /* Baro sensor command codes */
 #define BARO_CMD_RESET          ( 0xB6 )

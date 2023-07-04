@@ -21,7 +21,13 @@
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
 #include "main.h"
-#include "sdr_pin_defines_A0002.h"
+#if defined( BASE_FLIGHT_COMPUTER )
+	#include "zav_pin_defines_A0001.h"
+#elif defined( FULL_FLIGHT_COMPUTER )
+	#include "zav_pin_defines_A0002.h"
+#else
+	#error "No Baro compatibile device specified in Makefile"
+#endif
 #include "baro.h"
 
 
@@ -544,7 +550,7 @@ i2c_timeout = BARO_DEFAULT_TIMEOUT*num_regs;
 ------------------------------------------------------------------------------*/
 
 /* Read I2C register*/
-hal_status = HAL_I2C_Mem_Read( &( BARO_I2C )       ,
+hal_status = HAL_I2C_Mem_Read( &( baro_hi2c )       ,
 				               BARO_I2C_ADDR       ,
 				               reg_addr            ,
 				               I2C_MEMADD_SIZE_8BIT,
@@ -589,7 +595,7 @@ HAL_StatusTypeDef hal_status; /* HAL API Return codes */
 ------------------------------------------------------------------------------*/
 
 /* Write to register with I2C */
-hal_status = HAL_I2C_Mem_Write( &( BARO_I2C )       ,
+hal_status = HAL_I2C_Mem_Write( &( baro_hi2c )       ,
 				                BARO_I2C_ADDR       ,
 				                reg_addr            ,
 				                I2C_MEMADD_SIZE_8BIT,
