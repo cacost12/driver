@@ -20,19 +20,6 @@ extern "C" {
 
 
 /*------------------------------------------------------------------------------
- MCU Peripheral Configuration 
-------------------------------------------------------------------------------*/
-
-#if !( defined( A0002_REV1 ) || \
-       defined( L0002_REV4 ) || \
-	   defined( A0002_REV2 ) || \
-	   defined( L0002_REV5 ) || \
-	   defined( A0007_REV1 ) ) 
-	#error No IGNITION compatible device specified
-#endif
-
-
-/*------------------------------------------------------------------------------
  Typdefs 
 ------------------------------------------------------------------------------*/
 
@@ -111,36 +98,7 @@ IGN_STATUS ign_get_cont_info
     void
     );
 
-#if defined( ENGINE_CONTROLLER )
-/* Asserts the ignition signal to ignite the engine ematch. Returns a response 
-code indicating if the ignition occured succesfully */
-IGN_STATUS ign_ignite
-    (
-	void
-    );
 
-/* Check for continuity across solid propellant wire screw terminals */
-bool ign_solid_prop_cont
-	(
-    void
-    );
-
-/* Check for continuity across nozzle wire screw terminals           */
-bool ign_nozzle_cont
-	(
-    void
-    );
-
-/* Check for continuity across ematch and switch screw terminals     */
-bool ign_ematch_cont
-	(
-    void
-    );
-
-#endif /* #if defined( ENGINE_CONTROLLER ) */
-
-
-#if ( defined( FLIGHT_COMPUTER ) || defined( FLIGHT_COMPUTER_LITE ) )
 /* Asserts the ignition signal to ignite the main parachute deployment ematch. 
    Returns a response code indicating if the ignition occured succesfully */
 IGN_STATUS ign_deploy_main 
@@ -178,7 +136,6 @@ bool ign_switch_cont
 	void
 	);
 
-#endif /* #if defined( FLIGHT_COMPUTER )*/
 
 #ifdef __cplusplus
 }
