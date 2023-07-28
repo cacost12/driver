@@ -39,49 +39,6 @@
 ------------------------------------------------------------------------------*/
 
 
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		ign_cmd_execute                                                        *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Executes an ignition subcommand based on user input from the sdec      *
-*       terminal                                                               *
-*                                                                              *
-*******************************************************************************/
-IGN_STATUS ign_cmd_execute
-	(
-    IGN_SUBCOMMAND ign_subcommand
-    )
-{
-switch( ign_subcommand )
-	{
-    /* Deploy main */
-	case IGN_MAIN_DEPLOY_CODE:
-		{
-		return ign_deploy_main();
-		}
-
-    /* Deploy drogue */
-	case IGN_DROGUE_DEPLOY_CODE:
-		{
-		return ign_deploy_drogue();
-		}
-
-	/* Return continuity information */
-	case IGN_CONT_CODE:
-		{
-		return ign_get_cont_info();
-		}
-
-    /* Unrecognized subcommand code: call error handler */
-	default:
-		{
-		return IGN_UNRECOGNIZED_CMD;
-		}
-    } 
-
-} /* ign_cmd_execute */
 
 
 /*******************************************************************************
@@ -94,7 +51,7 @@ switch( ign_subcommand )
 *       response code                                                          *   
 *                                                                              *
 *******************************************************************************/
-IGN_STATUS ign_get_cont_info
+IGN_CONT_STATUS ign_get_cont_info
 	(
     void
     )
@@ -102,7 +59,7 @@ IGN_STATUS ign_get_cont_info
 /*------------------------------------------------------------------------------
  Local Variables 
 ------------------------------------------------------------------------------*/
-IGN_STATUS ign_status = 0; /* Status code to be returned */
+IGN_CONT_STATUS cont_status = 0; /* Status code to be returned */
 
 
 /*------------------------------------------------------------------------------
@@ -112,17 +69,17 @@ IGN_STATUS ign_status = 0; /* Status code to be returned */
 /* Poll the switch, main parachute, and drogue parachute continuity pins */
 if ( ign_switch_cont() )
 	{
-    ign_status |= IGN_SWITCH_MASK;
+    cont_status |= IGN_SWITCH_MASK;
     }
 if ( ign_main_cont()   )
 	{
-    ign_status |= IGN_MAIN_CONT_MASK;
+    cont_status |= IGN_MAIN_CONT_MASK;
     }
 if ( ign_drogue_cont() )
 	{
-    ign_status |= IGN_DROGUE_CONT_MASK;
+    cont_status |= IGN_DROGUE_CONT_MASK;
     }
-return ign_status;
+return cont_status;
 
 } /* ign_get_cont_info */
 

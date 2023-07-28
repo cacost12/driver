@@ -26,43 +26,32 @@ extern "C" {
 /* Ignition Continuity Status */
 /* IGN_CONT_STAT = bit7 | bit6 | bit5 | bit4 | bit3 | bit2 | bit1 | bit0 
 
-   bits6-7: unused
-   bit5:   Nozzle continuity of liquid engine, 1 indicates continuity between 
-           between screw terminals
-   bit4:   Solid propellant continuity for liquid engine, 1 indiciates 
-           continuity between screw terminals
-   bit3:   Ematch continuity for liquid engine, 1 indicates continuity between
-           srew terminals 
+   bits5-7: unused
+   bit4:   Aux 2 port continuity, 1 indicates continuity between screw terminals 
+   bit3:   Aux 1 port continuity, 1 indicates continuity between screw terminals 
+
    bit2:   Drogue parachute deployment continuity, 1 indicates continuity between 
            screw terminals
    bit1:   Main Parachute Deployment continuity, 1 indicates continuity between 
 		   screw terminals
    bit0:   Switch continuity */
+typedef uint8_t IGN_CONT_STATUS;
 
 /* Ignition Status Response Code */
 typedef enum IGN_STATUS
 	{
-	IGN_OK               = 0x40, /* Cont status takes up first 64 values */
-	IGN_SUCCESS          = 0x41,
-	IGN_EMATCH_CONT_FAIL = 0x42, 
-	IGN_POWER_FAIL       = 0x43, 
-	IGN_FAIL             = 0x44,
-	IGN_SWITCH_FAIL      = 0x45,
-	IGN_MAIN_CONT_FAIL   = 0x46,
-	IGN_MAIN_FAIL        = 0x47,
-    IGN_DROGUE_CONT_FAIL = 0x48, 
-	IGN_DROGUE_FAIL      = 0x49,
-	IGN_UNRECOGNIZED_CMD = 0x4A
+	IGN_OK              ,
+	IGN_SUCCESS         ,
+	IGN_EMATCH_CONT_FAIL, 
+	IGN_POWER_FAIL      , 
+	IGN_FAIL            ,
+	IGN_SWITCH_FAIL     ,
+	IGN_MAIN_CONT_FAIL  ,
+	IGN_MAIN_FAIL       ,
+    IGN_DROGUE_CONT_FAIL, 
+	IGN_DROGUE_FAIL     ,
+	IGN_UNRECOGNIZED_CMD 
 	} IGN_STATUS;
-
-/* SDEC Subcommand Codes */
-typedef enum IGN_SUBCOMMAND
-	{
-	IGN_FIRE_CODE = 0x01,
-	IGN_CONT_CODE       ,
-	IGN_MAIN_DEPLOY_CODE,
-	IGN_DROGUE_DEPLOY_CODE     
-	} IGN_SUBCOMMAND;
 
 
 /*------------------------------------------------------------------------------
@@ -77,9 +66,6 @@ typedef enum IGN_SUBCOMMAND
 #define IGN_SP_CONT_MASK        0b00010000
 #define IGN_NOZ_CONT_MASK       0b00100000
 
-/* Ignition burn time */
-#define IGN_BURN_DELAY          1250 
-
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
@@ -93,7 +79,7 @@ IGN_STATUS ign_cmd_execute
 
 /* Polls each continuity pin and sets the continuity bits in the response 
    code */
-IGN_STATUS ign_get_cont_info
+IGN_CONT_STATUS ign_get_cont_info
 	(
     void
     );

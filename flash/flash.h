@@ -26,17 +26,10 @@ Includes
 /* Standard includes */
 #include <stdbool.h>
 
-/* Project includes */
-//#include "sensor.h"
-
 
 /*------------------------------------------------------------------------------
  Macros 
 ------------------------------------------------------------------------------*/
-
-/* Flash subcommand bitmasks */
-#define FLASH_SUBCMD_OP_BITMASK     0b11100000 
-#define FLASH_NBYTES_BITMASK        0b00011111
 
 /* Write protection ON/OFF States */
 #define FLASH_WP_READ_ONLY          true 
@@ -68,7 +61,7 @@ Includes
 #define FLASH_REG_RESET_VAL         0b00111000
 
 /* Timeouts */
-#ifndef SDR_DEBUG
+#ifndef ZAV_DEBUG
 	#define HAL_FLASH_TIMEOUT       100
 #else
 	#define HAL_FLASH_TIMEOUT       0xFFFFFFFF
@@ -126,47 +119,23 @@ typedef enum FLASH_BPL_WP
 	FLASH_BPL_READ_ONLY  = 0b1000000
 	} FLASH_BPL_WP;
 
-/* Buffer object with handle to a user-definable buffer. FLASH_BUFFER struct 
-   should be filled with info about the buffer size, a reference to the buffer,
-   and an SPI handle */
-typedef struct _FLASH_BUFFER_TAG {
-	
-	/* Number of bytes in buffer */
-	uint32_t       num_bytes;
-
-	/* Base flash address for read/write operations */
-	uint32_t       address;
-
-	/* Buffer reference */
-	uint8_t*       pbuffer;
-
-    /* Write protection state */
-    bool           write_protected;
-
-	/* BPL settings for block protection */
-	FLASH_BPL_BITS bpl_bits;
-
-	/* Write protection setting of flash BPL bits */
-	FLASH_BPL_WP   bpl_write_protect;
-
-	/* Contents of status register */
-	uint8_t        status_register;
-
-} HFLASH_BUFFER; 
-
-/* Flash subcommand codes */
-typedef enum FLASH_SUBCMD_CODES 
+/* Configuration of flash chip */
+typedef struct _FLASH_CONFIG 
 	{
-	FLASH_SUBCMD_READ = 0,
-	FLASH_SUBCMD_ENABLE  ,
-	FLASH_SUBCMD_DISABLE ,
-	FLASH_SUBCMD_WRITE   ,
-	FLASH_SUBCMD_ERASE   ,
-	FLASH_SUBCMD_STATUS  ,
-	FLASH_SUBCMD_EXTRACT ,
-	FLASH_SUBCMD_HS_READ ,
-	FLASH_SUBCMD_4K_ERASE
-	} FLASH_SUBCMD_CODE;
+    bool           write_protected;   /* Overall write protection */
+	FLASH_BPL_BITS bpl_bits;          /* BPL block protection     */
+	FLASH_BPL_WP   bpl_write_protect; /* BPL config write enable  */
+	uint8_t        status_register;   /* status register          */
+	} FLASH_CONFIG;
+
+/* Data buffer for writing/reading to/from flash */
+typedef struct _FLASH_BUFFER
+	{
+	uint32_t address;     /* Flash memory address         */
+	uint8_t* buffer_ptr;  /* Pointer to I/O memory buffer */
+	uint32_t buffer_size; /* Size of data in buffer       */
+	} FLASH_BUFFER;
+
 
 /* Flash return value codes */
 typedef enum FLASH_STATUS 
@@ -224,29 +193,22 @@ typedef enum _FLASH_BLOCK_SIZE
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-/* Executes a flash subcommand based on user input from the sdec terminal */
-FLASH_STATUS flash_cmd_execute
-	(
-    uint8_t        flash_subcommand,
-    HFLASH_BUFFER* pflash_handle   
-    );
-
 /* Initializes the flash chip */
 FLASH_STATUS flash_init 
 	(
-	HFLASH_BUFFER* pflash_handle  
+	FLASH_CONFIG flash_config
 	);
 
 /* Read the status register of the flash chip */
 FLASH_STATUS flash_get_status
 	(
-	HFLASH_BUFFER* pflash_handle
+	uint8_t flash_status
     );
 
 /* Write to the status register of the flash chip */
 FLASH_STATUS flash_set_status
 	(
-	uint8_t        flash_status
+	uint8_t flash_status
     );
 
 /* Check if the flash chip is ready for write operations */
@@ -270,27 +232,20 @@ void flash_write_disable
 /* Write bytes from a flash buffer to the external flash */
 FLASH_STATUS flash_write
     (
-	HFLASH_BUFFER* pflash_handle
+	FLASH_BUFFER flash_buffer
     );
 
-/* Write a byte to the external flash */
-FLASH_STATUS flash_write_byte 
-    (
-	HFLASH_BUFFER* pflash_handle,
-	uint8_t        byte
-    );
 
 /* Read a specified number of bytes using a flash buffer */
 FLASH_STATUS flash_read
     (
-	HFLASH_BUFFER* pflash_handle,
-    uint32_t       num_bytes
+	FLASH_BUFFER flash_buffer
     );
 
 /* Erase the entire flash chip */
 FLASH_STATUS flash_erase
     (
-    HFLASH_BUFFER* pflash_handle	
+	void
     );
 
 /* Erase a 32kB block of flash */

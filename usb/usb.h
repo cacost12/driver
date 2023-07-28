@@ -41,6 +41,13 @@ typedef enum USB_STATUS
 #define USB_INACTIVE  false
 typedef bool USB_STATE;
 
+/* Timeouts */
+#ifndef DISABLE_TIMEOUTS 
+	#define USB_DEFAULT_TIMEOUT    ( 5 ) 
+#else
+	#define USB_DEFAULT_TIMEOUT    ( 0xFFFFFFFF )
+#endif
+
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
