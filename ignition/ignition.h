@@ -71,12 +71,6 @@ typedef enum IGN_STATUS
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
-/* Executes an ignition subcommand based on user input from the sdec terminal */
-IGN_STATUS ign_cmd_execute
-	(
-    IGN_SUBCOMMAND ign_subcommand
-    );
-
 /* Polls each continuity pin and sets the continuity bits in the response 
    code */
 IGN_CONT_STATUS ign_get_cont_info
