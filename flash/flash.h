@@ -57,8 +57,8 @@ Includes
 /* Maximum Flash address */
 #define FLASH_MAX_ADDR              0x07FFFF
 
-/* Reset state of flash register */
-#define FLASH_REG_RESET_VAL         0b00111000
+/* Reset state of flash status register */
+#define FLASH_STATUS_REG_RESET_VAL  0b00111000
 
 /* Timeouts */
 #ifndef ZAV_DEBUG

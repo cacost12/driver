@@ -110,8 +110,8 @@ uint8_t      updated_status;  /* Desired status register contents       */
  Initializations 
 ------------------------------------------------------------------------------*/
 flash_status   = FLASH_OK;
-initial_status = FLASH_REG_RESET_VAL;
-updated_status = FLASH_REG_RESET_VAL;
+initial_status = FLASH_STATUS_REG_RESET_VAL;
+updated_status = FLASH_STATUS_REG_RESET_VAL;
 
 
 /*------------------------------------------------------------------------------
@@ -850,7 +850,7 @@ static inline uint32_t bytes_to_address
 return ( (uint32_t) address_bytes[0] << 16 ) |
 	   ( (uint32_t) address_bytes[1] << 8  ) |
 	   ( (uint32_t) address_bytes[2] << 0  );
-} /* address_to_bytes */
+} /* bytes_to_address */
 
 
 /*******************************************************************************
