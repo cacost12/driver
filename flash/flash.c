@@ -59,14 +59,14 @@ static inline uint32_t bytes_to_address
 	uint8_t address_bytes[3]
 	);
 
-/* Enable writing to the external flash chip hardware */
-static FLASH_STATUS write_enable
+/* Set the flash chip write enable latch to arm flash write commands */
+static FLASH_STATUS enable_write_latch
     (
     void 
     );
 
-/* Disable writing to the external flash chip hardware */
-static FLASH_STATUS write_disable 
+/* Reset the flash chip write enable latch to disable flash write commands */
+static FLASH_STATUS disable_write_latch
     (
     void 
     );
@@ -95,14 +95,16 @@ FLASH_STATUS flash_init
  Local variables 
 ------------------------------------------------------------------------------*/
 FLASH_STATUS flash_status;    /* Flash API function return codes        */
-uint8_t      status_register; /* Desired status register contents       */
+uint8_t      initial_status;  /* Status of flash chip on initial read   */
+uint8_t      updated_status;  /* Desired status register contents       */
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
-flash_status    = FLASH_OK;
-status_register = FLASH_REG_RESET_VAL;
+flash_status   = FLASH_OK;
+initial_status = FLASH_REG_RESET_VAL;
+updated_status = FLASH_REG_RESET_VAL;
 
 
 /*------------------------------------------------------------------------------
@@ -110,55 +112,53 @@ status_register = FLASH_REG_RESET_VAL;
 ------------------------------------------------------------------------------*/
 
 /* Check for invalid BPL setting */
-if ( pflash_handle -> bpl_bits > FLASH_BPL_ALL )
+if ( flash_config.bpl_bits > FLASH_BPL_ALL )
 	{
 	return FLASH_INVALID_INPUT; 
 	}
 
 /* Determine the desired status register contents */
-status_register &= pflash_handle -> bpl_bits;
-status_register |= pflash_handle -> bpl_write_protect;
+updated_status &= flash_config.bpl_bits;
+updated_status |= flash_config.bpl_write_protect;
 
 
 /*------------------------------------------------------------------------------
  API Function Implementation 
 ------------------------------------------------------------------------------*/
 
-/* Configure write protection */
-if ( pflash_handle -> write_protected )
+/* Check the flash chip status register to confirm chip can be reached */
+flash_status = flash_get_status( &initial_status );
+if ( ( flash_status != FLASH_OK ) ||  ( initial_status == 0xFF ) )
+	{
+	return FLASH_CANNOT_REACH_DEVICE;
+	}
+
+/* Reset write enable latch, latch enabled on each flash write call */
+if ( reset_write_latch() != FLASH_OK )
+	{
+	return FLASH_INIT_FAIL;
+	}
+
+/* Set global write protection */
+if ( flash_config.write_protected )
 	{
 	flash_write_disable();
-	return FLASH_OK;
 	}
 else
 	{
 	flash_write_enable();
 	}
 
-/* Check the flash chip status register to confirm chip can be reached */
-flash_status = flash_get_status( pflash_handle );
-if ( flash_status != FLASH_OK )
-	{
-	return flash_status;
-	}
-else if ( pflash_handle -> status_register == 0xFF )
+/* Set the bpl bits in the flash chip */
+if ( flash_set_status( updated_status ) != FLASH_OK )
 	{
 	return FLASH_INIT_FAIL;
 	}
 
-/* Disable writing to the chip in case of prior interrupted write operation */
-if ( write_disable() != FLASH_OK )
-	{
-	return FLASH_CANNOT_WRITE_DISABLE;
-	}
-
-/* Set the bpl bits in the flash chip */
-flash_status = flash_set_status( status_register );
-
 /* Confirm Status register contents */
 while( flash_is_flash_busy() == FLASH_BUSY ){}
-flash_status = flash_get_status( pflash_handle );
-if ( pflash_handle -> status_register != status_register )
+flash_status = flash_get_status( &initial_status );
+if ( initial_status != updated_status )
 	{
 	return FLASH_INIT_FAIL;
 	}
@@ -181,7 +181,7 @@ else
 *******************************************************************************/
 FLASH_STATUS flash_get_status
 	(
-	HFLASH_BUFFER* pflash_handle
+	uint8_t* flash_status_ptr /* Out: flash status register contents */
     )
 {
 /*------------------------------------------------------------------------------
@@ -189,6 +189,7 @@ FLASH_STATUS flash_get_status
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status[2];  /* Status codes returned by SPI HAL         */
 uint8_t           flash_opcode;   /* Data to be transmitted over SPI          */
+
 
 /*------------------------------------------------------------------------------
  Initialiazations 
@@ -200,27 +201,18 @@ flash_opcode = FLASH_OP_HW_RDSR;
  API function implementation 
 ------------------------------------------------------------------------------*/
 
-/* Drive slave select line low */
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_RESET );
-
-/* Send RDSR code to flash chip */
+/* Flash SPI Sequence: drive SS Low -> send RDSR opcode -> read register ->
+                       drive SS high */
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status[0] = HAL_SPI_Transmit( &( flash_hspi )        ,
                                   &flash_opcode         ,
                                   sizeof( flash_opcode ),
-                                  HAL_DEFAULT_TIMEOUT );
-
-/* Recieve status code */
-hal_status[1] = HAL_SPI_Receive( &( flash_hspi ),
-                                 &( pflash_handle      -> status_register ),
-                                 sizeof( pflash_handle -> status_register ),
-							     HAL_DEFAULT_TIMEOUT );
-
-/* Drive slave select line high */
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_SET );
+                                  FLASH_DEFAULT_TIMEOUT );
+hal_status[1] = HAL_SPI_Receive( &( flash_hspi )  ,
+                                 flash_status_ptr ,
+                                 sizeof( uint8_t ),
+							     FLASH_DEFAULT_TIMEOUT );
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 /* Return flash status code */
 if ( hal_status[0] != HAL_OK || hal_status[1] != HAL_OK )
@@ -246,7 +238,7 @@ else
 *******************************************************************************/
 FLASH_STATUS flash_set_status
 	(
-	uint8_t        flash_status	
+	uint8_t flash_status	/* In: desired status register contents */
     )
 {
 /*------------------------------------------------------------------------------
@@ -276,22 +268,17 @@ if ( !( write_enabled ) )
  API function implementation 
 ------------------------------------------------------------------------------*/
 
-/* Enable write to status register */
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_RESET );
+/* Set status SPI sequence: drive SS low -> Send EWSR command -> drive SS high
+                        ->  drive SS low -> send WRSR command -> send desired 
+						    status register contents -> drive SS high */
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status[0] = HAL_SPI_Transmit( &( flash_hspi )   ,
                                   &flash_opcodes[0],
                                   sizeof( uint8_t ),
                                   HAL_DEFAULT_TIMEOUT );
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_SET );
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
-/* Write the Data to the status register */
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_RESET );
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status[1] = HAL_SPI_Transmit( &( flash_hspi )   ,
                                   &flash_opcodes[1],
                                   sizeof( uint8_t ),
@@ -300,14 +287,10 @@ hal_status[2] = HAL_SPI_Transmit( &( flash_hspi )        ,
                                   &flash_status         ,
                                   sizeof( flash_status ),
 							      HAL_DEFAULT_TIMEOUT );
-HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
-                   FLASH_SS_PIN      ,
-                   GPIO_PIN_SET );
+HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 /* Return flash status */
-if ( hal_status[0] != HAL_OK ||
-     hal_status[1] != HAL_OK ||
-	 hal_status[2] != HAL_OK )
+if ( hal_status[0] != HAL_OK || hal_status[1] != HAL_OK || hal_status[2] != HAL_OK )
 	{
 	return FLASH_SPI_ERROR;
 	}
@@ -337,15 +320,14 @@ bool flash_is_flash_busy
 /*------------------------------------------------------------------------------
  Local variables  
 ------------------------------------------------------------------------------*/
-HFLASH_BUFFER flash_handle; /* Flash handle to store status reg contents      */
 FLASH_STATUS  flash_status; /* Flash API return codes                         */
+uint8_t       status;
 
 
 /*------------------------------------------------------------------------------
  Initializations 
 ------------------------------------------------------------------------------*/
 flash_status                 = FLASH_OK;
-flash_handle.status_register = 0xFF;
 
 
 /*------------------------------------------------------------------------------
@@ -976,13 +958,13 @@ return ( (uint32_t) address_bytes[0] << 16 ) |
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
-* 		write_enable                                                           *
+* 		enable_write_latch                                                     *
 *                                                                              *
 * DESCRIPTION:                                                                 *
-*       Enable writing to the external flash chip hardware                     *
+*       Set the flash chip write enable latch to arm flash write commands      *
 *                                                                              *
 *******************************************************************************/
-static FLASH_STATUS write_enable
+static FLASH_STATUS enable_write_latch 
     (
     void 
     )
@@ -1027,19 +1009,20 @@ else
 	return FLASH_OK;
     }
 
-} /* write_enable */
+} /* enable_write_latch */
 
 
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   *
-* 		write_disable                                                          *
+* 		reset_write_latch                                                      *
 *                                                                              *
 * DESCRIPTION:                                                                 *
-*       Disable writing to the external flash chip hardware                    *
+*       Reset the flash chip write enable latch to disable flash write         *
+*       commands                                                               *
 *                                                                              *
 *******************************************************************************/
-static FLASH_STATUS write_disable 
+static FLASH_STATUS reset_write_latch 
     (
     void 
     )
@@ -1084,7 +1067,7 @@ else
 	return FLASH_OK;
     }
 
-} /* write_disable */
+} /* reset_write_latch */
 
 
 /*******************************************************************************

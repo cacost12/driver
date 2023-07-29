@@ -63,8 +63,10 @@ Includes
 /* Timeouts */
 #ifndef ZAV_DEBUG
 	#define HAL_FLASH_TIMEOUT       100
+	#define FLASH_DEFAULT_TIMEOUT   1
 #else
 	#define HAL_FLASH_TIMEOUT       0xFFFFFFFF
+	#define FLASH_DEFAULT_TIMEOUT   0xFFFFFFFF
 #endif
 
 /* Flash busy/ready boolean codes */
@@ -125,7 +127,6 @@ typedef struct _FLASH_CONFIG
     bool           write_protected;   /* Overall write protection */
 	FLASH_BPL_BITS bpl_bits;          /* BPL block protection     */
 	FLASH_BPL_WP   bpl_write_protect; /* BPL config write enable  */
-	uint8_t        status_register;   /* status register          */
 	} FLASH_CONFIG;
 
 /* Data buffer for writing/reading to/from flash */
@@ -157,6 +158,7 @@ typedef enum FLASH_STATUS
 	FLASH_CANNOT_WRITE_DISABLE,
 	FLASH_INIT_FAIL           ,
 	FLASH_EXTRACT_ERROR       ,
+	FLASH_CANNOT_REACH_DEVICE ,
 	FLASH_ADDR_OUT_OF_BOUNDS
 	} FLASH_STATUS;
 
@@ -202,7 +204,7 @@ FLASH_STATUS flash_init
 /* Read the status register of the flash chip */
 FLASH_STATUS flash_get_status
 	(
-	uint8_t flash_status
+	uint8_t* flash_status_ptr
     );
 
 /* Write to the status register of the flash chip */
