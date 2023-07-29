@@ -237,7 +237,6 @@ FLASH_STATUS flash_write
 	FLASH_BUFFER flash_buffer
     );
 
-
 /* Read a specified number of bytes using a flash buffer */
 FLASH_STATUS flash_read
     (
