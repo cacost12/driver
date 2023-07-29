@@ -73,7 +73,6 @@ typedef enum
     SENSOR_GYRO_ERROR            ,
 	SENSOR_MAG_ERROR             ,
 	SENSOR_BARO_ERROR            ,
-	SENSOR_USB_FAIL              ,
 	SENSOR_UNRECOGNIZED_SENSOR_ID,
 	SENSOR_POLL_FAIL_TO_START    ,
 	SENSOR_POLL_FAIL             ,

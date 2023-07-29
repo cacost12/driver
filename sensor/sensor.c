@@ -65,16 +65,6 @@ void static sensor_map
 	size_t*      sensor_size
 	);
 
-/* Extract bytes for export from SENSOR_ID struct */
-void static extract_sensor_bytes 
-	(
-	SENSOR_DATA* sensor_data_ptr      ,
-	SENSOR_ID*   sensor_ids_ptr       ,
-	uint8_t      num_sensors          ,
-	uint8_t*     sensor_data_bytes_ptr,
-	uint8_t*     num_sensor_bytes
-	);
-
 
 /*------------------------------------------------------------------------------
  API Functions 
@@ -633,72 +623,6 @@ void static sensor_map
                    sensor_size_offsets_table[ sensor_id ].offset;
 
 } /*  sensor_map */
-
-
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   *
-* 		extract_sensor_bytes                                                   *
-*                                                                              *
-* DESCRIPTION:                                                                 *
-*       Extract bytes for export from SENSOR_ID struct                         *
-*                                                                              *
-*******************************************************************************/
-void static extract_sensor_bytes 
-	(
-	SENSOR_DATA* sensor_data_ptr      , /* In:  Sensor data in struct         */
-	SENSOR_ID*   sensor_ids_ptr       , /* In:  Sensor ids                    */
-	uint8_t      num_sensors          , /* In:  Number of sensors polled      */
-	uint8_t*     sensor_data_bytes_ptr, /* Out: Sensor data in bytes          */
-	uint8_t*     num_sensor_bytes       /* Out: Size of output data           */
-	)
-{
-/*------------------------------------------------------------------------------
- Local Variables  
-------------------------------------------------------------------------------*/
-uint8_t*   output_ptr;    /* Pointer to data export output                    */
-uint8_t*   input_ptr;     /* Pointer to data within SENSOR_ID struct          */
-size_t     sensor_size;   /* Size in bytes of current sensor readout          */
-SENSOR_ID  sensor_id;     /* Current Sensor ID                                */
-SENSOR_ID* sensor_id_ptr; /* Pointer to current sensor ID                     */
-
-
-/*------------------------------------------------------------------------------
- Initializations  
-------------------------------------------------------------------------------*/
-output_ptr        = sensor_data_bytes_ptr;
-sensor_id_ptr     = sensor_ids_ptr;
-sensor_id         = *(sensor_id_ptr);
-*num_sensor_bytes = 0;
-
-
-/*------------------------------------------------------------------------------
- Implementation 
-------------------------------------------------------------------------------*/
-for ( uint8_t i = 0; i < num_sensors; ++i )
-	{
-	/* Get position info of sensor readout */
-	sensor_map( sensor_data_ptr, 
-	            sensor_id      ,
-				&input_ptr      ,
-				&sensor_size );
-
-	/* Copy data into output buffer */
-	memcpy( output_ptr, input_ptr, sensor_size );
-
-	/* Update size of output */
-	*num_sensor_bytes += (uint8_t) sensor_size;
-
-	/* Go to next sensor */ 
-	if ( i != ( num_sensors-1) )
-		{
-		sensor_id_ptr++;
-		sensor_id = *(sensor_id_ptr);
-		output_ptr += sensor_size;
-		}
-	}
-
-} /* extract_sensor_bytes */
 
 
 /*******************************************************************************
