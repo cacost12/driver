@@ -66,6 +66,9 @@ typedef enum IGN_STATUS
 #define IGN_SP_CONT_MASK        0b00010000
 #define IGN_NOZ_CONT_MASK       0b00100000
 
+/* Time to supply current through ignition circuits */
+#define IGN_BURN_DELAY          100
+
 
 /*------------------------------------------------------------------------------
  Function Prototypes 

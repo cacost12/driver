@@ -201,6 +201,15 @@ SENSOR_STATUS sensor_dump
     SENSOR_DATA* sensor_data_ptr 
     );
 
+/* Sensor ID to size and pointer mapping */
+void sensor_map
+	(
+	SENSOR_DATA* sensor_data_ptr,
+	SENSOR_ID    sensor_id      ,
+	uint8_t**    sensorid_pptr  ,
+	size_t*      sensor_size
+	);
+
 #ifdef __cplusplus
 }
 #endif

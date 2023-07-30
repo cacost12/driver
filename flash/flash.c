@@ -35,9 +35,7 @@
 /*------------------------------------------------------------------------------
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
-#include "main.h"
 #include "flash.h"
-#include "led.h"
 
 
 /*------------------------------------------------------------------------------
@@ -70,7 +68,7 @@ static FLASH_STATUS enable_write_latch
     );
 
 /* Reset the flash chip write enable latch to disable flash write commands */
-static FLASH_STATUS disable_write_latch
+static FLASH_STATUS reset_write_latch
     (
     void 
     );
@@ -286,18 +284,18 @@ HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status[0] = HAL_SPI_Transmit( &( flash_hspi )   ,
                                   &flash_opcodes[0],
                                   sizeof( uint8_t ),
-                                  HAL_DEFAULT_TIMEOUT );
+                                  FLASH_DEFAULT_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status[1] = HAL_SPI_Transmit( &( flash_hspi )   ,
                                   &flash_opcodes[1],
                                   sizeof( uint8_t ),
-							      HAL_DEFAULT_TIMEOUT );
+							      FLASH_DEFAULT_TIMEOUT );
 hal_status[2] = HAL_SPI_Transmit( &( flash_hspi )        ,
                                   &flash_status         ,
                                   sizeof( flash_status ),
-							      HAL_DEFAULT_TIMEOUT );
+							      FLASH_DEFAULT_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 /* Return flash status */
@@ -537,7 +535,7 @@ for ( int i = 2; i < flash_buffer.buffer_size; i += 2 )
 while ( flash_is_flash_busy() == FLASH_BUSY ){}
 
 /* Terminate AAI Programming */
-flash_status = write_disable();
+flash_status = reset_write_latch();
 if ( flash_status != FLASH_OK )
 	{
 	return FLASH_CANNOT_EXIT_AAI;
@@ -673,14 +671,14 @@ if( !( write_enabled ) )
 ------------------------------------------------------------------------------*/
 
 /* Enable writing to flash */
-flash_status = write_enable();
+flash_status = enable_write_latch();
 
 /* SPI sequence: drive SS low -> transmit FULL_ERASE command -> drive SS high */
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status = HAL_SPI_Transmit( &( flash_hspi )        ,
 							   &flash_opcode         ,
 							   sizeof( flash_opcode ),
-							   HAL_DEFAULT_TIMEOUT );
+							   FLASH_DEFAULT_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 /* Return status code */
@@ -781,18 +779,18 @@ if( !( write_enabled ) )
 ------------------------------------------------------------------------------*/
 
 /* Enable writing to flash */
-flash_status = write_enable();
+flash_status = enable_write_latch();
 
 /* Sector erase sequence */
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
-hal_status[0] = HAL_SPI_Transmit( &( flash_hspi )        ,
+hal_status[0] = HAL_SPI_Transmit( &( flash_hspi )       ,
 							      &flash_opcode         ,
 							      sizeof( flash_opcode ),
-							      HAL_DEFAULT_TIMEOUT );
-hal_status[1] = HAL_SPI_Transmit( &( flash_hspi )            , 
+							      FLASH_DEFAULT_TIMEOUT );
+hal_status[1] = HAL_SPI_Transmit( &( flash_hspi )           , 
                                   &flash_addr_bytes[0]      ,
 								  sizeof( flash_addr_bytes ), 
-								  HAL_DEFAULT_TIMEOUT );
+								  FLASH_DEFAULT_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 /* Return status code */
@@ -893,10 +891,10 @@ flash_opcode  = FLASH_OP_HW_WREN;
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
                    FLASH_SS_PIN      ,
                    GPIO_PIN_RESET );
-hal_status = HAL_SPI_Transmit( &( flash_hspi )        ,
+hal_status = HAL_SPI_Transmit( &( flash_hspi )       ,
                                &flash_opcode         ,
                                sizeof( flash_opcode ),
-                               HAL_DEFAULT_TIMEOUT );
+                               FLASH_DEFAULT_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
                    FLASH_SS_PIN      ,
                    GPIO_PIN_SET );
@@ -954,7 +952,7 @@ HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
 hal_status = HAL_SPI_Transmit( &( flash_hspi )        ,
                                &flash_opcode         ,
                                sizeof( flash_opcode ),
-                               HAL_DEFAULT_TIMEOUT );
+                               FLASH_DEFAULT_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT,
                    FLASH_SS_PIN      ,
                    GPIO_PIN_SET );
@@ -1031,17 +1029,17 @@ if ( flash_status != FLASH_OK )
 						  -> drive SS pin high */
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
 hal_status[0] = HAL_SPI_Transmit( &( flash_hspi )       ,
-							      &flash_opcode        ,
+							      &flash_opcode         ,
 							      sizeof( flash_opcode ),
-							      HAL_DEFAULT_TIMEOUT );
-hal_status[1] = HAL_SPI_Transmit( &( flash_hspi )   ,
-							      &address[0]      ,
+							      FLASH_DEFAULT_TIMEOUT );
+hal_status[1] = HAL_SPI_Transmit( &( flash_hspi )  ,
+							      &address_bytes[0],
 							      sizeof( address ),
-							      HAL_DEFAULT_TIMEOUT );
+							      FLASH_DEFAULT_TIMEOUT );
 hal_status[2] = HAL_SPI_Transmit( &( flash_hspi ),
-							     &byte          ,
-							     sizeof( byte ) ,
-							     HAL_FLASH_TIMEOUT );
+							      &byte          ,
+							      sizeof( byte ) ,
+							      HAL_FLASH_TIMEOUT );
 HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
 
 /* Return flash status */

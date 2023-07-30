@@ -53,20 +53,6 @@ static SENSOR_DATA_SIZE_OFFSETS sensor_size_offsets_table[ NUM_SENSORS ];
 
 
 /*------------------------------------------------------------------------------
- Internal function prototypes 
-------------------------------------------------------------------------------*/
-
-/* Sensor ID to size and pointer mapping */
-void static sensor_map
-	(
-	SENSOR_DATA* sensor_data_ptr,
-	SENSOR_ID    sensor_id      ,
-	uint8_t**    sensorid_pptr  ,
-	size_t*      sensor_size
-	);
-
-
-/*------------------------------------------------------------------------------
  API Functions 
 ------------------------------------------------------------------------------*/
 
@@ -608,7 +594,7 @@ return SENSOR_OK;
 *       Sensor ID to size and pointer mapping                                  *
 *                                                                              *
 *******************************************************************************/
-void static sensor_map
+void sensor_map
 	(
 	SENSOR_DATA* sensor_data_ptr, /* In:  Base pointer to sensor data   */
 	SENSOR_ID    sensor_id      , /* In:  Sensor id                    */
