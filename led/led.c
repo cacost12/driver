@@ -12,10 +12,16 @@
 /*------------------------------------------------------------------------------
  MCU Pins 
 ------------------------------------------------------------------------------*/
-#if     defined( BASE_FLIGHT_COMPUTER )
+#if   defined( BASE_FLIGHT_COMPUTER )
 	#include "zav_pin_defines_A0001.h"
-#elif   defined( FULL_FLIGHT_COMPUTER )
+#elif defined( FULL_FLIGHT_COMPUTER )
 	#include "zav_pin_defines_A0002.h"
+#elif defined( LEGACY_FLIGHT_COMPUTER )
+	#include "zav_pin_defines_A0003.h"
+#elif defined( LEGACY_FLIGHT_COMPUTER_LITE )
+	#include "zav_pin_defines_A0004.h"
+#else
+	#error "Error: No LED compatible board specified in Makefile"
 #endif
 
 
