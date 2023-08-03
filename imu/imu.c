@@ -18,8 +18,10 @@
  Project Includes                                                               
 ------------------------------------------------------------------------------*/
 #include "main.h"
-#if defined ( FULL_FLIGHT_COMPUTER )
+#if   defined( FULL_FLIGHT_COMPUTER   )
     #include "zav_pin_defines_A0002.h" 
+#elif defined( LEGACY_FLIGHT_COMPUTER )
+    #include "zav_pin_defines_A0003.h"
 #else
     #error "No IMU compatible device specified in Makefile"
 #endif
