@@ -612,7 +612,7 @@ hal_status = HAL_I2C_Mem_Read( &( imu_hi2c )        ,
                                I2C_MEMADD_SIZE_8BIT, 
                                data_ptr            , 
                                num_regs            , 
-                               HAL_MAX_DELAY );
+                               HAL_IMU_TIMEOUT );
 
 if ( hal_status != HAL_OK )
 	{
