@@ -42,7 +42,7 @@ typedef enum USB_STATUS
 typedef bool USB_STATE;
 
 /* Timeouts */
-#ifndef DISABLE_TIMEOUTS 
+#ifndef ZAV_DEBUG 
 	#define USB_DEFAULT_TIMEOUT    ( 5 ) 
 #else
 	#define USB_DEFAULT_TIMEOUT    ( 0xFFFFFFFF )

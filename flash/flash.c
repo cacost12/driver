@@ -1034,7 +1034,7 @@ hal_status[0] = HAL_SPI_Transmit( &( flash_hspi )       ,
 							      FLASH_DEFAULT_TIMEOUT );
 hal_status[1] = HAL_SPI_Transmit( &( flash_hspi )  ,
 							      &address_bytes[0],
-							      sizeof( address ),
+							      sizeof( address_bytes ),
 							      FLASH_DEFAULT_TIMEOUT );
 hal_status[2] = HAL_SPI_Transmit( &( flash_hspi ),
 							      &byte          ,

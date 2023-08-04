@@ -63,7 +63,7 @@ Includes
 /* Timeouts */
 #ifndef ZAV_DEBUG
 	#define HAL_FLASH_TIMEOUT       100
-	#define FLASH_DEFAULT_TIMEOUT   1
+	#define FLASH_DEFAULT_TIMEOUT   5
 #else
 	#define HAL_FLASH_TIMEOUT       0xFFFFFFFF
 	#define FLASH_DEFAULT_TIMEOUT   0xFFFFFFFF
