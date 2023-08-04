@@ -20,7 +20,6 @@
 /*------------------------------------------------------------------------------
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
-#include "main.h"
 #if defined( BASE_FLIGHT_COMPUTER )
 	#include "zav_pin_defines_A0001.h"
 #elif defined( FULL_FLIGHT_COMPUTER )

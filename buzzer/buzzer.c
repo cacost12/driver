@@ -20,7 +20,6 @@
 /*------------------------------------------------------------------------------
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
-#include "main.h"
 #if defined( FLIGHT_COMPUTER )
 	#include "sdr_pin_defines_A0002.h"
 #elif defined( FLIGHT_COMPUTER_LITE )
