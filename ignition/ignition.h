@@ -41,16 +41,11 @@ typedef uint8_t IGN_CONT_STATUS;
 typedef enum IGN_STATUS
 	{
 	IGN_OK              ,
-	IGN_SUCCESS         ,
-	IGN_EMATCH_CONT_FAIL, 
-	IGN_POWER_FAIL      , 
-	IGN_FAIL            ,
-	IGN_SWITCH_FAIL     ,
-	IGN_MAIN_CONT_FAIL  ,
-	IGN_MAIN_FAIL       ,
-    IGN_DROGUE_CONT_FAIL, 
-	IGN_DROGUE_FAIL     ,
-	IGN_UNRECOGNIZED_CMD 
+	IGN_SUCCESS         ,    /* Ignition successful        */
+	IGN_SWITCH_FAIL     ,    /* Device not armed           */
+	IGN_CONT_FAIL       ,    /* No continuity in pyro port */
+	IGN_FAILED_TO_IGNITE,    /* Ematch failed to ignite    */
+	IGN_UNRECOGNIZED_CMD     /* Unrecognized command code  */
 	} IGN_STATUS;
 
 
