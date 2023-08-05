@@ -112,7 +112,7 @@ if      ( !ign_switch_cont() )
 	}
 else if ( !ign_main_cont()   )
 	{
-    return IGN_MAIN_CONT_FAIL; 
+    return IGN_CONT_FAIL; 
     }
 else /* Continuity is good for main */
 	{
@@ -129,7 +129,7 @@ if ( !ign_main_cont() )
 	}
 else /* Ignition unsuccessful */
 	{
-	return IGN_MAIN_FAIL;
+	return IGN_FAILED_TO_IGNITE;
 	}
 
 } /* ign_deploy_main */
@@ -162,7 +162,7 @@ if      ( !ign_switch_cont() )
 	}
 else if ( !ign_drogue_cont()   )
 	{
-    return IGN_DROGUE_CONT_FAIL; 
+    return IGN_CONT_FAIL; 
     }
 else /* Continuity is good for drogue */
 	{
@@ -179,7 +179,7 @@ if ( !ign_drogue_cont() )
 	}
 else /* Ignition unsuccessful */
 	{
-	return IGN_DROGUE_FAIL;
+	return IGN_FAILED_TO_IGNITE;
 	}
 
 } /* ign_deploy_drogue */
