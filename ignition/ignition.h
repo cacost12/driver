@@ -62,9 +62,8 @@ typedef enum IGN_STATUS
 #define IGN_SWITCH_MASK   	    0b00000001
 #define IGN_MAIN_CONT_MASK  	0b00000010
 #define IGN_DROGUE_CONT_MASK 	0b00000100
-#define IGN_E_CONT_MASK         0b00001000
-#define IGN_SP_CONT_MASK        0b00010000
-#define IGN_NOZ_CONT_MASK       0b00100000
+#define IGN_AUX1_CONT_MASK      0b00001000
+#define IGN_AUX2_CONT_MASK      0b00010000
 
 /* Time to supply current through ignition circuits */
 #define IGN_BURN_DELAY          100
